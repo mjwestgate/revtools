@@ -22,14 +22,13 @@ ui <- fluidPage(
 			#h4("Show LDA options"), 
 			checkboxInput("show_LDA", strong("Show LDA options"), value=FALSE),
 			conditionalPanel(condition="input.show_LDA==true",
-				wellPanel(sliderInput("n.iter", "# iterations", 
-					min=1000, max=5000, value=1000, step=1000)),
+				uiOutput("topic_slider"),
+				sliderInput("n.iter", "# iterations", 
+					min=1000, max=5000, value=1000, step=1000),
+				checkboxInput("retain_points", "Retain excluded points?", value=TRUE),
 				selectInput("col_selector", "color scheme", choices=c(
 					"Accent", "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
-					selected="Dark2", multiple=FALSE, width="100%"),
-				uiOutput("topic_slider"),
-				# wellPanel(sliderInput("n.topics", "# topics", min=1, max=12, value=5)),
-				checkboxInput("retain_points", "Retain excluded points?", value=TRUE)
+					selected="Dark2", multiple=FALSE, width="100%")
 				), # end LDA conditionalPanel
 
 			# Display options
@@ -37,11 +36,10 @@ ui <- fluidPage(
 			conditionalPanel(condition="input.show_display==true",
 				checkboxInput("show_bib_details", "Show bibliographic details?",  value=FALSE),
 				checkboxInput("show_coauthors", "Show coauthorship?",  value=FALSE),
-				sliderInput("point_size", "point size", min=0.5, max=4, value=1.5, step=0.5),
 				checkboxInput("show_citations", "Show citations?",  value=FALSE),
 				conditionalPanel(condition="input.show_citations==true",
-					sliderInput("expand_citations", "expansion factor", min=1, max=6, value=3, step=1)
-					) # end expansion stuff
+					sliderInput("expand_citations", "expansion factor", min=1, max=6, value=3, step=1)), 
+				sliderInput("point_size", "point size", min=0.5, max=4, value=1.5, step=0.5)
 				), # end Display conditionalPanel
 
 			# Export options
