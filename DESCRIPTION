@@ -1,0 +1,9 @@
+Package: bibviewr
+Version: 0.0.1
+Date: 2016-05-12
+Title: Interactive visualisation and classification of bibliographic data
+Author: Martin J. Westgate <martinjwestgate@gmail.com>
+Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
+Description: Import and interactive display tools for bibliographic data
+Depends: R (>= 3.1.0), shiny, tm, topicmodels, ape, ade4, RColorBrewer
+License: GPL-2
