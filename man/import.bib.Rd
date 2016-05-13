@@ -1,6 +1,8 @@
 \name{import.bib}
-\alias{import_bib}
 \title{Import bibliographic data}
+\description{
+Import standard formats from academic search engines and referencing software to R.
+}
 \usage{
 import.bib(x)
 }
@@ -9,7 +11,4 @@ import.bib(x)
 }
 \value{
 Returns a list, where each entry is a reference, containing a sublist of standard data on that reference (author, year, etc).
-}
-\description{
-Import standard formats from academic search engines and referencing software to R.
 }

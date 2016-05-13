@@ -1,16 +1,15 @@
 \name{draw.bib}
-\alias{draw_bib}
-\title{Draw an interactive plot of a bibliography using LDA and Shiny}
+\title{Interactive visualisation of bibliographic data}
+\description{Draw an interactive plot of a bibliography using LDA and Shiny}
 \usage{
 draw.bib(x)
 }
 \arguments{
-  \item{x}{List returned by prep.bib}
+  \item{x}{A list returned by prep.bib}
 }
 \value{
-Launches a Shiny app in the users default browser. 
-}
-\description{
+This function launches a Shiny app in the users' default browser. 
+
 The display space is divided into three parts. From left to right, these are the control panel; the plot window; and the selection panel. 
 
 The control window is the only part of the display that is drawn when the app is launched. It consists of a button to calculate LDA, and a series of drop-down menus to alter the apperance of the remaining panels. The default is to suppress most bibliographic information (i.e. data on article authors, years and journals, as well as coauthorship and citation information). Note that the default settings for LDA (5 topics, 1000 iterations) prioritize speed over reliability - higher numbers of iterations will give more reliable results. 
