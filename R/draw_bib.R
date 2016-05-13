@@ -7,9 +7,52 @@ coauthors<-x$coauthors
 
 ui <- fluidPage(theme=shinytheme("spacelab"),
 
-	includeCSS("customCSS.css"),
-	# style attributes of whole page
-	tags$style(type="text/css", "body {background-color:#fff;}"), 
+	# add some custom css - altered from code in Shiny
+	# primary goal is to alter slider color from blue to grey
+	tags$style(type="text/css", "body {background-color:#fff;}
+
+	.irs-bar {
+	    height: 8px; top: 25px;
+	    border-top: 1px solid #969696;
+	    border-bottom: 1px solid #969696;
+	    background: #969696;
+	}
+	    .irs-bar-edge {
+	        height: 8px; top: 25px;
+	        width: 14px;
+	        border: 1px solid #969696;
+	        border-right: 0;
+	        background: #969696;
+	        border-radius: 16px 0 0 16px;
+	        -moz-border-radius: 16px 0 0 16px;
+	    }
+	
+	.irs-from, .irs-to, .irs-single {
+	    color: #fff;
+	    font-size: 11px; line-height: 1.333;
+	    text-shadow: none;
+	    padding: 1px 3px;
+	    background: #969696;
+	    border-radius: 3px;
+	    -moz-border-radius: 3px;
+	}
+	
+	.irs-grid {
+	    height: 27px;
+	}
+	.irs-grid-pol {
+	    opacity: 0.5;
+	    background: #969696;
+	}
+	.irs-grid-pol.small {
+	    background: #999;
+	}
+	
+	.irs-grid-text {
+	    bottom: 5px;
+	    color: #969696;
+	}
+	"), 
 
 	# set first row
 	fluidRow(
