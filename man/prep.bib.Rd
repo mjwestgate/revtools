@@ -1,4 +1,5 @@
-\name{prep.bib}
+\name{prep_bib}
+\alias{prep.bib}
 \title{Prepare bibliographic data for interactive plotting}
 \description{
 Performs some simple analyses to accumulate data in the correct format. Kept separate from draw.bib for two reasons: 1. to speed up plotting by Shiny, 2. to allow user checkng of data supplied to visualisation (i.e. to alow exclusion of words, correction of author lists etc.).

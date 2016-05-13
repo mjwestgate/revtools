@@ -1,4 +1,5 @@
-\name{import.bib}
+\name{import_bib}
+\alias{import.bib}
 \title{Import bibliographic data}
 \description{
 Import standard formats from academic search engines and referencing software to R.
