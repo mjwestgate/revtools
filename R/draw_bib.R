@@ -379,7 +379,7 @@ server <- function(input, output) {
 			
 			# draw
 			par(mar=c(3, 0.5, 2, 0.5))
-			plot(1~1, type="n", ann=FALSE, axes=FALSE, ylim=c(1, 0), xlim=c(max(result$n)+1, 0))
+			plot(x=1, y=1, type="n", ann=FALSE, axes=FALSE, ylim=c(1, 0), xlim=c(max(result$n)+1, 0))
 			xlabs<-axTicks(1)
 			axis(1, at= xlabs, labels=rep("", length(xlabs)), col="grey30", tcl=0.5)
 			axis(1, at=xlabs, line=-0.5, lwd=0)
@@ -417,7 +417,7 @@ server <- function(input, output) {
 			pc.complete<-(1/total)*complete	
 			# draw
 			par(mar=c(3, 4, 3, 2))
-			plot(1~1, type="n", ann=FALSE, axes=FALSE, xlim=c(0, 1), ylim=c(0, 1))
+			plot(x=1, y=1, type="n", ann=FALSE, axes=FALSE, xlim=c(0, 1), ylim=c(0, 1))
 			polygon(x=c(0, 1, 1, 0), y=c(0, 0, 1, 1), border="grey30")
 			polygon(x=c(0, pc.complete, pc.complete, 0), 
 				y=c(0, 0, 1, 1), col=adjustcolor("darkblue", alpha.f=0.4), 
