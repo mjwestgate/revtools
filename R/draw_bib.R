@@ -5,8 +5,9 @@ bibliography<-x$bibliography
 dtm<-x$dtm
 coauthors<-x$coauthors
 
-ui <- fluidPage(
+ui <- fluidPage(theme=shinytheme("spacelab"),
 
+	includeCSS("customCSS.css"),
 	# style attributes of whole page
 	tags$style(type="text/css", "body {background-color:#fff;}"), 
 
