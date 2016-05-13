@@ -396,8 +396,12 @@ server <- function(input, output) {
 						col=data.tr$fill[k])
 					}
 				}	
+			# topic labels
+			terms.plot<-terms(LDA_data$model, 3)
+			labels.tr<-apply(terms.plot, 2, function(a){paste(a, collapse=" ")})
+			text(x=rep(0, length(labels.tr)), y=xvals, labels=labels.tr, pos=2, cex=1, col="grey40")				
 			# axis labels
-			mtext("Topic", side=3, adj=1, line=0)
+			mtext("Topic", side=3, adj=0.9, line=0)
 			mtext("# Articles", side=1, adj=0.5, line=2)
 		}
 	})
@@ -444,7 +448,7 @@ server <- function(input, output) {
 				name.tr<-names(bibliography)[hover_recorder$row]
 				point.tr<-which(LDA_data$coords$label==name.tr)
 				topic.tr<-topics(LDA_data$model)[point.tr]
-				terms.topic<-terms(LDA_data$model, 5)[, topic.tr]
+				terms.topic<-terms(LDA_data$model, 8)[4:8, topic.tr]
 				terms.article<-names(sort(dtm[hover_recorder$row, ], decreasing=TRUE))[1:5]
 				result<-paste("<strong>Keywords</strong><br><strong>Topic:</strong> ",
 					paste(terms.topic, collapse=", "),
