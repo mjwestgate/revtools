@@ -20,5 +20,10 @@ to.remove<-sort(unique(stopwords("english"),
     "also", "howev", "show", "found", "due") 
     ))
 bib.list<-prep.bib(bib.data, to.remove) # generate data in correct format - SLOW
-draw.bib(final.list) # run interactive figure with Shiny
+# creates a list with three entries:
+    # $bibliography - copy of bib.data
+    # $dtm - document term matrix
+    # $coauthors - list of pairs of articles that share >0 authors
+
+draw.bib(bib.list) # run interactive figure with Shiny
 ```
