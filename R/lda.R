@@ -47,14 +47,14 @@ LDAfun<-function(x, n.topics=6, iter=1000, ...){ # vector of abstracts
 # calculate document term matrix
 get.dtm<-function(x, stop.words){ # where x is a vector of abstracts
 	dtm.control <- list(
-	  tolower = TRUE,
-	  removePunctuation = TRUE,
-	  removeNumbers = TRUE,
-	  stopwords = stop.words,
-	  stemming = TRUE,
-	  wordLengths = c(3, Inf),
-	  minDocFreq=5,
-	  weighting = weightTf)
+		tolower = TRUE,
+		removePunctuation = TRUE,
+		removeNumbers = TRUE,
+		stopwords = stop.words,
+		stemming = TRUE,
+		wordLengths = c(3, Inf),
+		minDocFreq=5,
+		weighting = weightTf)
 	# convert to document term matrix
 	corp<-Corpus(VectorSource(x))
 	dtm<-DocumentTermMatrix(corp, control= dtm.control)
