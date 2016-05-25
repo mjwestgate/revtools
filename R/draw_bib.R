@@ -182,14 +182,14 @@ server <- function(input, output) {
 	observeEvent(input$show_citations, {
 		if(input$show_citations){
 			raw.data<-citations.n(bibliography)$n
-			add.vals<-1+((raw.data/max(raw.data))*input$expand_citations)
+			add.vals<-1+((raw.data/max(c(1, max(raw.data))))*input$expand_citations)
 			point.expansion$add<-add.vals
 		}else{point.expansion$add<-rep(1, length(bibliography))}
 		})
 	observeEvent(input$expand_citations, {
 		if(input$show_citations){
 			raw.data<-citations.n(bibliography)$n
-			add.vals<-1+((raw.data/max(raw.data))*input$expand_citations)
+			add.vals<-1+((raw.data/max(c(1, max(raw.data))))*input$expand_citations)
 			point.expansion$add<-add.vals
 		}else{point.expansion$add<-rep(1, length(bibliography))}
 		})
