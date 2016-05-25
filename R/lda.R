@@ -50,6 +50,7 @@ get.dtm<-function(x, stop.words){ # where x is a vector of abstracts
 		tolower = TRUE,
 		removePunctuation = TRUE,
 		removeNumbers = TRUE,
+		removestopWords=TRUE,
 		stopwords = stop.words,
 		stemming = TRUE,
 		wordLengths = c(3, Inf),

@@ -21,7 +21,7 @@ import.bib<-function(x){ # e.g. x="reference.csw"
 read.ciw<-function(x){
 
 	# import x
-	z<-scan(x, sep="\t", what="character", quiet=TRUE)
+	z<-scan(x, sep="\t", what="character", quote="", quiet=TRUE)
 	z<-unlist(strsplit(z, "\n")) # avoid problem with missed escapes
 	
 	# extract designator info
@@ -77,7 +77,7 @@ return(result.clean)
 read.ris<-function(x){
 
 	# import x
-	z<-scan(x, sep="\t", what="character", quiet=TRUE)
+	z<-scan(x, sep="\t", what="character", quote="", quiet=TRUE)
 	z<-unlist(strsplit(z, "\n")) # avoid problem with missed escapes
 	
 	# get labels
