@@ -1,1 +1,1 @@
-export(import.bib, prep.bib, draw.bib)
+export(get.author.matrix, import.bib, prep.bib, draw.bib)

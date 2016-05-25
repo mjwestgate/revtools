@@ -1,3 +1,4 @@
+get.author.matrix	matrix of documents (rows) by authors (cols)
 import.bib	import bibliography in .ciw or .ris format
 prep.bib	extract data necessary for text and coauthor analysis
 draw.bib	draw an interactive plot of bibliographic data
