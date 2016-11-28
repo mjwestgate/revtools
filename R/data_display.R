@@ -1,6 +1,6 @@
 # extract data on the numbers of times each article has been cited
 citations.n<-function(x){
-	# find citation data withn the supplied list
+	# find citation data within the supplied list
 	citation.search<-lapply(x, function(a){
 		if(any(names(a)=="TC")){
 			return(as.numeric(a$TC))
@@ -29,7 +29,7 @@ return(result.drame)
 }
 
 
-# Function to give display bibliographic information on selected articles
+# Function to display bibliographic information on selected articles
 pretty.citations<-function(
 	x, # list of data from a standard import function
 	abstract=FALSE, # option to return only the citation for an article

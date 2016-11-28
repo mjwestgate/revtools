@@ -4,14 +4,15 @@
 # wrapper function to get all references, regardless of format
 import.bib<-function(x){ # e.g. x="reference.csw"
 	x.format<-strsplit(x, "\\.")[[1]][2]
-	if(any(c("ciw", "ris", "bib", "csv")==x.format)==FALSE){
-		stop(paste("No method currently exists in package(bibviewr) to import files of format'", 
+	if(any(c("ciw", "ris", "bib")==x.format)==FALSE){
+		stop(paste("No method currently exists in package(bibviewr) to import files of format '.", 
 			x.format, "'", sep=""))}
-	switch(x.format,
+	result<-switch(x.format,
 		"ciw"={read.ciw(x)},
-		"ris"={read.ris(x)})
-		#"bib"={read.bib(x)},
-		#"csv"={read.csv.refs(x)})
+		"ris"={read.ris(x)},
+		"bib"={read.bib(x)})
+	class(result)<-"bibdata"
+	return(result)
 	}
 
 
@@ -132,8 +133,69 @@ return(result.clean)
 # any(unlist(lapply(test, function(a){any(names(a)=="AB")}))) # check for abstracts
 
 
-# TXT (scopus)
-
 # BIB (xml?)
+read.bib<-function(x){
 
-# csv (scopus)
+	# import x
+	z<-scan(x, sep="\t", what="character", quote="", quiet=TRUE)
+	z<-unlist(strsplit(z, "\n")) # avoid problem with missed escapes
+
+	# split by entry - in this case by finding the @ARTICLE tag	
+	at.vector<-rep(0, length(z))
+	first.char.vector<-lapply(as.list(z), function(a){substr(a, 1, 1)})
+	at.vector[which(unlist(first.char.vector) =="@")]<-1
+	split.vector<-cumsum(at.vector)
+	z.split<-split(z, split.vector)
+
+	# get names for each unique entry
+	z.names<-unlist(lapply(z.split, function(a){substr(a[1], 10, nchar(a[1])-1)}))
+	names(z.split)<-z.names
+
+	# generate a lookup table
+	lookup.table<-data.frame(
+		bib=c("author", "title", "journal", "year", "volume", "issue", "number", "page_initial", "page_final", 
+			"doi", "note", "url", "document_type", "source", "abstract"),
+		ris=c("AU", "TI", "SO", "PY", "VL", "IS", "IS", "SP", "EP", "DO", "N1", "UR", "TY", "DB", "AB"),
+		stringsAsFactors=FALSE)
+
+	# sort out contents of each entry
+	z.final<-lapply(z.split, function(a, check){
+		#extract and reorganize data
+		a<-a[c(2:(length(a)-1))]
+		split.entries<-lapply(as.list(a), function(b){strsplit(b, "=\\{")})
+		name.headings<-unlist(lapply(split.entries, function(a){a[[1]][1]}))
+		entry.data<-unlist(lapply(split.entries, function(a){substr(a[[1]][2], 1, nchar(a[[1]][2])-2)}))
+		result<-as.list(entry.data)
+		names(result)<-name.headings
+
+		# set format for authors
+		if(any(names(result)=="author")==FALSE){result$author<-"Anon."}
+		result$author<-strsplit(result$author, " and ")[[1]] # appears robust to n.authors = 1
+
+		# split into start and end pages
+		if(any(names(result)=="pages")){
+			pages<-strsplit(result$pages, "-")[[1]]
+			result<-result[-which(names(result)=="pages")]
+			result$page_initial<-pages[1]
+			result$page_final<-pages[2]
+		}else{
+			result$page_initial<-NA
+			result$page_final<-NA}
+
+		# ensure year is numeric
+		result$year<-as.numeric(result$year)		
+
+		# use lookup table to match headings to those in other formats 
+		names(result)<-unlist(lapply(names(result), function(a, lookup){
+			if(any(lookup$bib==a)){
+				return(lookup$ris[which(lookup$bib==a)])
+			}else{return(NA)}
+			}, lookup=check))
+		if(any(is.na(names(result)))){result<-result[-which(is.na(names(result)))]}
+
+		return(result)
+
+		}, check=lookup.table)
+	
+	return(z.final)
+	} # end function

@@ -2,11 +2,24 @@
 # function for cleaning abstracts for text analysis
 extract.abstracts<-function(x){ # list of data from an import function
 	# extract relevant data from the list
-	y<-lapply(x, function(a){a$AB})
+	y<-lapply(x, function(a){
+		if(is.null(a$AB) & is.null(a$TI)){return("")
+		}else{
+			if(is.null(a$AB)){return(a$TI)}
+			if(is.null(a$TI)){return(a$AB)}
+			if(any(c(is.null(a$AB), is.null(a$TI)))==FALSE){
+				return(paste(a$TI, a$AB, sep=" "))
+		}}
+		})
 
 	# are any abstracts completely missing? 
-	null.check<-lapply(y, is.null)
-	if(any(unlist(null.check))){y[which(unlist(null.check))]<-""}
+	null.check<-unlist(lapply(x, function(a){is.null(a$AB)}))
+	null.count<-length(which(null.check))
+	null.percent<-round((100/length(x)) * null.count, 0)
+	if(any(null.check)){
+		warning(paste("", null.count, " of ", length(x), " entries (", 
+			null.percent, "%) do not contain abstracts: only titles used", sep=""))
+		}
 
 	# remove copyright notices
 	# ISI lists copyright as (C)
