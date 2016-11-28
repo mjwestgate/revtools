@@ -11,6 +11,8 @@ install_github("mjwestgate/bibviewr")
 library(bibviewr)
 
 bib.data<-import.bib("example_bibliography.ris")  # import
+summary(bib.data) # show number of entries, sources, etc.
+print(bib.data) # show first 5 entries
 
 # write custom list of stopwords (optional)
 to.remove<-sort(unique(stopwords("english"),
