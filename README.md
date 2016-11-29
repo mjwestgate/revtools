@@ -15,8 +15,8 @@ summary(bib.data) # show number of entries, sources, etc.
 print(bib.data) # show first 5 entries
 
 # write custom list of stopwords (optional)
-to.remove<-sort(unique(stopwords("english"),
-    c("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",	
+to.remove<-sort(unique(c(stopwords("english"),
+    "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",	
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
     "use", "can", "may", "high", "higher", "low", "lower", 
     "also", "howev", "show", "found", "due") 

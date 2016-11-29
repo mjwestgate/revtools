@@ -1,9 +1,11 @@
 
 # function to call 
 prep.bib<-function(x, 
-	stop.words 
+	stop.words,
+	show.coauthors=TRUE
 	){
-	if(missing(stop.words)){stop.words<-stopwords("english")}
+	if(missing(stop.words)){stop.words<-stopwords("english")
+	}else{stop.words<-unique(c(stopwords("english"), stop.words))}
 	abstracts<-extract.abstracts(x)
 	# remove empty entries
 	if(any(is.na(abstracts))){
@@ -24,11 +26,16 @@ prep.bib<-function(x,
 		abstracts<-abstracts[-rm.rows]
 		x<-x[-rm.rows]
 		dtm<-dtm[-rm.rows, ]}
-	cat("Creating document author matrix ... ")
-	dam<-get.author.matrix(x)
-	cat("Creating coauthor network ... ")
-	coauthor.network<-get.coauthorship(dam)
-	cat("Complete")
+	if(show.coauthors & length(x)<=300){
+		cat("Creating document author matrix ... ")
+		dam<-get.author.matrix(x)
+		cat("Creating coauthor network ... ")
+		coauthor.network<-get.coauthorship(dam)
+		cat("Complete")
+	}else{
+		coauthor.network<-data.frame(a1=NA, a2=NA)
+		cat("Skipping coauthorship due to data length ... Complete")
+		}
 	return(list(bibliography=x, dtm= dtm, coauthors= coauthor.network))
 	}
 

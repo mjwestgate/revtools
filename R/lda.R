@@ -15,7 +15,7 @@ extract.abstracts<-function(x){ # list of data from an import function
 	# are any abstracts completely missing? 
 	null.check<-unlist(lapply(x, function(a){is.null(a$AB)}))
 	null.count<-length(which(null.check))
-	null.percent<-round((100/length(x)) * null.count, 0)
+	null.percent<-round((100/length(x)) * null.count, 1)
 	if(any(null.check)){
 		warning(paste("", null.count, " of ", length(x), " entries (", 
 			null.percent, "%) do not contain abstracts: only titles used", sep=""))
@@ -59,19 +59,24 @@ LDAfun<-function(x, n.topics=6, iter=1000, ...){ # vector of abstracts
 
 # calculate document term matrix
 get.dtm<-function(x, stop.words){ # where x is a vector of abstracts
+
+	# convert to document term matrix
+	corp <- Corpus(VectorSource(x))
+		corp <- tm_map(corp,
+			content_transformer(function(x) iconv(x, to='UTF-8-MAC', sub='byte')),
+			mc.cores=1)
+		corp <- tm_map(corp, content_transformer(tolower), lazy=TRUE)
+		corp <- tm_map(corp, removeWords, stop.words)
+		corp <- tm_map(corp, removeNumbers)
+		corp <- tm_map(corp, removePunctuation)
+		corp <- tm_map(corp, stemDocument, lazy=TRUE)
+
+	# use control in DTM code to do remaining work
 	dtm.control <- list(
-		tolower = TRUE,
-		removePunctuation = TRUE,
-		removeNumbers = TRUE,
-		removestopWords=TRUE,
-		stopwords = stop.words,
-		stemming = TRUE,
 		wordLengths = c(3, Inf),
 		minDocFreq=5,
 		weighting = weightTf)
-	# convert to document term matrix
-	corp<-Corpus(VectorSource(x))
-	dtm<-DocumentTermMatrix(corp, control= dtm.control)
+	dtm<-DocumentTermMatrix(corp , control= dtm.control)
 	dtm<-removeSparseTerms(dtm, sparse= 0.99) # remove rare terms (cols)
 	return(dtm)
 	}

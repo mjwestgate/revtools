@@ -34,7 +34,6 @@ pretty.citations<-function(
 	x, # list of data from a standard import function
 	abstract=FALSE, # option to return only the citation for an article
 	details=TRUE # whether to allow or suppress bibliographic details - name, year, journal
-	# earlier version included 'width' arg - unlcear why 
 	){
 	if(details){
 		# author info
@@ -68,4 +67,3 @@ pretty.citations<-function(
 
 	return(result)
 	}
-# pretty.citations(data[[164]], abstract=FALSE, details=FALSE)

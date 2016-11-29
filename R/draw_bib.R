@@ -79,6 +79,7 @@ ui <- fluidPage(theme=shinytheme("spacelab"),
 			checkboxInput("show_display", strong("Show display options"),  value=TRUE),
 			conditionalPanel(condition="input.show_display==true",
 				checkboxInput("show_bib_details", "Show bibliographic details?",  value=FALSE),
+				# if(show.coauthorship)
 				checkboxInput("show_coauthors", "Show coauthorship?",  value=FALSE),
 				checkboxInput("show_citations", "Show citations?",  value=FALSE),
 				conditionalPanel(condition="input.show_citations==true",
@@ -140,7 +141,7 @@ server <- function(input, output) {
 	# set up slider to select the number of topics
 	# wellPanel(sliderInput("n.topics", "# topics", min=1, max=12, value=5))
 	output$topic_slider<-renderUI({
-		sliderInput("n.topics", "# topics", min=1, 
+		sliderInput("n.topics", "# topics", min=3, 
 			max=brewer.pal.info[input$col_selector, ]$maxcolors, value=5)
 		})
 
@@ -155,9 +156,7 @@ server <- function(input, output) {
 		if(input$retain_points | any(article.selector$status =="no", na.rm=TRUE)==FALSE){
 			data.tr<-dtm
 		}else{
-			present.rows<-which(is.na(article.selector$status)==FALSE)
-			no.rows<-which(article.selector$status[present.rows]=="no")
-			current.display$rows <-c(1:nrow(dtm))[-present.rows[no.rows]]
+			current.display$rows <-c(1:nrow(dtm))[-which(article.selector$status=="no")]
 			data.tr<-dtm[current.display$rows, ]
 			data.tr<-data.tr[, which(apply(data.tr, 2, sum)>0)]}
 		model<-LDAfun(data.tr, n.topics=input$n.topics, iter=input$n.iter)
@@ -206,11 +205,12 @@ server <- function(input, output) {
 			threshold=10,
 			maxpoints=1)
 		if(nrow(res)==1){
-			selector<-which(names(bibliography)==res$label)
+			selector.hover<-which(names(bibliography)==res$label[1])
 			plot_interaction$hover<-paste(
-				pretty.citations(bibliography[[selector]], abstract=TRUE, details=input$show_bib_details),
-				paste("<br><em>Article number ", selector, "</em>", sep=""))
-			hover_recorder$row<-selector
+				pretty.citations(bibliography[[selector.hover]], abstract=TRUE, details=input$show_bib_details),
+				paste("<br><em>Article number ", selector.hover, "</em>", sep=""))
+			# plot_interaction$hover<-print(res)
+			hover_recorder$row<-selector.hover
 		}else{plot_interaction$hover<-NULL}} # necessary?
 		})
 	# and clicking
@@ -221,11 +221,11 @@ server <- function(input, output) {
 			threshold=10,
 			maxpoints=1)
 		if(nrow(res)==1){
-			selector<-which(names(bibliography)==res$label)
+			selector.click<-which(names(bibliography)==res$label[1])
 			plot_interaction$click<-paste(
-				pretty.citations(bibliography[[selector]], abstract=TRUE, details=input$show_bib_details),
-				paste("<br><em>Article number ", selector, "</em>", sep=""))
-			click_recorder$row<-selector
+				pretty.citations(bibliography[[selector.click]], abstract=TRUE, details=input$show_bib_details),
+				paste("<br><em>Article number ", selector.click, "</em>", sep=""))
+			click_recorder$row<-selector.click
 		}else{
 			plot_interaction$click <-NULL}}
 		})
@@ -242,9 +242,6 @@ server <- function(input, output) {
 	output$select_no<- renderUI({
 		 if(is.null(plot_interaction$click)==FALSE){
 			actionButton("return_no", "No", style="color: #fff; background-color: #428bca;")} })
-
-	# need a separate system to track which points to keep
-	# point.display <- reactiveValues(status = rep(NA, nrow(dtm)))
 
 	# link action buttons to select/deselect articles to article status
 	observeEvent(input$return_yes, {article.selector$status[click_recorder$row]<-"yes"})
@@ -276,7 +273,7 @@ server <- function(input, output) {
 		if(is.null(click_recorder$row)==FALSE){
 			name.tr<-names(bibliography)[click_recorder$row]
 			point.tr<-which(LDA_data$coords$label==name.tr)
-			if(any(coauthors$a1== name.tr) & input$show_coauthors){
+			if(any(coauthors$a1== name.tr) & input$show_coauthors){# & show.coauthorship){
 				row1<-which(coauthors$a1== name.tr)
 				names2<-coauthors$a2[row1]
 				row2<-which(sapply(names(bibliography)[current.display$rows], function(a, lookup){
@@ -471,14 +468,20 @@ server <- function(input, output) {
 	# EXPORT
 	observeEvent(input$export_selected, {
 		selector1<-which(is.na(article.selector$status)==FALSE)
-		selector2<-selector1[which(article.selector$status[selector1]==TRUE)]
-		result<-get.citations(bibliography[selector1])
-		write.csv(result, "article_results_selected.csv", row.names=FALSE)
+		selector2<-selector1[which(article.selector$status[selector1]=="yes")]
+		result<-get.citations(bibliography[selector2])
+		# get timestamp
+		time.text<-strsplit(as.character(Sys.time()), " ")[[1]]
+		file.name<-paste("article_results_selected", time.text[1], 
+			paste(strsplit(time.text[2], ":")[[1]], collapse="-"), ".csv", sep="_")
+		write.csv(result, file.name, row.names=FALSE)
 		})
 	observeEvent(input$export_all, {
 		result<-get.citations(bibliography)
 		result$selected<-article.selector$status
-		write.csv(result, "article_results_all.csv", row.names=FALSE)
+		file.name<-paste("article_results_all", time.text[1], 
+			paste(strsplit(time.text[2], ":")[[1]], collapse="-"), ".csv", sep="_")
+		write.csv(result, file.name, row.names=FALSE)
 		})
 
 } # end server

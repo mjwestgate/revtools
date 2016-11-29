@@ -4,7 +4,7 @@ summary.bibdata<-function(x){
 	# are any abstracts completely missing? 
 	null.check<-unlist(lapply(x, function(a){is.null(a$AB)}))
 	null.count<-length(x)-length(which(null.check))
-	null.percent<-round((100/length(x)) * null.count, 0)
+	null.percent<-round((100/length(x)) * null.count, 1)
 
 	# how many sources?
 	n.sources<-unlist(lapply(x, function(a){a$SO}))
