@@ -14,15 +14,27 @@ citations.n<-function(x){
 				if(length(a[[test1]])>1){
 					text.val<-grep("cited by", a[[test1]], ignore.case=TRUE, value=TRUE)
 				}else{text.val<-a[[test1]]}
-				result<-as.numeric(strsplit(text.val, ":")[[1]][2])
-				}
+			text.clean<-removePunctuation(text.val)
+			text.split<-strsplit(text.clean, " ")[[1]] 
+			split.matrix<-matrix(data=c(c(1:(length(text.split)-1)), c(2:length(text.split))), 
+				nrow=length(text.split)-1, ncol=2, byrow=FALSE)
+			text.pairs<-apply(split.matrix, 1, function(a, lookup){
+				paste(lookup[as.numeric(a)], collapse=" ")
+				}, lookup=text.split)
+			text.loc<-grep("cited by", text.pairs, ignore.case=TRUE, value=FALSE)
+			result<-text.split[max(split.matrix[text.loc, ])+1]		
+			# grep("cited by",
+			# text.split<-strsplit(text.val, ":")[[1]]
+			# if(length(text.split)==1){text.split<-strsplit(text.split, " ")[[1]]}
+			# result<-text.split[length(text.split)]
+			}
 			return(result)
 		}
 		})
 	# convert to data.frame
 	result.drame<-data.frame(
 		label=names(citation.search),
-		n=unlist(citation.search),
+		n=unlist(as.numeric(citation.search)),
 		stringsAsFactors=FALSE)
 	rownames(result.drame)<-NULL
 return(result.drame)
@@ -37,7 +49,13 @@ pretty.citations<-function(
 	){
 	if(details){
 		# author info
-		author.data<-unlist(lapply(strsplit(x$AU, ", "), function(a){paste(a[2], a[1], sep=" ")}))
+		# remove any additional characters that display affiliations (i.e. those after last ".")
+		author.data<-unlist(lapply(strsplit(x$AU, ""), function(a){
+			dot.lookup<-a %in% "."
+			if(any(dot.lookup)){a<-a[1:max(which(dot.lookup))]}
+			return(paste(a, collapse=""))
+			}))
+		author.data<-unlist(lapply(strsplit(author.data, ", "), function(a){paste(a[2], a[1], sep=" ")}))
 	
 		if(length(x$AU)>3){author.info<-paste(author.data[1], ", ", author.data[2], " et al.", sep="")
 		}else if(length(x$AU)==3){author.info <-paste(author.data[1], ", ", 

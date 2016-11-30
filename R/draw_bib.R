@@ -104,8 +104,8 @@ ui <- fluidPage(theme=shinytheme("spacelab"),
 			plotOutput("plot1", height = 500, 
 				click = "plot_click", 
 				dblclick="plot_dblclick",
-				brush=brushOpts(id="plot_brush", resetOnNew=TRUE),
-				hover=hoverOpts(id="plot_hover", delay=0)),
+				brush=brushOpts(id="plot_brush", resetOnNew=TRUE, clip=TRUE),
+				hover=hoverOpts(id="plot_hover", delay=0, clip=TRUE)),
 			tags$style(type="text/css","#info_hover { color:#404040;}"), 
 			tableOutput("text")
 			),
@@ -204,12 +204,11 @@ server <- function(input, output) {
 			xvar="x", yvar="y",
 			threshold=10,
 			maxpoints=1)
-		if(nrow(res)==1){
+		if(nrow(res)==1 & any(names(bibliography)==res$label[1])){
 			selector.hover<-which(names(bibliography)==res$label[1])
 			plot_interaction$hover<-paste(
 				pretty.citations(bibliography[[selector.hover]], abstract=TRUE, details=input$show_bib_details),
 				paste("<br><em>Article number ", selector.hover, "</em>", sep=""))
-			# plot_interaction$hover<-print(res)
 			hover_recorder$row<-selector.hover
 		}else{plot_interaction$hover<-NULL}} # necessary?
 		})
@@ -220,14 +219,13 @@ server <- function(input, output) {
 			xvar="x", yvar="y",
 			threshold=10,
 			maxpoints=1)
-		if(nrow(res)==1){
+		if(nrow(res)>=1 & any(names(bibliography)==res$label[1])){
 			selector.click<-which(names(bibliography)==res$label[1])
 			plot_interaction$click<-paste(
 				pretty.citations(bibliography[[selector.click]], abstract=TRUE, details=input$show_bib_details),
 				paste("<br><em>Article number ", selector.click, "</em>", sep=""))
 			click_recorder$row<-selector.click
-		}else{
-			plot_interaction$click <-NULL}}
+		}else{plot_interaction$click <-NULL}}
 		})
 
 	# ARTICLE SELECTOR
