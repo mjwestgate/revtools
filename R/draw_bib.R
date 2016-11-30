@@ -64,7 +64,7 @@ ui <- fluidPage(theme=shinytheme("spacelab"),
 				style="color: #fff; background-color: #428bca;"),
 			# LDA control
 			#h4("Show LDA options"), 
-			checkboxInput("show_LDA", strong("Show LDA options"), value=FALSE),
+			checkboxInput("show_LDA", strong("LDA options"), value=FALSE),
 			conditionalPanel(condition="input.show_LDA==true",
 				uiOutput("topic_slider"),
 				sliderInput("n.iter", "# iterations", 
@@ -76,19 +76,19 @@ ui <- fluidPage(theme=shinytheme("spacelab"),
 				), # end LDA conditionalPanel
 
 			# Display options
-			checkboxInput("show_display", strong("Show display options"),  value=TRUE),
+			checkboxInput("show_display", strong("Display options"),  value=TRUE),
 			conditionalPanel(condition="input.show_display==true",
-				checkboxInput("show_bib_details", "Show bibliographic details?",  value=FALSE),
+				checkboxInput("show_bib_details", "bibliographic detail",  value=FALSE),
 				# if(show.coauthorship)
-				checkboxInput("show_coauthors", "Show coauthorship?",  value=FALSE),
-				checkboxInput("show_citations", "Show citations?",  value=FALSE),
+				checkboxInput("show_coauthors", "coauthorship",  value=FALSE),
+				checkboxInput("show_citations", "times cited",  value=FALSE),
 				conditionalPanel(condition="input.show_citations==true",
 					sliderInput("expand_citations", "expansion factor", min=1, max=6, value=3, step=1)), 
 				sliderInput("point_size", "point size", min=0.5, max=4, value=1.5, step=0.5)
 				), # end Display conditionalPanel
 
 			# Export options
-			checkboxInput("show_export", strong("Show export options"),  value=FALSE),
+			checkboxInput("show_export", strong("Export options"),  value=FALSE),
 			conditionalPanel(condition="input.show_export==true",
 				actionButton("export_all", "export all",
 					style="color: #fff; background-color: #337ab7;"),
@@ -105,7 +105,7 @@ ui <- fluidPage(theme=shinytheme("spacelab"),
 				click = "plot_click", 
 				dblclick="plot_dblclick",
 				brush=brushOpts(id="plot_brush", resetOnNew=TRUE, clip=TRUE),
-				hover=hoverOpts(id="plot_hover", delay=0, clip=TRUE)),
+				hover=hoverOpts(id="plot_hover", delay=100, clip=TRUE)),
 			tags$style(type="text/css","#info_hover { color:#404040;}"), 
 			tableOutput("text")
 			),
@@ -207,7 +207,7 @@ server <- function(input, output) {
 		if(nrow(res)==1 & any(names(bibliography)==res$label[1])){
 			selector.hover<-which(names(bibliography)==res$label[1])
 			plot_interaction$hover<-paste(
-				pretty.citations(bibliography[[selector.hover]], abstract=TRUE, details=input$show_bib_details),
+				pretty.citations(bibliography[[res$label[1]]], abstract=TRUE, details=input$show_bib_details),
 				paste("<br><em>Article number ", selector.hover, "</em>", sep=""))
 			hover_recorder$row<-selector.hover
 		}else{plot_interaction$hover<-NULL}} # necessary?
@@ -222,7 +222,7 @@ server <- function(input, output) {
 		if(nrow(res)>=1 & any(names(bibliography)==res$label[1])){
 			selector.click<-which(names(bibliography)==res$label[1])
 			plot_interaction$click<-paste(
-				pretty.citations(bibliography[[selector.click]], abstract=TRUE, details=input$show_bib_details),
+				pretty.citations(bibliography[[res$label[1]]], abstract=TRUE, details=input$show_bib_details),
 				paste("<br><em>Article number ", selector.click, "</em>", sep=""))
 			click_recorder$row<-selector.click
 		}else{plot_interaction$click <-NULL}}
