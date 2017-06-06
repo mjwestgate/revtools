@@ -2,12 +2,12 @@
 summary.bibdata<-function(x){
 
 	# are any abstracts completely missing? 
-	null.check<-unlist(lapply(x, function(a){is.null(a$AB)}))
+	null.check<-unlist(lapply(x, function(a){is.null(a$abstract)}))
 	null.count<-length(x)-length(which(null.check))
 	null.percent<-round((100/length(x)) * null.count, 1)
 
 	# how many sources?
-	n.sources<-unlist(lapply(x, function(a){a$SO}))
+	n.sources<-unlist(lapply(x, function(a){a$journal}))
 	source.freq<-sort(xtabs(~n.sources), decreasing=TRUE)[1:5]
 
 	# put text together
