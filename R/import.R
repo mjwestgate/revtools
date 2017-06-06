@@ -7,7 +7,7 @@ import.bib<-function(
 	path
 	){
 
-	lookup<-readRDS("R/sysdata.rds")
+	lookup<-readRDS("sysdata.rds")
 
 	# import x
 	if(missing(path)){file<-x}else{file<-paste(path, x, sep="/")}
