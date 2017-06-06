@@ -7,8 +7,6 @@ import.bib<-function(
 	path
 	){
 
-	lookup<-readRDS("sysdata.rds")
-
 	# import x
 	if(missing(path)){file<-x}else{file<-paste(path, x, sep="/")}
 	z<-scan(file, sep="\t", what="character", quote="", quiet=TRUE)
@@ -74,6 +72,18 @@ import.bib<-function(
 read.ris<-function(x){
 
 	# merge data with lookup info, to provide bib-style tags
+	lookup<-data.frame(ris=c("TY", "AU", "PY", "TI", "T1", 
+			"JO", "T2", "VL", "IS", "EP", 
+			"SP", "AB", "KW", "DO", "CN", 
+			"SN", "UR", "AN", "CY", "PB", 
+			"PP", "AD", "ED", "ET", "LA"), 
+		bib=c("type", "author", "year", "title", "title",
+			"journal", "journal", "volume", "number", "pages",
+			"pages", "abstract", "keywords", "doi", "call",
+			"issn", "url", "accession", "institution", "publisher",
+			"pubplace", "address", "editor", "edition", "language"),
+		order=c(1, 2, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9:22),
+		stringsAsFactors=FALSE)
 	x.merge<-merge(x, lookup, by="ris", all.x=TRUE, all.y=FALSE)
 	x.merge <-x.merge[order(x.merge$row.order), ]
 
