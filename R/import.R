@@ -15,19 +15,24 @@ import.bib<-function(
 	# detect whether this is bib-like or ris-like
 	# most efficient way is to find the most common single characters
 	zsub<-z[c(1:min(c(100, length(z))))]
-	z.list<-strsplit(zsub, "")
-
-	# next test is to find out what the delimiter is
-	z.vec<-do.call(c, z.list)
-	char.selector<-length(which(z.vec =="{" | z.vec =="}"))-length(which(z.vec =="-"))
-	if(char.selector<0){data.type<-"ris"}else{data.type<-"bib"}
+	if(length(grep("=\\{", zsub))>30){data.type<-"bib"}else{data.type<-"ris"}
 
 	if(data.type=="bib"){result<-read.bib(z)  # simple case - no further work needed
 	}else{  #  ris format - can be inconsistent - custom code needed
 
 		# test for fixed width
-		test.matrix<-do.call(rbind, lapply(z.list, function(a){a[1:8]==" "}))
-		empty.cols<-apply(test.matrix, 2, function(a){all(a, na.rm=TRUE)}) 
+		space.loc.list<-gregexpr(" ", zsub)
+		loc.index<-data.frame(n=unlist(lapply(space.loc.list, function(a){length(a)})))
+		loc.index$index<-c(1:nrow(loc.index))
+
+		space.finder<-data.frame(
+			line=do.call(c, lapply(split(loc.index, loc.index$index), function(a){rep(a$index, a$n)})),
+			location=do.call(c, lapply(space.loc.list, function(a){as.numeric(a)})))
+		if(any(space.finder$location==-1)){
+			space.finder<-space.finder[-which(space.finder$location==-1), ]}
+
+		space.matrix<-xtabs(~ line + location, data=space.finder)
+		empty.cols<-apply(space.matrix, 2, function(a){all(a, na.rm=TRUE)}) 
 		is.fixed.width<-any(empty.cols)
 	
 		if(is.fixed.width){
@@ -138,8 +143,17 @@ read.ris<-function(x){
 read.bib<-function(x){
 
 	# convert to data.frame with tags and content in separate columns
-	x.split<-strsplit(x, "\\{")
+	x.split<-strsplit(x, "=\\{")
+	x.split<-lapply(x.split, function(a){
+		if(length(a==1) & nchar(a[1])>8){
+			if(substr(a[1], 2, 8)=="ARTICLE"){
+				result<-c("@ARTICLE", substr(a, 10, nchar(a)))
+				return(result)
+			}else{return(a)}
+		}else{return(a)}
+		})
 	x.split<-lapply(x.split, function(a){gsub("=|\\}|\\,[^\\,]*$", "", a)})
+
 	x.new<-as.data.frame(do.call(rbind, x.split), stringsAsFactors=FALSE)
 	colnames(x.new)<-c("tag", "text")
 
@@ -162,7 +176,7 @@ read.bib<-function(x){
 	x.split<-lapply(x.split, function(a){
 		b<-as.list(a$text)
 		names(b)<-a$tag
-		b$author<-strsplit(b$author, " and ")[[1]]
+		if(any(names(b)=="author")){b$author<-strsplit(b$author, " and ")[[1]]}
 		return(b)})
 	names(x.split)<-ref.labels
 
