@@ -78,16 +78,24 @@ read.ris<-function(x){
 
 	# merge data with lookup info, to provide bib-style tags
 	lookup<-data.frame(ris=c("TY", "AU", "PY", "TI", "T1", 
-			"JO", "T2", "VL", "IS", "EP", 
-			"SP", "AB", "KW", "DO", "CN", 
+			"JO", "T2", "SO", # journal
+			"VL", "IS", 
+			"EP", "BP", "SP", # pages
+			"AB", 
+			"KW", "DE", # "ID", # keywords
+			"DO", "CN", 
 			"SN", "UR", "AN", "CY", "PB", 
 			"PP", "AD", "ED", "ET", "LA"), 
-		bib=c("type", "author", "year", "title", "title",
-			"journal", "journal", "volume", "number", "pages",
-			"pages", "abstract", "keywords", "doi", "call",
+		bib=c("type", "author", "year", rep("title", 2,),
+			rep("journal", 3),
+			"volume", "number", 
+			rep("pages", 3),
+			"abstract", 
+			rep("keywords", 2), 
+			"doi", "call",
 			"issn", "url", "accession", "institution", "publisher",
 			"pubplace", "address", "editor", "edition", "language"),
-		order=c(1, 2, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9:22),
+		order=c(1, 2, 3, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 9, 10, 10, 11:22),
 		stringsAsFactors=FALSE)
 	x.merge<-merge(x, lookup, by="ris", all.x=TRUE, all.y=FALSE)
 	x.merge <-x.merge[order(x.merge$row.order), ]
@@ -105,10 +113,16 @@ read.ris<-function(x){
 			if(result$title[1]==result$title[2]){result$title<-result$title[1]
 			}else{result$title<-paste(result$title, collapse=" ")}
 			}
+		if(any(names(result)=="keywords")){
+			if(length(result$keywords)>1){result$keywords<-paste(result$keywords, collapse=" ")}
+			result$keywords<-strsplit(result$keywords, "; ")[[1]]
+			}
 		if(length(result$abstract>1)){
 			result$abstract <-paste(result$abstract, collapse=" ")}
 		if(any(names(result)=="pages")){
-			if(length(result$pages)>1){result$pages<-paste(result$pages, collapse="-") 
+			if(length(result$pages)>1){
+				z<-as.numeric(result$pages)
+				result$pages<-paste(min(z), max(z), sep="-")
 			}}
 		entry.order<-unlist(lapply(names(result), function(b, order){
 				order$order[which(order$bib==b)[1]]}, order=a))
