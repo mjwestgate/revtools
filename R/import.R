@@ -111,23 +111,21 @@ read.ris<-function(x){
 		result<-split(a$text, a$bib)
 		if(length(result$title)>1){
 			if(result$title[1]==result$title[2]){result$title<-result$title[1]
-			}else{result$title<-paste(result$title, collapse=" ")}
-			}
+			}else{result$title<-paste(result$title, collapse=" ")}}
 		if(any(names(result)=="keywords")){
 			if(length(result$keywords)>1){result$keywords<-paste(result$keywords, collapse=" ")}
-			result$keywords<-strsplit(result$keywords, "; ")[[1]]
-			}
+			result$keywords<-strsplit(result$keywords, "; ")[[1]]}
 		if(length(result$abstract>1)){
 			result$abstract <-paste(result$abstract, collapse=" ")}
 		if(any(names(result)=="pages")){
-			if(length(result$pages)>1){
-				z<-as.numeric(result$pages)
-				result$pages<-paste(min(z), max(z), sep="-")
-			}}
+			if(length(result$pages)>1){result$pages<-paste(sort(result$pages), sep="-")}}
 		entry.order<-unlist(lapply(names(result), function(b, order){
 				order$order[which(order$bib==b)[1]]}, order=a))
 		result[order(entry.order)]
 		})
+
+# lapply(x.final, function(a){a$pages})
+
 
 	# generate unique label for entries
 	author.year.test<-all(unlist(lapply(x.final, function(a){length(a$author)}))>0 &
