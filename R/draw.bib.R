@@ -80,6 +80,8 @@ ui<-fluidPage(
 		checkboxInput("show_LDA", strong("Topic Model options"), value=FALSE),
 		conditionalPanel(condition="input.show_LDA==true",
 			selectInput("modeltype", "model type", choices=c("LDA", "CTM")),
+			sliderInput("niter", "number of iterations", 
+				min=1000, max=20000, step=1000, value= 2000),
 			uiOutput("topic_slider"),
 			actionButton("go_LDA", strong("recalculate model"), width="100%", 
 				style="color: #fff; background-color: #428bca;")
@@ -152,7 +154,8 @@ observeEvent(input$go_LDA, {
 	rows<-which(infostore$SEL$display)
 	model<-LDAfun(infostore$DTM[rows, ], 
 		topic.model=input$modeltype, 
-		n.topics=input$n.topics)
+		n.topics=input$n.topics,
+		iter=input$niter)
 	lda.weights<-posterior(model)$topics
 	palette<-do.call(input$color, list(
 		n=model@k, 

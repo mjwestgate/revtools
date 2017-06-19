@@ -104,7 +104,7 @@ getDTM<-function(
 # function to run the topic model in question
 LDAfun<-function(
 	x,  # DTM
-	topic.model="LDA", n.topics=6, iter=1000, ...)
+	topic.model="LDA", n.topics=6, iter=2000, ...)
 	{
 	LDA.control<-list(iter=iter)
 	switch(topic.model,
