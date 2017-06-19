@@ -118,7 +118,7 @@ read.ris<-function(x){
 		if(length(result$abstract>1)){
 			result$abstract <-paste(result$abstract, collapse=" ")}
 		if(any(names(result)=="pages")){
-			if(length(result$pages)>1){result$pages<-paste(sort(result$pages), sep="-")}}
+			if(length(result$pages)>1){result$pages<-paste(sort(result$pages), collapse="-")}}
 		entry.order<-unlist(lapply(names(result), function(b, order){
 				order$order[which(order$bib==b)[1]]}, order=a))
 		result[order(entry.order)]
