@@ -11,8 +11,8 @@ getDTM<-function(
 	){
 
 	# sort out stop words
-	if(missing(stop.words)){stop.words<-stopwords("english")
-	}else{stop.words<-unique(c(stopwords("english"), stop.words))}
+	if(missing(stop.words)){stop.words<-tm::stopwords()
+	}else{stop.words<-unique(c(tm::stopwords(), stop.words))}
 
 	# some articles have added words in their abstracts - set list for later
 	rm.words<-c("Abstract:", "Aim:", "Aims:", "Background:", 
