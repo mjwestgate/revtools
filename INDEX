@@ -1,2 +1,3 @@
 import.bib	import bibliography
+write.bib	export bibliography
 draw.bib	draw an interactive plot of bibliographic data

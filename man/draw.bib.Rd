@@ -6,7 +6,7 @@
 draw.bib(x)
 }
 \arguments{
-  \item{x}{A list returned by prep.bib}
+  \item{x}{A list returned by import.bib}
 }
 \value{
 This function launches a Shiny app in the users' default browser. 
