@@ -1,5 +1,5 @@
 # function to export data in .bib format
-write.bib<-function(x, filename="bibviewr_export.ris", format="ris"){
+export.bib<-function(x, filename="bibviewr_export.ris", format="ris"){
 
 
 if(format=="bib"){

@@ -38,7 +38,7 @@ import.bib<-function(
 		if(is.fixed.width){
 			z.dframe<-data.frame(
 				ris=substr(z, 1, 2) ,
-				text=substr(z, max(which(empty.cols==TRUE)), nchar(z)),
+				text=substr(z, max(as.numeric(names(which(empty.cols==TRUE)))), nchar(z)),
 				row.order=c(1:length(z)),
 				stringsAsFactors=FALSE)	
 		}else{
