@@ -32,18 +32,19 @@ import.bib<-function(
 			space.finder<-space.finder[-which(space.finder$location==-1), ]}
 
 		space.matrix<-xtabs(~ line + location, data=space.finder)
-		empty.cols<-apply(space.matrix, 2, function(a){all(a, na.rm=TRUE)}) 
-		is.fixed.width<-any(empty.cols)
+		empty.cols<-apply(space.matrix, 2, sum)
+		is.fixed.width<-any(empty.cols > 85) # i.e. 85% empty
 	
 		if(is.fixed.width){
+			start.char<-max(as.numeric(names(which(empty.cols > 85)))) + 1
 			z.dframe<-data.frame(
 				ris=substr(z, 1, 2) ,
-				text=substr(z, max(as.numeric(names(which(empty.cols==TRUE)))), nchar(z)),
+				text=substr(z, start.char, nchar(z)),
 				row.order=c(1:length(z)),
 				stringsAsFactors=FALSE)	
 		}else{
 			# find rows where the first two letters are capitalized
-			tag.detector<-gregexpr("^[[:upper:]]+$", lapply(z, function(a){substr(a, 1, 2)}))
+			tag.detector<-gregexpr("^[A-Z]{2}", test) # NOTE: this is insufficient: some contain numbers
 			tagged.rows<-unlist(lapply(tag.detector, function(a){a[1]==1}))
 			tagged.data<-data.frame(tagged=tagged.rows, data=z, stringsAsFactors=FALSE)
 			z.split<-split(tagged.data, c(1:length(z)))
@@ -60,6 +61,7 @@ import.bib<-function(
 
 		# now fill missing tags
 		if(any(z.dframe$ris=="")){
+			if(z.dframe$ris[1]==""){z.dframe$ris[1]<-"ZZ"} # blank tag to avoid error
 			missing.rows<-which(z.dframe$ris=="")
 			for(i in 1:length(missing.rows)){
 				z.dframe$ris[missing.rows[i]]<-z.dframe$ris[(missing.rows[i]-1)]}}
@@ -77,25 +79,28 @@ import.bib<-function(
 read.ris<-function(x){
 
 	# merge data with lookup info, to provide bib-style tags
-	lookup<-data.frame(ris=c("TY", "AU", "PY", "TI", "T1", 
+	lookup<-data.frame(ris=c("TY", 
+			"AU", paste("A", c(1:5), sep=""), # author
+			"PY", "Y1", # year
+			"TI", "T1", # title
 			"JO", "T2", "SO", # journal
 			"VL", "IS", 
 			"EP", "BP", "SP", # pages
-			"AB", 
+			"AB", "N2", # abstract
 			"KW", "DE", # "ID", # keywords
 			"DO", "CN", 
 			"SN", "UR", "AN", "CY", "PB", 
 			"PP", "AD", "ED", "ET", "LA"), 
-		bib=c("type", "author", "year", rep("title", 2,),
+		bib=c("type", rep("author", 6), rep("year", 2), rep("title", 2,),
 			rep("journal", 3),
 			"volume", "number", 
 			rep("pages", 3),
-			"abstract", 
+			rep("abstract", 2), 
 			rep("keywords", 2), 
 			"doi", "call",
 			"issn", "url", "accession", "institution", "publisher",
 			"pubplace", "address", "editor", "edition", "language"),
-		order=c(1, 2, 3, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 9, 10, 10, 11:22),
+		order=c(1, rep(2, 6), 3, 3, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 9, 9, 10, 10, 11:22),
 		stringsAsFactors=FALSE)
 	x.merge<-merge(x, lookup, by="ris", all.x=TRUE, all.y=FALSE)
 	x.merge <-x.merge[order(x.merge$row.order), ]
