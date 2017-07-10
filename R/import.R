@@ -44,7 +44,7 @@ import.bib<-function(
 				stringsAsFactors=FALSE)	
 		}else{
 			# find rows where the first two letters are capitalized
-			tag.detector<-gregexpr("^[A-Z]{2}", test) # NOTE: this is insufficient: some contain numbers
+			tag.detector<-gregexpr("^[A-Z]{2}|[A-Z]{1}d{1}", z)
 			tagged.rows<-unlist(lapply(tag.detector, function(a){a[1]==1}))
 			tagged.data<-data.frame(tagged=tagged.rows, data=z, stringsAsFactors=FALSE)
 			z.split<-split(tagged.data, c(1:length(z)))
