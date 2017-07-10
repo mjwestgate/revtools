@@ -8,17 +8,24 @@ summary.bibdata<-function(x){
 
 	# how many sources?
 	n.sources<-unlist(lapply(x, function(a){a$journal}))
-	source.freq<-sort(xtabs(~n.sources), decreasing=TRUE)[1:5]
-
-	# put text together
-	result<-paste(
-		paste("Number of entries:", length(x), sep=" "), "\n\t",
-		paste("containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
-		paste("Number of sources:", length(unique(n.sources)), sep=" "), "\n",
-		"Most common sources:", "\n\t",
-		paste(names(source.freq), " (n = ", as.numeric(source.freq), ")", sep="", collapse="\n\t"),
-	sep="",
-	collapse="\n")
+	if(is.null(n.sources)==FALSE){
+		source.freq<-sort(xtabs(~n.sources), decreasing=TRUE)[1:5]
+		# put text together
+		result<-paste(
+			paste("Object of class 'bibdata' containing", length(x), "entries.", sep=" "), "\n\t",
+			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
+			paste("Number of sources:", length(unique(n.sources)), sep=" "), "\n",
+			"Most common sources:", "\n\t",
+			paste(names(source.freq), " (n = ", as.numeric(source.freq), ")", sep="", collapse="\n\t"),
+		sep="",
+		collapse="\n")
+	}else{
+		result<-paste(
+			paste("Object of class 'bibdata' containing", length(x), "entries.", sep=" "), "\n\t",
+			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
+		sep="",
+		collapse="\n")
+	}
 	cat(result)
 	}
 
