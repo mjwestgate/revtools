@@ -26,7 +26,7 @@ summary.bibdata<-function(x){
 		sep="",
 		collapse="\n")
 	}
-	cat(result)
+	cat(result, sep="\n")
 	}
 
 
