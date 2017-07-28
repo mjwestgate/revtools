@@ -14,8 +14,9 @@ pretty.citations<-function(
 				if(any(dot.lookup)){a<-a[1:max(which(dot.lookup))]}
 				return(paste(a, collapse=""))
 				}))
-			author.data<-unlist(lapply(strsplit(author.data, ", "), function(a){paste(a[2], a[1], sep=" ")}))
-		
+			if(any(grepl(",", author.data))){
+				author.data<-unlist(lapply(strsplit(author.data, ", "), function(a){paste(a[2], a[1], sep=" ")}))
+				}
 			n.authors<-length(x$author)
 			if(n.authors>=4){n.authors<-4}
 			author.info<-switch(as.character(n.authors), 
@@ -33,8 +34,10 @@ pretty.citations<-function(
 		if(all(lookup.result)){
 			result<-paste(author.info, " (", x$year, ") ", 
 				x$title, ". ", x$journal, " ", x$volume, ": ", x$pages, sep="")
-		}else{result<-paste(x[lookup.headers[lookup.result]], collapse=" ")}
-	
+		}else{
+			result<-paste(author.info, paste(x[lookup.headers[lookup.result]], collapse=" "), sep=" ")}
+			# note - the above line doesn't add brackets around year
+
 		# add abstract if required
 		if(abstract){
 			result<- paste(result, ".<br><br><strong>Abstract</strong><br>", x$abstract, sep="")}
@@ -46,3 +49,5 @@ pretty.citations<-function(
 
 	return(result)
 	}
+# issues:
+	# double full stops on some article titles.
