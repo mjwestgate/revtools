@@ -287,12 +287,15 @@ read.ris<-function(x){
 				}else{result$title<-paste(result$title, collapse=" ")}}
 			result$title <-gsub("   ", " ", result$title) # in case of error (3 spaces)
 			result$title <-gsub("  ", " ", result$title) # ditto (2 spaces)
+			result$title <-sub("\\.$", "", result$title) # remove final full stops
 			}
 		# JOURNAL
 		if(any(names(result)=="journal")){
 			if(length(result$journal)>1){
-				result$journal<-result$journal[which.max(nchar(result$journal))]
-				}}
+				result$journal<-result$journal[which.max(nchar(result$journal))]}
+			result$journal <-gsub("  ", " ", result$journal)
+			result$journal <-sub("\\.$", "", result$journal) 
+			}
 		# ABSTRACT
 		if(length(result$abstract>1)){
 			result$abstract <-paste(result$abstract, collapse=" ")
