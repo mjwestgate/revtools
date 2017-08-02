@@ -1,14 +1,16 @@
-bibviewr
+revtools
 ==========
 
-Import and interactive display tools for bibliographic data
+Tools to support systematic review and meta-analysis in R
+
+Note: This package includes tools to import, de-duplicate, and display bibliographic data. It is in the early stages of development, so use at your own risk!
 
 # Example:
 ```
 # install and load package
 library(devtools)
-install_github("mjwestgate/bibviewr")
-library(bibviewr)
+install_github("mjwestgate/revtools")
+library(revtools)
 
 x<-import.bib("example_bibliography.ris")  # import
 summary(x) # show number of entries, sources, etc.
