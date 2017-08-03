@@ -269,6 +269,7 @@ read.ris<-function(x){
 	# add a section here to relabel bib==NA for each entry
 	# previous version on un-split data kept tags from previous reference
 
+	# convert to list format
 	x.final<-lapply(x.split, function(a){
 		result<-split(a$text, a$bib)
 		# MISC
@@ -332,6 +333,15 @@ read.ris<-function(x){
 		rows.tr<-which(nonunique_names=="ref")
 		nonunique_names[rows.tr]<-paste("ref", c(1:length(rows.tr)), sep="_")
 		}
+
+	# ensure names are unique
+	if(length(unique(nonunique_names))<length(nonunique_names)){
+		name_counts<-xtabs(~nonunique_names)
+		duplicated_names<-names(which(name_counts>1))
+		for(i in 1:length(duplicated_names)){
+			rows<-which(nonunique_names== duplicated_names[i])
+			new_names<-paste(nonunique_names[rows], letters[1:length(rows)], sep="_")
+			nonunique_names[rows]<-new_names}}
 
 	names(x.final)<-nonunique_names
 
