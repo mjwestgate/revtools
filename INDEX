@@ -1,6 +1,6 @@
-import.bib		import bibliography
-export.bib		export bibliography
-draw.bib		draw an interactive plot of bibliographic data
-find_duplicates		find duplicated references within a data.frame
+import.bib	import bibliography
+export.bib	export bibliography
+draw.bib	draw an interactive plot of bibliographic data
+find_duplicates	find duplicated references within a data.frame
 make_reference_dataframe	convert a biodata file to a data.frame
 pretty.citations	print a reference in a cleaned format

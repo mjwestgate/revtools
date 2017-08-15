@@ -1,4 +1,4 @@
-\name{export_bib}
+\name{export.bib}
 \alias{export.bib}
 \title{Export imported bibliographic data as .bib}
 \description{Basic function to export bibliographic information for use in other programs. Work in progress. Very little error checking or advanced formatting in this version}

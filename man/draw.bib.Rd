@@ -1,4 +1,4 @@
-\name{draw_bib}
+\name{draw.bib}
 \alias{draw.bib}
 \title{Interactive visualisation of bibliographic data}
 \description{Draw an interactive plot of a bibliography using LDA and Shiny}
