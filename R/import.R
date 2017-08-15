@@ -295,7 +295,7 @@ read.ris<-function(x){
 				unique_journals<-unique_journals[order(nchar(unique_journals), decreasing=FALSE)]
 				result$journal<-unique_journals[1]
 				result$journal_secondary<-paste(unique_journals[c(2:length(unique_journals))], collapse=" ")
-				}
+			}else{result$journal<-unique_journals}		
 			result$journal <-gsub("  ", " ", result$journal)
 			result$journal <-sub("\\.$", "", result$journal) 
 			}
