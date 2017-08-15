@@ -3,7 +3,7 @@
 \title{Export imported bibliographic data as .bib}
 \description{Basic function to export bibliographic information for use in other programs. Work in progress. Very little error checking or advanced formatting in this version}
 \usage{
-write.bib(x, filename, format)
+export.bib(x, filename, format)
 }
 \arguments{
   \item{x}{An object of class 'bibviewr', such as imported using import.bib}

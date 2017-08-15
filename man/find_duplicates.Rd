@@ -1,4 +1,5 @@
 \name{find_duplicates}
+\alias{find_duplicates}
 \title{Locate duplicated references within a data.frame}
 \description{Identify potential duplicates within a data.frame containing title, journal and year data for each reference (i.e. as returned by make_reference_dataframe().}
 \usage{

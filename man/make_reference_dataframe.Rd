@@ -1,4 +1,5 @@
 \name{make_reference_dataframe}
+\alias{make_reference_dataframe}
 \title{Convert bibliographic information to a data.frame}
 \description{This function take the list-based format returned by import.bib (class "bibdata") and converts it to a simple data.frame. }
 \usage{
