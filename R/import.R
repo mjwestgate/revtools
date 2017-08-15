@@ -13,6 +13,7 @@ import.bib<-function(
 	}else{
 		file<-paste(path, x, sep="/")
 		}
+	Sys.setlocale("LC_ALL", "C")
 	z<-scan(file, sep="\t", what="character", quote="", quiet=TRUE, blank.lines.skip=FALSE)
 	Encoding(z)<-"latin1"
 	z<-gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
@@ -265,9 +266,6 @@ read.ris<-function(x){
 
 	# convert into a list, where each reference is a separate entry
 	x.split<-split(x.merge[c("bib", "ris", "text", "order")], x.merge$ref)
-	
-	# add a section here to relabel bib==NA for each entry
-	# previous version on un-split data kept tags from previous reference
 
 	# convert to list format
 	x.final<-lapply(x.split, function(a){
@@ -292,8 +290,12 @@ read.ris<-function(x){
 			}
 		# JOURNAL
 		if(any(names(result)=="journal")){
-			if(length(result$journal)>1){
-				result$journal<-result$journal[which.max(nchar(result$journal))]}
+			unique_journals<-unique(result$journal)
+			if(length(unique_journals)>1){
+				unique_journals<-unique_journals[order(nchar(unique_journals), decreasing=FALSE)]
+				result$journal<-unique_journals[1]
+				result$journal_secondary<-paste(unique_journals[c(2:length(unique_journals))], collapse=" ")
+				}
 			result$journal <-gsub("  ", " ", result$journal)
 			result$journal <-sub("\\.$", "", result$journal) 
 			}

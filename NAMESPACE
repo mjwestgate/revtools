@@ -1,3 +1,4 @@
 export(import.bib, export.bib,
 summary.bibdata, print.bibdata, summary.bibselector,
+pretty.citations,
 draw.bib)
