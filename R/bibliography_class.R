@@ -1,5 +1,5 @@
 # contains info on class("bibdata")
-summary.bibdata<-function(x){
+summary.bibliography<-function(x){
 
 	# are any abstracts completely missing? 
 	null.check<-unlist(lapply(x, function(a){is.null(a$abstract)}))
@@ -12,7 +12,7 @@ summary.bibdata<-function(x){
 		source.freq<-sort(xtabs(~n.sources), decreasing=TRUE)[1:5]
 		# put text together
 		result<-paste(
-			paste("Object of class 'bibdata' containing", length(x), "entries.", sep=" "), "\n\t",
+			paste("Object of class 'bibliography' containing", length(x), "entries.", sep=" "), "\n\t",
 			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
 			paste("Number of sources:", length(unique(n.sources)), sep=" "), "\n",
 			"Most common sources:", "\n\t",
@@ -21,7 +21,7 @@ summary.bibdata<-function(x){
 		collapse="\n")
 	}else{
 		result<-paste(
-			paste("Object of class 'bibdata' containing", length(x), "entries.", sep=" "), "\n\t",
+			paste("Object of class 'bibliography' containing", length(x), "entries.", sep=" "), "\n\t",
 			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
 		sep="",
 		collapse="\n")
@@ -30,9 +30,9 @@ summary.bibdata<-function(x){
 	}
 
 
-print.bibdata<-function(x){
+print.bibliography<-function(x){
 	if(length(x)>5){n<-5}else{n<-length(x)}
-	text.tr<-lapply(x[1:n], pretty.citations)
+	text.tr<-lapply(x[1:n], format_citation)
 	cat(
 		# paste("Bibliography containing ", length(x), " entries, the first ", n, " of which are:\n\n", sep=""),
 		paste(unlist(text.tr), collapse="\n\n"))

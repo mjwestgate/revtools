@@ -1,7 +1,10 @@
 find_duplicates<-function(x){
 
 	# prep a checkable data.frame
-	x.lower<-as.data.frame(lapply(x, tolower), stringsAsFactors=FALSE)
+	x.lower<-x
+	x.lower$title<-gsub("[[:punct:]]", "", tolower(x.lower$title)) # remove punctuation
+	x.lower$journal<-tolower(x.lower$journal)
+	x.lower$year<-as.numeric(x.lower$year)
 
 	# check for similar journals - allows fuzzy matching of journal titles
 	journal_names<-sort(unique(x.lower$journal)) 
@@ -59,44 +62,55 @@ find_duplicates<-function(x){
 	journal_groups<-text_dframe[, c("initial_title", "group")]
 	colnames(journal_groups)<-c("journal", "journal_group")
 	x.lower<-merge(x.lower, journal_groups, by="journal", all=TRUE)
+	x.lower<-x.lower[order(x.lower$ID), ]
 
-	# remaining prep on titles and years
-	x.lower$year<-as.numeric(x.lower$year)
+	# prep for duplicate testing
 	x.lower$checked<-is.na(x.lower$title) # i.e. those that are missing titles are not checked
-	x.lower$title<-gsub("[[:punct:]]", "", x.lower$title) # remove punctuation
-	x.lower$group<-NA
+	x.lower$duplicate_group<-NA
 	group_increment<-1
 
 	# check for similar titles within journals and years
-	while(length(which(x.lower$checked==FALSE))>1){
-		# locate relevant information
-		unchecked_test<-x.lower$checked==FALSE
-		row_start<-which(unchecked_test)[1]
-		# include only those rows with similar years
-		if(is.na(x.lower$year[row_start])){
-			year_test<-rep(TRUE, nrow(x.lower))
+	while(length(which(x.lower$checked==FALSE))>0){
+		if(length(which(x.lower$checked==FALSE))==1){
+			last_row<-which(x.lower$checked==FALSE)
+			x.lower$duplicate_group[last_row]<-group_increment
+			x.lower$checked[last_row]<-TRUE
 		}else{
-			year_test<-(abs(x.lower$year - x.lower$year[row_start]) < 2 | is.na(x.lower$year))}
-		# include only rows with similar journal titles
-		if(is.na(x.lower$journal[row_start])){	
-			journal_test<-rep(TRUE, nrow(x.lower))
-		}else{
-			journal_test<-((x.lower$journal_group == x.lower$journal_group[row_start] ) | is.na(x.lower$journal))}
-		# combine
-		comp_rows<-which(unchecked_test & year_test & journal_test)
-		comp_rows <- comp_rows[which(comp_rows != row_start)]
-		text_similarity <- stringdist(x.lower$title[row_start], x.lower$title[comp_rows])
-		if(any(text_similarity < 5)){
-			checked_rows<-c(row_start, comp_rows[which(text_similarity < 5)])
-			x.lower$group[checked_rows]<-group_increment
-			x.lower$checked[checked_rows]<-TRUE
-		}else{
-			x.lower$group[row_start]<-group_increment
-			x.lower$checked[row_start]<-TRUE
+			# locate relevant information
+			unchecked_test<-x.lower$checked==FALSE
+			row_start<-which(unchecked_test)[1]
+			# include only those rows with similar years
+			if(is.na(x.lower$year[row_start])){
+				year_test<-rep(TRUE, nrow(x.lower))
+			}else{
+				year_test<-(abs(x.lower$year - x.lower$year[row_start]) < 2 | is.na(x.lower$year))}
+			# include only rows with similar journal titles
+			if(is.na(x.lower$journal[row_start])){	
+				journal_test<-rep(TRUE, nrow(x.lower))
+			}else{
+				journal_test<-((x.lower$journal_group == x.lower$journal_group[row_start] ) | is.na(x.lower$journal))}
+			# combine
+			comp_rows<-which(unchecked_test & year_test & journal_test)
+			comp_rows <- comp_rows[which(comp_rows != row_start)]
+			text_similarity <- stringdist(x.lower$title[row_start], x.lower$title[comp_rows])
+			if(any(text_similarity < 5)){
+				checked_rows<-c(row_start, comp_rows[which(text_similarity < 5)])
+				x.lower$duplicate_group[checked_rows]<-group_increment
+				x.lower$checked[checked_rows]<-TRUE
+			}else{
+				x.lower$duplicate_group[row_start]<-group_increment
+				x.lower$checked[row_start]<-TRUE
+				}
+			group_increment <- group_increment + 1
 			}
-		group_increment <- group_increment + 1
 		}
-	x<-merge(x, x.lower[, c("ID", "group")], by="ID", all=TRUE)
+	x<-merge(x, x.lower[, c("ID", "duplicate_group")], by="ID", all=TRUE)
+
+	# now ensure that entries that are missing titles are given a unique number
+	if(any(is.na(x$title))){
+		rows_tr<-which(is.na(x$title))
+		x$duplicate_group[rows_tr]<-c(1:length(rows_tr)) + max(x$duplicate_group)
+		}
 
 	return(x)
 }

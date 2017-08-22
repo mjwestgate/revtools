@@ -1,6 +1,5 @@
-# methods for class(bibselector)
-
-summary.bibselector<-function(x){
+# methods for class(review_info)
+summary.review_info<-function(x){
 	# 1: article summary
 	cat("Number of entries:\n")
 		cat(paste("  total: ", length(x$DATA), "\n", sep=""))
@@ -18,10 +17,4 @@ summary.bibselector<-function(x){
 		cat(paste("  mean number of words per article: ",  
 			round(mean(apply(x$DTM, 1, sum)), 0), "\n", sep=""))	
 }
-
-# testing
-# x<-test
-# class(x)<-"bibselector"
-# summary(x)
-
 # add something about content: most common words, perhaps name of the original file?

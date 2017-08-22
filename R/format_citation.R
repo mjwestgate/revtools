@@ -1,5 +1,5 @@
 # Function to display bibliographic information on selected articles
-pretty.citations<-function(
+format_citation<-function(
 	x, # list of data from a standard import function
 	abstract=FALSE, # option to return only the citation for an article
 	details=TRUE # whether to allow or suppress bibliographic details - name, year, journal
@@ -49,5 +49,23 @@ pretty.citations<-function(
 
 	return(result)
 	}
-# issues:
-	# double full stops on some article titles.
+
+# duplicate version for calling apply on a data.frame
+format_citation_dataframe<-function(df){
+	author_vector<-strsplit(df['author'], " and ")[[1]]
+	if(length(author_vector)==1){author_text<-df['author']
+	}else{author_text<-paste(author_vector[1], " et al.", sep="")}
+	text_vector<-paste(author_text, " (", df['year'], ") ", df['title'], ". ", df['journal'], ".", sep="")
+	# now organize so that line breaks are added at word breaks every y characters
+	split_vector<-strsplit(text_vector, " ")[[1]]
+	result_dframe<-data.frame(
+		text=split_vector,
+		nchars=nchar(split_vector),
+		stringsAsFactors=FALSE)
+	result_dframe$sum<-cumsum(result_dframe$nchars)
+	result_dframe$group<-cut(result_dframe$sum, 
+		breaks=seq(0, max(result_dframe$sum)+79, 80),
+		labels=FALSE)
+	result_list<-split(result_dframe$text, result_dframe$group)
+	paste(unlist(lapply(result_list, function(a){paste(a, collapse=" ")})), collapse="\n")
+	}

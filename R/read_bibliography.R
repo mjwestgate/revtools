@@ -2,7 +2,7 @@
 
 # New function to import a file, regardless of format
 # This is based on auto-detection of key parameters
-import.bib<-function(
+read_bibliography<-function(
 	x, 
 	path
 	){
@@ -24,7 +24,7 @@ import.bib<-function(
 	invisible(Sys.setlocale('LC_ALL', 'C')) # gets around errors in import with special characters
 	if(length(grep("=\\{", zsub))>30){data.type<-"bib"}else{data.type<-"ris"}
 
-	if(data.type=="bib"){result<-read.bib(z)  # simple case - no further work needed
+	if(data.type=="bib"){result<-read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
 
 		# detect delimiters between references, starting with strings that start with "ER"
@@ -94,8 +94,8 @@ import.bib<-function(
 		z.dframe<-as.data.frame(do.call(rbind, z.split))
 
 		# import appropriate format
-		if(any(z.dframe$ris=="PMID")){result<-read.medline(z.dframe)
-		}else{result<-read.ris(z.dframe)}
+		if(any(z.dframe$ris=="PMID")){result<-read_medline(z.dframe)
+		}else{result<-read_ris(z.dframe)}
 
 	}
 	return(result)
@@ -103,7 +103,7 @@ import.bib<-function(
 
 
 
-read.medline<-function(x){
+read_medline<-function(x){
 
 	names(x)[3]<-"order"
 	# data from https://www.nlm.nih.gov/bsd/mms/medlineelements.html	
@@ -162,14 +162,14 @@ read.medline<-function(x){
 		})
 
 	names(x.final)<-unlist(lapply(x.final, function(a){a$pubmed_id}))
-	class(x.final)<-"bibdata" #  change class
+	class(x.final)<-"bibliography"
 	return(x.final)
 }
 
 
 
 # RIS
-read.ris<-function(x){
+read_ris<-function(x){
 
 	# merge data with lookup info, to provide bib-style tags
 	lookup<-data.frame(ris=c("TY", 
@@ -348,14 +348,14 @@ read.ris<-function(x){
 	names(x.final)<-nonunique_names
 
 	# final stuff
-	class(x.final)<-"bibdata" #  change class
+	class(x.final)<-"bibliography"
 	return(x.final)
 	}
 
 
 
 # BIB
-read.bib<-function(x){
+read_bib<-function(x){
 
 	# convert to data.frame with tags and content in separate columns
 	x.split<-strsplit(x, "=\\{")
@@ -396,7 +396,7 @@ read.bib<-function(x){
 	names(x.split)<-ref.labels
 
 	# final stuff
-	class(x.split)<-"bibdata" #  change class
+	class(x.split)<-"bibliography"
 	return(x.split)
 	
 	}
