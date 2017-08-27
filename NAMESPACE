@@ -2,4 +2,4 @@ export(read_bibliography, write_bibliography,
 summary.bibliography, print.bibliography, summary.review_info,
 format_citation,
 make_reference_dataframe, find_duplicates,
-make_DTM, run_LDA, start_review)
+make_DTM, run_LDA, start_review_window)
