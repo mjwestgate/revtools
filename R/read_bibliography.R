@@ -275,10 +275,13 @@ read_ris<-function(x){
 			names(result$further_info)<-a$ris[which(a$bib=="further_info")]}
 		# YEAR
 		if(any(names(result)=="year")){	
-			if(nchar(result$year)>4){
+			if(any(nchar(result$year)>=4)){
 				year_check<-regexpr("\\d{4}", result$year)
-				if(year_check>0){
-					result$year<-substr(result$year, year_check[1], year_check[1]+3)}}}
+				if(any(year_check>0)){
+					result$year<-substr(result$year[which(year_check>0)], year_check[1], year_check[1]+3)
+				}else{result$year<-""}
+			}else{result$year<-""}
+			}
 		# TITLE
 		if(any(names(result)=="title")){
 			if(length(result$title)>1){

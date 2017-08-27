@@ -5,5 +5,6 @@
 \usage{read_bibliography(x)}
 \arguments{
   \item{x}{Filename of a bibliographic file. Supported formats include .ris, .bib, medline (.nbib) or web of science (.ciw)}
+  \item{path}{path to specified file}
 }
 \value{Returns an object of class 'bibliography', which is a list where each entry is a list containing data on each reference. This function auto-detects document formatting, meaning that specified file formats are ignored except to locate the file.}
