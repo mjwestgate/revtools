@@ -1,5 +1,5 @@
 export(read_bibliography, write_bibliography,
 summary.bibliography, print.bibliography, summary.review_info,
 format_citation,
-make_reference_dataframe, find_duplicates,
+make_reference_dataframe, find_duplicates, extract_unique_references,
 make_DTM, run_LDA, start_review_window)
