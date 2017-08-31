@@ -64,76 +64,78 @@ if(class(info)!="review_info"){
 
 }
 
-# create topic ordinations (articles and words) by averaging over topics
-# article_topics # summarized version of article_ordination
-# word_topics	# summarized version of word_ordination
-
 
 # build user interface
-ui<-fluidPage(
+# icon options: http://fontawesome.io/icons/
+header<- dashboardHeader(title="revtools")
+sidebar<-dashboardSidebar(
+	sidebarMenu(
+		id="tabs",
 
-	# build sidebar to contain useful information
-	column(width=2,
-		h4("Controls"),
-		selectInput("plot_type", "Plot Type", choice=c("articles", "words"), selected="articles"),
-		checkboxInput("show_display", strong("Display options"), value=FALSE),
-		conditionalPanel(condition="input.show_display==true",
-			# dimension options
-			selectInput("plot1_dim", "main plot", choice=c("2D", "3D"), selected="3D"),
-			selectInput("plot2_dim", "topic plot", choice=c("2D", "3D"), selected="2D"),
-			# color options
-			checkboxInput("show_colors", strong("colors"), value=FALSE),
-			conditionalPanel(condition="input.show_colors==true",
-				selectInput("color", "color scheme", choices=c("viridis", "magma", "inferno", "plasma")),
-				sliderInput("color_alpha", "opacity", min=0.2, max=1, step=0.1, value= 0.9)	,
-				sliderInput("color_hue", "hue range", min=0, max=1, step=0.05, value= c(0, 0.9))	
-				),
-			# point size options
-			checkboxInput("show_points", strong("point size"), value=FALSE),
-			conditionalPanel(condition="input.show_points==true",	
-				sliderInput("plot1_pointsize", "main plot", min=2, max=20, step=2, value= 10),
-				sliderInput("plot2_pointsize", "topic plot", min=2, max=20, step=2, value= 10)
-				)
-			), # end conditionalPanel
-		# LDA options
-		checkboxInput("show_LDA", strong("Topic Model options"), value=FALSE),
-		conditionalPanel(condition="input.show_LDA==true",
-			selectInput("modeltype", "model type", choices=c("LDA", "CTM")),
-			sliderInput("niter", "number of iterations", 
-				min=1000, max=20000, step=1000, value= 2000),
-			uiOutput("topic_slider"),
-			actionButton("go_LDA", strong("recalculate model"), width="100%", 
-				style="color: #fff; background-color: #428bca;")
-			), # end conditionalPanel
-		# Save options
-		checkboxInput("show_save", strong("Save options"), value=FALSE),
-		conditionalPanel(condition="input.show_save==true",
-			textInput("saveas", "save as:", "revtools_results.rds"),
-			actionButton("save", "save")
+		# need an input option here 
+		# shiny::fileInput
+		# https://blog.rstudio.com/2017/08/15/shiny-1-0-4/?utm_content=buffer31546&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
+		# https://github.com/rstudio/shiny/blob/master/NEWS.md
+
+		menuItem("Plot", icon=icon("bar-chart-o"),	
+			menuItem("Content",
+				menuSubItem("Articles", tabName="articles", selected=TRUE),
+				menuSubItem("Words", tabName="words")
+			),
+			menuItem("Level",
+				menuSubItem("Observations", tabName="observations", selected=TRUE),
+				menuSubItem("Topics", tabName="topics")
 			)
 		),
+		menuItem("Display", icon=icon("paint-brush"),
 
-	# main window
-	column(width = 7, 
-		plotlyOutput("plot_x1", height = 500),  # show ordination in main window
-		tableOutput("plot_x1_click"), # text from plot 1
-		tableOutput("plot_x2_click") # text from plot 2
-		), # end main panel
-	
-	#  right-hand column, to select show topics and allow selection
-	column(width=3,
-		# add barchart here
-		plotlyOutput("plot_x2"),
-		# then text to select relevant articles
-		tableOutput("select_text_x1"), br(), # early
-		uiOutput("select_yes_x1"), 
-		uiOutput("select_no_x1"), br(),
-		tableOutput("select_text_x2"), br(), # early
-		uiOutput("select_yes_x2"), 
-		uiOutput("select_no_x2"), br()
+			# add dynamic screen sizing
+
+			menuItem("Dimensions", 
+				menuSubItem("2D", tabName="2d"),
+				menuSubItem("3D", tabName="3d", selected=TRUE)
+			),
+			menuItem("Color Scheme",
+				menuSubItem("Viridis", tabName="viridis"),
+				menuSubItem("Magma", tabName="magma", selected=TRUE),
+				menuSubItem("Inferno", tabName="inferno"),
+				menuSubItem("Plasma", tabName="plasma")
+			),
+			sliderInput("color_alpha", "Opacity", min=0.2, max=1, step=0.1, value= 0.9),
+			sliderInput("color_hue", "Hue", min=0, max=1, step=0.05, value= c(0, 0.9)),
+			sliderInput("point_size", "Point Size", min=2, max=20, step=2, value= 10)
+		),
+
+		menuItem("Topic Model", icon=icon("calculator"),
+			menuItem("Type",
+				menuSubItem("LDA", tabName="lda", selected=TRUE),
+				menuSubItem("CTM", tabName="ctm")
+			),
+			sliderInput("interations", "Iterations", min=1000, max=20000, step=1000, value= 2000),
+			uiOutput("topic_slider"),
+			actionButton("go_LDA", strong("Recalculate"))
+		),
+
+		menuItem("Save", icon=icon("save"),
+			textInput("saveas", "Save as:", "revtools_results.rds"),
+			actionButton("save", "Save")
 		)
+	)
+)
 
-) # end ui builder
+body<-dashboardBody(
+	fluidRow(
+		box(plotlyOutput("plot_main", height=800), width=8), 
+		box(width=4, title="Selected Text", solidHeader=TRUE, status="primary",
+			tableOutput("plot_click"), br(),
+			tableOutput("select_text"), p("  "),
+			uiOutput("select_yes"), p("  "), #br(),
+			uiOutput("select_no")
+		)
+	)
+)
+
+ui<-dashboardPage(header, sidebar, body) #, skin="black")
 
 
 # code for what to draw
@@ -165,10 +167,36 @@ if(class(info)=="review_info"){
 	topic_counter<-1
 	}
 
-# set LDA options
+# create a list that stores all information from sidebar input
+sidebar_tracker<-reactiveValues(
+	content="articles",	
+	level="observations",
+	dimensions="3d",
+	color_scheme="magma",
+	model_type="lda")
+
+# update the above as needed
+observeEvent(input$tabs, {
+	if(any(c("articles", "words")==input$tabs)){sidebar_tracker$content<-input$tabs}
+	if(any(c("observations", "topics")==input$tabs)){sidebar_tracker$level<-input$tabs}
+	if(any(c("2d", "3d")==input$tabs)){sidebar_tracker$dimensions<-input$tabs}
+	if(any(c("magma", "viridis", "inferno", "plasma")==input$tabs)){sidebar_tracker$color_scheme<-input$tabs}
+	if(any(c("lda", "ctm")==input$tabs)){sidebar_tracker$model_type<-input$tabs}
+})
+
+# lookup for which data and functions to use in plotly
+plot_lookup<-expand.grid(
+	content=c("articles", "words"),
+	level=c("observations", "topics"),
+	dimensions=c("2d", "3d"),
+	stringsAsFactors=FALSE)
+plot_lookup<-plot_lookup[order(plot_lookup$content, plot_lookup$level), ]
+plot_lookup$data<-paste(rep(c("x", "y"), each=4), rep(rep(c("", "_topic"), each=2), 2), sep="")
+plot_lookup$fun<-paste("plot", rep(c(1, 1, 2, 2), 2), "_", rep(c("2D", "3D"), 4), sep="")
+
 # set up slider to select the number of topics
 output$topic_slider<-renderUI({
-	sliderInput("n.topics", "number of topics", min=3, max=30, value= infostore$model@k)
+	sliderInput("n_topics", "number of topics", min=3, max=30, value= infostore$model@k)
 	})
 
 # if asked, re-run LDA
@@ -176,10 +204,10 @@ observeEvent(input$go_LDA, {
 	rows<-which(infostore$x$display)
 	cols<-which(infostore$y$display)
 	infostore$model<-LDAfun(infostore$dtm[rows, cols], 
-		topic.model=input$modeltype, 
-		n.topics=input$n.topics,
-		iter=input$niter)
-	infostore$palette<-do.call(input$color, list(
+		topic.model=sidebar_tracker$model_type, 
+		n.topics=input$n_topics,
+		iter=input$iterations)
+	infostore$palette<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
@@ -216,193 +244,136 @@ observeEvent(input$go_LDA, {
 	topic_counter<-topic_counter+1
 	})
 
-
 # set colors
-observeEvent(input$color, {
-	infostore$palette<-do.call(input$color, list(
+observeEvent(sidebar_tracker$color_scheme, {
+	infostore$palette<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
 		end=input$color_hue[2]))
 	})
 observeEvent(input$color_alpha, {
-	infostore$palette<-do.call(input$color, list(
+	infostore$palette<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
 		end=input$color_hue[2]))
 	})
 observeEvent(input$color_hue, {
-	infostore$palette<-do.call(input$color, list(
+	infostore$palette<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
 		end=input$color_hue[2]))
 	})
 
-
-
-# plot 1: article ordination (x)
+# plot window
 observe({ # note: this is intended to update plotly when infostore$x changes
-	output$plot_x1<-renderPlotly({
-		if(input$plot_type=="articles"){
-			if(input$plot1_dim=="3D"){plot1_3D(infostore$x, infostore$palette, input$plot1_pointsize)
-			}else{plot1_2D(infostore$x, infostore$palette, input$plot1_pointsize)}
-		}else{
-			if(input$plot1_dim=="3D"){plot1_3D(infostore$y, infostore$palette, input$plot1_pointsize)
-			}else{plot1_2D(infostore$y, infostore$palette, input$plot1_pointsize)}
-		}
-	})})
-
-# set reactive values to observe when a point is clicked on plot x1
-click_x1<-reactiveValues(d=NULL)
-observe({click_x1$d<-(event_data("plotly_click", source="x1")$pointNumber + 1)})
-output$plot_x1_click<-renderPrint({
-	if(is.null(click_x1$d)){cat("")
-	}else{
-		click_x2$d<-NULL
-		if(input$plot_type=="articles"){
-			cat(infostore$x$topic[which(infostore$x$display)[click_x1$d]])
-		}else{
-			cat(infostore$y$topic[which(infostore$y$display)[click_x1$d]])
-		}
-		}
+	output$plot_main<-renderPlotly({
+		row_tr<-which(
+			plot_lookup$content==sidebar_tracker$content &
+			plot_lookup$level==sidebar_tracker$level &
+			plot_lookup$dimensions==sidebar_tracker$dimensions)
+		do.call(plot_lookup$fun[row_tr], list(
+			input_info= infostore[[plot_lookup$data[row_tr]]],
+			palette=infostore$palette,
+			pointsize=input$point_size)
+		)
 	})
-output$select_text_x1<-renderPrint({
-	if(is.null(click_x1$d)==FALSE){cat("<strong>Select Article?</strong>")}})
-output$select_yes_x1<-renderPrint({
-	if(is.null(click_x1$d)==FALSE){
-		actionButton("return_yes_x1", "Yes", style="color: #fff; background-color: #428bca;")}})
-output$select_no_x1<-renderPrint({
-	if(is.null(click_x1$d)==FALSE){
-		actionButton("return_no_x1", "No", style="color: #fff; background-color: #428bca;")}})
+})
+
+# click behavior: set reactive values to observe when a point is clicked on the plot
+click_vals<-reactiveValues(d=NULL)
+observe({click_vals$d<-(event_data("plotly_click", source="main_plot")$pointNumber + 1)})
+output$plot_click<-renderPrint({
+	if(is.null(click_vals$d)){cat("")
+	}else{
+		row_tr<-which(
+			plot_lookup$content==sidebar_tracker$content &
+			plot_lookup$level==sidebar_tracker$level &
+			plot_lookup$dimensions==sidebar_tracker$dimensions)
+		data_tr<-infostore[[plot_lookup$data[row_tr]]]
+		if(sidebar_tracker$level=="observations"){
+			cat(data_tr$caption[which(data_tr$display)[click_vals$d]])
+		}else{
+			cat(data_tr$caption[click_vals$d])
+		}
+	}
+})
+
+# controls for selector keys
+output$select_text<-renderPrint({
+	if(is.null(click_vals$d)==FALSE){
+		if(sidebar_tracker$level=="topics"){
+			cat("<strong>Select Topic?</strong>")
+		}else{ # i.e. observations
+			if(sidebar_tracker$content=="articles"){
+				cat("<strong>Select Article?</strong>")
+			}else{
+				cat("<strong>Select Word?</strong>")
+			}
+		}
+	}
+})
+output$select_yes<-renderPrint({
+	if(is.null(click_vals$d)==FALSE){
+		actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")}})
+output$select_no<-renderPrint({
+	if(is.null(click_vals$d)==FALSE){
+		actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")}})
 
 # link action buttons to select/deselect articles to article status
-observeEvent(input$return_yes_x1, {
-	if(input$plot_type=="articles"){
-		row<-which(infostore$x$display)[click_x1$d]
-		infostore$x$tested[row]<-TRUE
-		infostore$x$selected[row]<-TRUE
-		infostore$x$topic_counter[row]<-topic_counter
-		infostore$x$decision_time[row]<-as.character(Sys.time())
-		infostore$x$display<-(infostore$x$tested & infostore$x$selected==FALSE)==FALSE
+observeEvent(input$return_yes, {
+	row_tr<-which(
+		plot_lookup$content==sidebar_tracker$content &
+		plot_lookup$level==sidebar_tracker$level &
+		plot_lookup$dimensions==sidebar_tracker$dimensions)
+	if(sidebar_tracker$level=="observations"){
+		lookup_val<-plot_lookup$data[row_tr]
+		data_tr<-infostore[[lookup_val]]
+		row<-which(data_tr$display)[click_vals$d]
 	}else{
-		row<-which(infostore$y$display)[click_x1$d]
-		infostore$y$tested[row]<-TRUE
-		infostore$y$selected[row]<-TRUE
-		infostore$y$topic_counter[row]<-topic_counter
-		infostore$y$decision_time[row]<-as.character(Sys.time())
-		infostore$y$display<-(infostore$y$tested & infostore$y$selected==FALSE)==FALSE
+		lookup_val<-substr(plot_lookup$data[row_tr], 1, 1)
+		data_tr<-infostore[[lookup_val]]
+		row<-which(data_tr$display & data_tr$topic==infostore[[plot_lookup$data[row_tr]]]$topic[click_vals$d])
 	}
-	click_x1$d<-NULL
-	click_x2$d<-NULL
-	})
-observeEvent(input$return_no_x1, {
-	if(input$plot_type=="articles"){
-		row<-which(infostore$x$display)[click_x1$d]
-		infostore$x$tested[row]<-TRUE
-		infostore$x$selected[row]<-FALSE
-		infostore$x$topic_counter[row]<-topic_counter
-		infostore$x$decision_time[row]<-as.character(Sys.time())
-		infostore$x$display<-(infostore$x$tested & infostore$x$selected==FALSE)==FALSE
+	data_tr$tested[row]<-TRUE
+	data_tr$selected[row]<-TRUE
+	data_tr$topic_counter[row]<-topic_counter
+	data_tr$decision_time[row]<-as.character(Sys.time())
+	data_tr$display<-(data_tr$tested & data_tr$selected==FALSE)==FALSE
+	infostore[[lookup_val]]<-data_tr
+	click_vals$d<-NULL
+})
+
+observeEvent(input$return_no, {
+	row_tr<-which(
+		plot_lookup$content==sidebar_tracker$content &
+		plot_lookup$level==sidebar_tracker$level &
+		plot_lookup$dimensions==sidebar_tracker$dimensions)
+	if(sidebar_tracker$level=="observations"){
+		lookup_val<-plot_lookup$data[row_tr]
+		data_tr<-infostore[[lookup_val]]
+		row<-which(data_tr$display)[click_vals$d]
 	}else{
-		row<-which(infostore$y$display)[click_x1$d]
-		infostore$y$tested[row]<-TRUE
-		infostore$y$selected[row]<-FALSE
-		infostore$y$topic_counter[row]<-topic_counter
-		infostore$y$decision_time[row]<-as.character(Sys.time())
-		infostore$y$display<-(infostore$y$tested & infostore$y$selected==FALSE)==FALSE
+		lookup_val<-substr(plot_lookup$data[row_tr], 1, 1)
+		data_tr<-infostore[[lookup_val]]
+		row<-which(data_tr$display & data_tr$topic==infostore[[plot_lookup$data[row_tr]]]$topic[click_vals$d])
 	}
-	click_x1$d<-NULL
-	click_x2$d<-NULL
-	# if(length(unique(infostore[[entry1]]$topic))<max(infostore[[entry1]]$topic)){
-		# infostore$x_topic<-build_topic_df(
-			# input_info=infostore$x[which(infostore$x$display), ], 
-			# comparison_matrix=t(posterior(infostore$model)$terms))
-		# # note: infostore$y may retain this topic, because we don't delete words by topic on this plot
-		# } 
-	})
-
-
-
-# plot 2: topic ordination
-observe({ # note: this is intended to update plotly when infostore$x changes
-	output$plot_x2<-renderPlotly({
-		if(input$plot_type=="articles"){
-			if(input$plot2_dim=="3D"){plot2_3D(infostore$x_topic, infostore$palette, input$plot2_pointsize)
-			}else{plot2_2D(infostore$x_topic, infostore$palette, input$plot2_pointsize)}
-		}else{
-			if(input$plot2_dim=="3D"){plot2_3D(infostore$y_topic, infostore$palette, input$plot2_pointsize)
-			}else{plot2_2D(infostore$y_topic, infostore$palette, input$plot2_pointsize)}
-		}
-	})})
-
-# set reactive values to observe when a point is clicked on plot x2
-click_x2<-reactiveValues(d=NULL)
-observe({click_x2$d<-(event_data("plotly_click", source="x2")$pointNumber + 1)})
-output$plot_x2_click<-renderPrint({
-	if(is.null(click_x2$d)){cat("")
+	data_tr$tested[row]<-TRUE
+	data_tr$selected[row]<-FALSE
+	data_tr$topic_counter[row]<-topic_counter
+	data_tr$decision_time[row]<-as.character(Sys.time())
+	data_tr$display<-(data_tr$tested & data_tr$selected==FALSE)==FALSE
+	infostore[[lookup_val]]<-data_tr
+	# add section to recalculate topic data.frames
+	if(sidebar_tracker$content=="articles"){
+		infostore$x_topic<-build_topic_df(infostore$x, y_matrix)
 	}else{
-		click_x1$d<-NULL
-		if(input$plot_type=="articles"){
-			cat(infostore$x_topic$caption[click_x2$d])
-		}else{
-			cat(infostore$y_topic$caption[click_x2$d])
-		}}
-	})
-output$select_text_x2<-renderPrint({
-	if(is.null(click_x2$d)==FALSE){cat("<strong>Select Topic?</strong>")}})
-output$select_yes_x2<-renderPrint({
-	if(is.null(click_x2$d)==FALSE){
-		actionButton("return_yes_x2", "Yes", style="color: #fff; background-color: #428bca;")}})
-output$select_no_x2<-renderPrint({
-	if(is.null(click_x2$d)==FALSE){
-		actionButton("return_no_x2", "No", style="color: #fff; background-color: #428bca;")}})
-
-# link action buttons to select/deselect articles to article status
-observeEvent(input$return_yes_x2, {
-	if(input$plot_type=="articles"){
-		row<-which(infostore$x$display & infostore$x$topic==infostore$x_topic$topic[click_x2$d])
-		infostore$x$tested[row]<-TRUE
-		infostore$x$selected[row]<-TRUE
-		infostore$x$topic_counter[row]<-topic_counter
-		infostore$x$decision_time[row]<-as.character(Sys.time())
-		infostore$x$display<-(infostore$x$tested & infostore$x$selected==FALSE)==FALSE
-	}else{
-		row<-which(infostore$y$display & infostore$y$topic==infostore$y_topic$topic[click_x2$d])
-		infostore$y$tested[row]<-TRUE
-		infostore$y$selected[row]<-TRUE
-		infostore$y$topic_counter[row]<-topic_counter
-		infostore$y$decision_time[row]<-as.character(Sys.time())
-		infostore$y$display<-(infostore$y$tested & infostore$y$selected==FALSE)==FALSE
+		infostore$y_topic<-build_topic_df(infostore$y, x_matrix, type="y", xdata=infostore$x)
 	}
-	click_x1$d<-NULL
-	click_x2$d<-NULL
-	})
-observeEvent(input$return_no_x2, {
-	if(input$plot_type=="articles"){
-		row<-which(infostore$x$display & infostore$x$topic==infostore$x_topic$topic[click_x2$d])
-		infostore$x$tested[row]<-TRUE
-		infostore$x$selected[row]<-FALSE
-		infostore$x$topic_counter[row]<-topic_counter
-		infostore$x$decision_time[row]<-as.character(Sys.time())
-		infostore$x$display<-(infostore$x$tested & infostore$x$selected==FALSE)==FALSE
-	}else{
-		row<-which(infostore$y$display & infostore$y$topic==infostore$y_topic$topic[click_x2$d])
-		infostore$y$tested[row]<-TRUE
-		infostore$y$selected[row]<-FALSE
-		infostore$y$topic_counter[row]<-topic_counter
-		infostore$y$decision_time[row]<-as.character(Sys.time())
-		infostore$y$display<-(infostore$y$tested & infostore$y$selected==FALSE)==FALSE
-	}
-	click_x1$d<-NULL
-	click_x2$d<-NULL
-	})
-	# infostore$x_topic<-build_topic_df(
-		# input_info=infostore$x[which(infostore$x$display), ], 
-		# comparison_matrix=t(posterior(infostore$model)$terms))
-	# })
-
+	click_vals$d<-NULL
+})
 
 # export all data when requested by the 'save' button
 observeEvent(input$save, {
@@ -422,7 +393,5 @@ observeEvent(input$save, {
 } # end server
 
 shinyApp(ui, server) # run
+
 } # end function
-
-
-# start_review_window(test_df)

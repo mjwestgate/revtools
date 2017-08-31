@@ -10,7 +10,7 @@ plot1_3D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
-		source="x1"
+		source="main_plot"
 		) %>%
 	add_markers() %>%
 	layout(
@@ -36,7 +36,7 @@ plot1_2D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
-		source="x1"
+		source="main_plot"
 		) %>%
 	add_markers() %>%
 	layout(
@@ -60,7 +60,7 @@ plot2_3D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
-		source="x2"
+		source="main_plot"
 		) %>%
 	add_markers() %>%
 	layout(
@@ -86,7 +86,7 @@ plot2_2D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
-		source="x2"
+		source="main_plot"
 		) %>%
 	add_markers() %>%
 	layout(
