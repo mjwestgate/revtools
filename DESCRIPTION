@@ -5,5 +5,5 @@ Title: Tools to support systematic review in R
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
 Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
 Description: Import, process and display bibliographic data
-Depends: R (>= 3.1.0), ape, ade4, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
+Depends: R (>= 3.1.0), ade4, plotly, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
 License: GPL-2
