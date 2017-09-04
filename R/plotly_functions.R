@@ -1,4 +1,4 @@
-plot1_3D<-function(input_info, palette, pointsize=10){
+plot1_3D<-function(input_info, palette, pointsize=10, height=400){
 	p<-plot_ly(input_info[which(input_info$display), ], 
 		x=~Axis1, y=~Axis2, z=~Axis3, 
 		type="scatter3d", 
@@ -10,6 +10,7 @@ plot1_3D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
+		height=height,
 		source="main_plot"
 		) %>%
 	add_markers() %>%
@@ -24,7 +25,7 @@ plot1_3D<-function(input_info, palette, pointsize=10){
 }
 
 
-plot1_2D<-function(input_info, palette, pointsize=10){
+plot1_2D<-function(input_info, palette, pointsize=10, height=400){
 	p<-plot_ly(input_info[which(input_info$display), ], 
 		x=~Axis1, y=~Axis2,
 		type="scatter", 
@@ -36,6 +37,7 @@ plot1_2D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
+		height=height,
 		source="main_plot"
 		) %>%
 	add_markers() %>%
@@ -48,7 +50,7 @@ plot1_2D<-function(input_info, palette, pointsize=10){
 }
 
 
-plot2_3D<-function(input_info, palette, pointsize=10){
+plot2_3D<-function(input_info, palette, pointsize=10, height=400){
 	p<-plot_ly(input_info, 
 		x=~Axis1, y=~Axis2, z=~Axis3, 
 		type="scatter3d", 
@@ -60,6 +62,7 @@ plot2_3D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
+		height=height,
 		source="main_plot"
 		) %>%
 	add_markers() %>%
@@ -74,7 +77,7 @@ plot2_3D<-function(input_info, palette, pointsize=10){
 }
 
 
-plot2_2D<-function(input_info, palette, pointsize=10){
+plot2_2D<-function(input_info, palette, pointsize=10, height=400){
 	p<-plot_ly(input_info, 
 		x=~Axis1, y=~Axis2,
 		type="scatter", 
@@ -86,6 +89,7 @@ plot2_2D<-function(input_info, palette, pointsize=10){
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
 		text= ~ caption,
+		height=height,
 		source="main_plot"
 		) %>%
 	add_markers() %>%

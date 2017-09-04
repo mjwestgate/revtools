@@ -89,12 +89,13 @@ sidebar<-dashboardSidebar(
 		),
 		menuItem("Display", icon=icon("paint-brush"),
 
-			# add dynamic screen sizing
-
 			menuItem("Dimensions", 
 				menuSubItem("2D", tabName="2d"),
 				menuSubItem("3D", tabName="3d", selected=TRUE)
 			),
+
+			sliderInput("screen_size", "Plot height", min=400, max=1400, step=100, value= 600),
+
 			menuItem("Color Scheme",
 				menuSubItem("Viridis", tabName="viridis"),
 				menuSubItem("Magma", tabName="magma", selected=TRUE),
@@ -125,7 +126,9 @@ sidebar<-dashboardSidebar(
 
 body<-dashboardBody(
 	fluidRow(
-		box(plotlyOutput("plot_main", height=800), width=8), 
+		box(width=8, # title="Plot Window", solidHeader=TRUE, status="primary",
+			plotlyOutput("plot_main") 
+		), 
 		box(width=4, title="Selected Text", solidHeader=TRUE, status="primary",
 			tableOutput("plot_click"), br(),
 			tableOutput("select_text"), p("  "),
@@ -277,10 +280,13 @@ observe({ # note: this is intended to update plotly when infostore$x changes
 		do.call(plot_lookup$fun[row_tr], list(
 			input_info= infostore[[plot_lookup$data[row_tr]]],
 			palette=infostore$palette,
-			pointsize=input$point_size)
+			pointsize=input$point_size,
+			height=input$screen_size
+			)
 		)
 	})
 })
+
 
 # click behavior: set reactive values to observe when a point is clicked on the plot
 click_vals<-reactiveValues(d=NULL)
