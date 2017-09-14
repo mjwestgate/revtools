@@ -19,7 +19,7 @@ if(class(info)!="review_info"){
 	model<-run_LDA(dtm, n.topics=default_topics)
 	palette_initial <-magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
-	# static data
+	# data to send to plotinfo
 	x_matrix<-posterior(model)$topics # article x topic
 	y_matrix<-t(posterior(model)$terms)
 	plot_list<-list(
@@ -40,9 +40,7 @@ if(class(info)!="review_info"){
 			caption=rownames(y_matrix),
 			stringsAsFactors=FALSE)
 		)
-	# when this info is changed, the whole plot is updated
-
-	# add topic-level information to static_list
+	if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
 	plot_list$x_topic<-build_topic_df(plot_list$x, y_matrix)
 	plot_list$y_topic<-build_topic_df(plot_list$y, x_matrix, type="y", xdata= plot_list$x)
 
@@ -57,7 +55,7 @@ if(class(info)!="review_info"){
 			color=palette_initial[plot_list$x$topic],
 			stringsAsFactors=FALSE),
 		y=data.frame(
-			id=plot_list$y$label,
+			id=plot_list$y$id,
 			label=colnames(dtm),
 			frequency=apply(dtm, 2, sum),
 			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
@@ -82,7 +80,6 @@ if(class(info)!="review_info"){
 			color=palette_initial[plot_list$y_topic$topic],
 			stringsAsFactors=FALSE)
 		)
-
 }
 
 
@@ -157,8 +154,9 @@ body<-dashboardBody(
 			tableOutput("plot_status"),
 			tableOutput("plot_click"), br(),
 			tableOutput("select_text"), p("  "),
-			uiOutput("select_yes"), p("  "),
-			uiOutput("select_no")
+			uiOutput("select_yes"), p("  "), # br(), 
+			uiOutput("select_no"), br(),
+			tableOutput("abstract_info")
 		)
 	)
 )
@@ -305,13 +303,13 @@ observe({
 		))
 })
 
-## ARTICLE SELECTION
+## POINT SELECTION
 # set reactive values to observe when a point is clicked on the plot
 click_vals<-reactiveValues(d=c())
 observe({
 	click_data<-event_data("plotly_click", source="main_plot")$pointNumber + 1
 	click_vals$d<-which(
-		infostore[[plot_data$dataset]]$id== plotinfo[[plot_data$dataset]]$id[click_data]
+		infostore[[plot_data$dataset]]$id == plotinfo[[plot_data$dataset]]$id[click_data]
 	)
 })
 
@@ -321,9 +319,9 @@ output$plot_status<-renderPrint({
 	}else{
 		if(infostore[[plot_data$dataset]]$tested[click_vals$d]){
 			if(infostore[[plot_data$dataset]]$selected[click_vals$d]){
-				cat("STATUS: SELECTED")
+				cat("<b>Status:</b> Included")
 			}else{
-				cat("STATUS: EXCLUDED")
+				cat("<b>Status:</b> Excluded")
 			}
 		}else{
 			cat("")
@@ -339,27 +337,56 @@ output$plot_click<-renderPrint({
 	}
 })
 
+
+output$abstract_info<-renderPrint({
+	if(length(click_vals$d)==0){
+		cat("")
+	}else{
+		if(any(colnames(plotinfo[[plot_data$dataset]])=="abstract")){
+			cat(paste0(
+				"<b>Abstract</b><br>",
+				plotinfo[[plot_data$dataset]]$abstract[click_vals$d]
+			))
+		}else{
+			cat("")
+		}
+	}
+})
+
+
 # controls for selector keys
 output$select_text<-renderPrint({
-	if(is.null(click_vals$d)==FALSE){
+	if(length(click_vals$d)>0){
 		if(sidebar_tracker$level=="topics"){
-			cat("<strong>Select Topic?</strong>")
+			if(sidebar_tracker$content=="articles"){
+				cat("<strong>Select Topic?</strong>")
+			}else{
+				cat("<strong>Exclude Words?</strong>")
+			}
 		}else{ # i.e. observations
 			if(sidebar_tracker$content=="articles"){
 				cat("<strong>Select Article?</strong>")
 			}else{
-				cat("<strong>Select Word?</strong>")
+				cat("<strong>Exclude Word?</strong>")
 			}
 		}
 	}
 })
+
 output$select_yes<-renderPrint({
-	if(is.null(click_vals$d)==FALSE){
-		actionButton("return_yes", "Select")} #, style="color: #fff; background-color: #428bca;")}
+	if(length(click_vals$d)>0 & sidebar_tracker$content=="articles"){
+		actionButton("return_yes", "Select") #, style="color: #fff; background-color: #428bca;")}
+	}else{
+		cat("")
+	}
 })
+
 output$select_no<-renderPrint({
-	if(is.null(click_vals$d)==FALSE){
-		actionButton("return_no", "Exclude")} #, style="color: #fff; background-color: #428bca;")}
+	if(length(click_vals$d)>0){
+		actionButton("return_no", "Exclude") #, style="color: #fff; background-color: #428bca;")}
+	}else{
+		cat("")
+	}
 })
 
 observeEvent(input$return_yes, {
@@ -430,7 +457,8 @@ observeEvent(input$go_LDA, {
 	# static data
 	x_matrix<-posterior(infostore$model)$topics # article x topic
 	y_matrix<-t(posterior(infostore$model)$terms)
-	initial_captions<-plotinfo$x[, c("id", "caption")]
+	keep_cols<-c("id", "caption", "abstract")
+	initial_captions<-plotinfo$x[, keep_cols[which(keep_cols %in% colnames(plotinfo$x))]]
 	plotinfo$x<-data.frame(
 		id=rownames(infostore$dtm)[infostore$x$present],
 		label= infostore$x$label[infostore$x$present],

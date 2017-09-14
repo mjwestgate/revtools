@@ -55,7 +55,7 @@ format_citation_dataframe<-function(df){
 	author_vector<-strsplit(df['author'], " and ")[[1]]
 	if(length(author_vector)==1){author_text<-df['author']
 	}else{author_text<-paste(author_vector[1], " et al.", sep="")}
-	text_vector<-paste(author_text, " (", df['year'], ") ", df['title'], ". ", df['journal'], ".", sep="")
+	text_vector<-paste(author_text, " (", df['year'], ") ", df['title'], ". <i>", df['journal'], "</i>.", sep="")
 	# now organize so that line breaks are added at word breaks every y characters
 	split_vector<-strsplit(text_vector, " ")[[1]]
 	result_dframe<-data.frame(
@@ -64,7 +64,7 @@ format_citation_dataframe<-function(df){
 		stringsAsFactors=FALSE)
 	result_dframe$sum<-cumsum(result_dframe$nchars)
 	result_dframe$group<-cut(result_dframe$sum, 
-		breaks=seq(0, max(result_dframe$sum)+79, 80),
+		breaks=seq(0, max(result_dframe$sum)+49, 50),
 		labels=FALSE)
 	result_list<-split(result_dframe$text, result_dframe$group)
 	paste(unlist(lapply(result_list, function(a){paste(a, collapse=" ")})), collapse="\n")

@@ -1,11 +1,11 @@
 plot1_3D<-function(input_info, color, pointsize=10, height=400){
-	p<-plot_ly(input_info, #[which(input_info$display), ], 
+	p<-plot_ly(input_info,
 		x=~Axis1, y=~Axis2, z=~Axis3, 
 		type="scatter3d", 
 		mode="markers",	
 		marker=list(
 			size=pointsize,
-			color= color), # add_color(input_info$topic[which(input_info$display)], palette)),
+			color= color),
 		hoverinfo="text",
 		hoverlabel=list(
 			bgcolor=grey(0.9), 
@@ -31,13 +31,13 @@ plot1_3D<-function(input_info, color, pointsize=10, height=400){
 
 
 plot1_2D<-function(input_info, color, pointsize=10, height=400){
-	p<-plot_ly(input_info, # [which(input_info$display), ], 
+	p<-plot_ly(input_info,
 		x=~Axis1, y=~Axis2,
 		type="scatter", 
 		mode="markers",	
 		marker=list(
 			size=pointsize,
-			color=color), # add_color(input_info$topic[which(input_info$display)], palette)),
+			color=color),
 		hoverinfo="text",
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
@@ -62,7 +62,7 @@ plot2_3D<-function(input_info, color, pointsize=10, height=400){
 		mode="markers",	
 		marker=list(
 			size=pointsize,
-			color=color), # add_color(input_info$topic, palette)),
+			color=color),
 		hoverinfo="text",
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
@@ -89,7 +89,7 @@ plot2_2D<-function(input_info, color, pointsize=10, height=400){
 		mode="markers",	
 		marker=list(
 			size=pointsize,
-			color=color), # add_color(input_info$topic, palette)),
+			color=color),
 		hoverinfo="text",
 		hoverlabel=list(bgcolor=grey(0.9), bordercolor=grey(0.9),
 			namelength=200, font=list(color="black")),
