@@ -41,8 +41,7 @@ if(class(info)!="review_info"){
 			stringsAsFactors=FALSE)
 		)
 	if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
-	plot_list$x_topic<-build_topic_df(plot_list$x, y_matrix)
-	plot_list$y_topic<-build_topic_df(plot_list$y, x_matrix, type="y", xdata= plot_list$x)
+	plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix)
 
 	# generate info to pass to infostore: it updates the display, but not the whole plot
 	dynamic_list<-list(
@@ -63,21 +62,15 @@ if(class(info)!="review_info"){
 			decision_time="",
 			color=palette_initial[plot_list$y$topic],
 			stringsAsFactors=FALSE),
-		x_topic=data.frame(
-			id= plot_list$x_topic$id,
-			topic= plot_list$x_topic$topic,
+		topic=data.frame(
+			id= plot_list$topic$id,
+			topic= plot_list$topic$topic,
 			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
 			topic_counter=0,
 			decision_time="",
-			color=palette_initial[plot_list$x_topic$topic],
-			stringsAsFactors=FALSE),
-		y_topic=data.frame(
-			id= plot_list$y_topic$id,
-			topic= plot_list$y_topic$topic,
-			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
-			topic_counter=0,
-			decision_time="",
-			color=palette_initial[plot_list$y_topic$topic],
+			x_count=plot_list$topic$x_count,
+			y_count=plot_list$topic$y_count,
+			color=palette_initial[plot_list$topic$topic],
 			stringsAsFactors=FALSE)
 		)
 }
@@ -89,15 +82,10 @@ header<- dashboardHeader(title="revtools")
 sidebar<-dashboardSidebar(
 	sidebarMenu(
 		id="tabs",
-
 		menuItem("Plot", icon=icon("bar-chart-o"),	
 			menuItem("Content",
 				menuSubItem("Articles", tabName="articles", selected=TRUE),
 				menuSubItem("Words", tabName="words")
-			),
-			menuItem("Level",
-				menuSubItem("Observations", tabName="observations", selected=TRUE),
-				menuSubItem("Topics", tabName="topics")
 			),
 			menuItem("Window",
 				sliderInput("screen_size", "Height (px)", min=400, max=1400, step=100, value= 600)
@@ -108,21 +96,18 @@ sidebar<-dashboardSidebar(
 			)
 		),
 		menuItem("Colors", icon=icon("paint-brush"),
-
 			menuItem("Palette",
 				menuSubItem("Viridis", tabName="viridis"),
 				menuSubItem("Magma", tabName="magma", selected=TRUE),
 				menuSubItem("Inferno", tabName="inferno"),
 				menuSubItem("Plasma", tabName="plasma")
 			),
-
 			menuItem("Options",			
 				sliderInput("color_alpha", "Opacity", min=0.2, max=1, step=0.1, value= 0.9),
 				sliderInput("color_hue", "Hue", min=0, max=1, step=0.05, value= c(0, 0.9)),
 				sliderInput("point_size", "Point Size", min=0, max=20, step=2, value= 12)
 			)
 		),
-
 		menuItem("Topic Model", icon=icon("calculator"),
 			menuItem("Model Type",
 				menuSubItem("LDA", tabName="lda", selected=TRUE),
@@ -135,7 +120,6 @@ sidebar<-dashboardSidebar(
 			),
 			actionButton("go_LDA", strong("Recalculate"))
 		),
-
 		menuItem("Save", icon=icon("save"),
 			selectInput("save_type", "File Type", 
 				choices=c("All Data (.rds)", "Article Selections (.csv)")),
@@ -147,16 +131,26 @@ sidebar<-dashboardSidebar(
 
 body<-dashboardBody(
 	fluidRow(
-		box(width=8, # title="Plot Window", solidHeader=TRUE, status="primary",
-			withSpinner(plotlyOutput("plot_main"))
-		), 
-		box(width=4, title="Selected Text", solidHeader=TRUE, status="primary",
-			tableOutput("plot_status"),
-			tableOutput("plot_click"), br(),
-			tableOutput("select_text"), p("  "),
-			uiOutput("select_yes"), p("  "), # br(), 
-			uiOutput("select_no"), br(),
-			tableOutput("abstract_info")
+		column(width=8,
+			box(width=NULL,
+				withSpinner(plotlyOutput("plot_main"))
+			)
+		),
+		column(width=4, 
+			box(
+				title="Selected Text", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=FALSE,
+				tableOutput("plot_status"),
+				tableOutput("plot_click"), br(),
+				tableOutput("select_text"), p("  "),
+				uiOutput("select_yes"), p("  "), # br(), 
+				uiOutput("select_no"), br(),
+				tableOutput("abstract_info")
+			),
+			box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
+					collapsible=TRUE, collapsed=FALSE,
+					plotlyOutput("plot_topic")
+			)
 		)
 	)
 )
@@ -172,7 +166,6 @@ options(warn=-1) # hide incompatibility between shiny and plotly
 # create a list that stores all information from sidebar input
 sidebar_tracker<-reactiveValues(
 	content="articles",	
-	level="observations",
 	dimensions="2d",
 	color_scheme="magma",
 	model_type="lda")
@@ -181,8 +174,6 @@ sidebar_tracker<-reactiveValues(
 observeEvent(input$tabs, {
 	if(any(c("articles", "words")==input$tabs)){
 		sidebar_tracker$content<-input$tabs}
-	if(any(c("observations", "topics")==input$tabs)){
-		sidebar_tracker$level<-input$tabs}
 	if(any(c("2d", "3d")==input$tabs)){
 		sidebar_tracker$dimensions<-input$tabs}
 	if(any(c("magma", "viridis", "inferno", "plasma")==input$tabs)){
@@ -195,9 +186,8 @@ observeEvent(input$tabs, {
 if(class(info)=="review_info"){
 	infostore<-reactiveValues(
 		x = info$x,
-		x_topic= info$x_topic,
 		y = info$y,
-		y_topic= info$y_topic,
+		topic= info$topic,
 		dtm= info$dtm,
 		model= info$model
 	)
@@ -206,8 +196,7 @@ if(class(info)=="review_info"){
 	infostore<-reactiveValues(
 		x = dynamic_list$x,
 		y = dynamic_list$y,
-		x_topic = dynamic_list$x_topic,
-		y_topic = dynamic_list$y_topic,
+		topic = dynamic_list$topic,
 		dtm=dtm,
 		model=model
 	)
@@ -217,8 +206,7 @@ if(class(info)=="review_info"){
 plotinfo<-reactiveValues(
 	x = plot_list$x,
 	y = plot_list$y,
-	x_topic = plot_list$x_topic,
-	y_topic = plot_list$y_topic
+	topic = plot_list$topic
 )
 
 rm(dynamic_list, plot_list, dtm, model)
@@ -228,26 +216,20 @@ rm(dynamic_list, plot_list, dtm, model)
 # lookup for which data and functions to use in plotly
 plot_lookup<-expand.grid(
 	content=c("articles", "words"),
-	level=c("observations", "topics"),
 	dimensions=c("2d", "3d"),
 	stringsAsFactors=FALSE)
-plot_lookup<-plot_lookup[order(plot_lookup$content, plot_lookup$level), ]
-plot_lookup$tag<-paste0(
-	rep(c("x", "y"), each=4), 
-	rep(rep(c("", "_topic"), each=2), 2)
-	)
-plot_lookup$fun<-paste("plot", rep(c(1, 1, 2, 2), 2), "_", rep(c("2D", "3D"), 4), sep="")
+plot_lookup<-plot_lookup[order(plot_lookup$content), ]
+plot_lookup$tag<-rep(c("x", "y"), each=2)
+plot_lookup$fun<-paste("plot1_", rep(c("2D", "3D"), 2), sep="")
 
 # keep track of which plot type and dataset to use
 plot_data<-reactiveValues(dataset="x", fun="plot1_2D")
 observeEvent({
 	sidebar_tracker$content
-	sidebar_tracker$level 
 	sidebar_tracker$dimensions
 	}, {
 	row_tr<-which(
 		plot_lookup$content==sidebar_tracker$content &
-		plot_lookup$level==sidebar_tracker$level &
 		plot_lookup$dimensions==sidebar_tracker$dimensions)
 	plot_data$dataset<-plot_lookup$tag[row_tr]
 	plot_data$fun<-plot_lookup$fun[row_tr]
@@ -256,7 +238,6 @@ observeEvent({
 # update colors as needed
 observeEvent({
 	sidebar_tracker$content
-	sidebar_tracker$level
 	sidebar_tracker$color_scheme
 	input$color_alpha
 	input$color_hue
@@ -270,15 +251,12 @@ observeEvent({
 	infostore$x$color[infostore$x$present]<-palette_tr[plotinfo$x$topic]
 		infostore$x$color[which(infostore$x$selected)]<-"#000000"
 		infostore$x$color[which(infostore$x$display==FALSE)]<-"#CCCCCC"
-	infostore$x_topic$color[infostore$x_topic$present]<-palette_tr[plotinfo$x_topic$topic]
-		infostore$x_topic$color[which(infostore$x_topic$selected)]<-"#000000"
-		infostore$x_topic$color[which(infostore$x_topic$display==FALSE)]<-"#CCCCCC"
 	infostore$y$color[infostore$y$present]<-palette_tr[plotinfo$y$topic]
 		infostore$y$color[which(infostore$y$selected)]<-"#000000"
 		infostore$y$color[which(infostore$y$display==FALSE)]<-"#CCCCCC"
-	infostore$y_topic$color[infostore$y_topic$present]<-palette_tr[plotinfo$y_topic$topic]
-		infostore$y_topic$color[which(infostore$y_topic$selected)]<-"#000000"
-		infostore$y_topic$color[which(infostore$y_topic$display==FALSE)]<-"#CCCCCC"
+	infostore$topic$color[infostore$topic$present]<-palette_tr[plotinfo$topic$topic]
+		infostore$topic$color[which(infostore$topic$selected)]<-"#000000"
+		infostore$topic$color[which(infostore$topic$display==FALSE)]<-"#CCCCCC"
 })
 
 # plot window
@@ -303,7 +281,23 @@ observe({
 		))
 })
 
-## POINT SELECTION
+
+# barplot of topics
+observe({
+	output$plot_topic<-renderPlotly({
+		if(plot_data$dataset=="x"){n_tr<-infostore$topic$x_count}else{n_tr<-infostore$topic$y_count}
+		plot_article_bar(
+			x=plotinfo$topic,
+			n=infostore$topic[, paste0(plot_data$dataset, "_count")], # n_tr,
+			color=infostore$topic$color
+		)
+	})
+})
+# note: this should now redraw as topic counts change
+# try updating later.
+
+
+## POINT SELECTION FOR MAIN PLOT
 # set reactive values to observe when a point is clicked on the plot
 click_vals<-reactiveValues(d=c())
 observe({
@@ -357,18 +351,10 @@ output$abstract_info<-renderPrint({
 # controls for selector keys
 output$select_text<-renderPrint({
 	if(length(click_vals$d)>0){
-		if(sidebar_tracker$level=="topics"){
-			if(sidebar_tracker$content=="articles"){
-				cat("<strong>Select Topic?</strong>")
-			}else{
-				cat("<strong>Exclude Words?</strong>")
-			}
-		}else{ # i.e. observations
-			if(sidebar_tracker$content=="articles"){
-				cat("<strong>Select Article?</strong>")
-			}else{
-				cat("<strong>Exclude Word?</strong>")
-			}
+		if(sidebar_tracker$content=="articles"){
+			cat("<strong>Select Article?</strong>")
+		}else{
+			cat("<strong>Exclude Word?</strong>")
 		}
 	}
 })
@@ -395,15 +381,6 @@ observeEvent(input$return_yes, {
 	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#000000" 
-	if(sidebar_tracker$level=="topics"){
-		dataset_full<-substr(plot_data$dataset,  1, 1)
-		rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
-		infostore[[dataset_full]]$tested[rows]<-TRUE
-		infostore[[dataset_full]]$selected[rows]<-TRUE
-		infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
-		infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
-		infostore[[dataset_full]]$color[rows]<-"#000000"
-	}	
 	click_vals$d<-c()
 })
 
@@ -414,33 +391,41 @@ observeEvent(input$return_no, {
 	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#CCCCCC" 
-	# if you have ben altering topics, ensure articles are updated to match
-	if(sidebar_tracker$level=="topics"){
-		dataset_full<-substr(plot_data$dataset,  1, 1)
-		rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
-		infostore[[dataset_full]]$tested[rows]<-TRUE
-		infostore[[dataset_full]]$selected[rows]<-FALSE
-		infostore[[dataset_full]]$display[rows]<-FALSE
-		infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
-		infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
-		infostore[[dataset_full]]$color[rows]<-"#CCCCCC"
-	}else{ # and vice versa
-		remaining_points<-xtabs(infostore[[plot_data$dataset]]$display ~ 
-			infostore[[plot_data$dataset]]$topic, drop.unused.levels=FALSE)
-		if(any(remaining_points<1)){
-			lost_topic<-as.numeric(names(remaining_points)[which(remaining_points<1)])
-			dataset_tr<-paste0(plot_data$dataset, "_topic")
-			row_tr<-which(infostore[[dataset_tr]]$topic==lost_topic)
-			infostore[[dataset_tr]]$tested[row_tr]<-TRUE
-			infostore[[dataset_tr]]$selected[row_tr]<-FALSE
-			infostore[[dataset_tr]]$display[row_tr]<-FALSE
-			infostore[[dataset_tr]]$topic_counter[row_tr]<-topic_counter
-			infostore[[dataset_tr]]$decision_time[row_tr]<-as.character(Sys.time())
-			infostore[[dataset_tr]]$color[row_tr]<-"#CCCCCC" 
-		}
-	}
+	# update topic plot
+	topic_tr<-infostore[[plot_data$dataset]]$topic[click_vals$d]
+	row_tr<-which(infostore$topic$topic==topic_tr)
+	col_tr<-paste0(plot_data$dataset, "_count")
+	infostore$topic[row_tr, col_tr]<-(infostore$topic[row_tr, col_tr]-1)
 	click_vals$d<-c()
+	# NOTE: possible error here - appears to be selecting wrong rows.
 })
+
+
+# NEXT add infrastructure to topic selection/excusion.
+
+# info for topic clicks
+# click yes
+	# if(sidebar_tracker$level=="topics"){
+		# dataset_full<-substr(plot_data$dataset,  1, 1)
+		# rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
+		# infostore[[dataset_full]]$tested[rows]<-TRUE
+		# infostore[[dataset_full]]$selected[rows]<-TRUE
+		# infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
+		# infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
+		# infostore[[dataset_full]]$color[rows]<-"#000000"
+	# }	
+	# # if you have ben altering topics, ensure articles are updated to match
+	# if(sidebar_tracker$level=="topics"){
+		# dataset_full<-substr(plot_data$dataset,  1, 1)
+		# rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
+		# infostore[[dataset_full]]$tested[rows]<-TRUE
+		# infostore[[dataset_full]]$selected[rows]<-FALSE
+		# infostore[[dataset_full]]$display[rows]<-FALSE
+		# infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
+		# infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
+		# infostore[[dataset_full]]$color[rows]<-"#CCCCCC"
+
+
 
 ## TOPIC MODELS
 # if asked, re-run LDA
@@ -477,8 +462,8 @@ observeEvent(input$go_LDA, {
 		caption=rownames(y_matrix),
 		stringsAsFactors=FALSE
 	)
-	plotinfo$x_topic<-build_topic_df(plotinfo$x, y_matrix)
-	plotinfo$y_topic<-build_topic_df(plotinfo$y, x_matrix, type="y", xdata= plotinfo$x)
+	plotinfo$topic<-build_topic_df_simple(plotinfo$x, y_matrix)
+	# plotinfo$y_topic<-build_topic_df(plotinfo$y, x_matrix, type="y", xdata= plotinfo$x)
 
 	topic_counter<-topic_counter+1
 })
@@ -492,9 +477,8 @@ observeEvent(input$save, {
 	}else{
 		output<-list(
 			x= infostore$x,
-			x_topic= infostore$x_topic, 
 			y= infostore$y, 
-			y_topic= infostore$y_topic,
+			topic= infostore$topic,
 			dtm=infostore$dtm,
 			model=infostore$model
 			)
