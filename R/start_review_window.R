@@ -66,8 +66,8 @@ if(class(info)!="review_info"){
 			id= plot_list$topic$id,
 			topic= plot_list$topic$topic,
 			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
-			topic_counter=0,
-			decision_time="",
+			# topic_counter=0, # not relevant for topics
+			# decision_time="", # ditto
 			x_count=plot_list$topic$x_count,
 			y_count=plot_list$topic$y_count,
 			color=palette_initial[plot_list$topic$topic],
@@ -83,10 +83,8 @@ sidebar<-dashboardSidebar(
 	sidebarMenu(
 		id="tabs",
 		menuItem("Plot", icon=icon("bar-chart-o"),	
-			menuItem("Content",
-				menuSubItem("Articles", tabName="articles", selected=TRUE),
-				menuSubItem("Words", tabName="words")
-			),
+			menuSubItem("Articles", tabName="articles", selected=TRUE),
+			menuSubItem("Words", tabName="words"),
 			menuItem("Window",
 				sliderInput("screen_size", "Height (px)", min=400, max=1400, step=100, value= 600)
 			),
@@ -133,18 +131,22 @@ body<-dashboardBody(
 	fluidRow(
 		column(width=8,
 			box(width=NULL,
-				withSpinner(plotlyOutput("plot_main"))
+				withSpinner(plotlyOutput("plot_main"))# , type=2, color.background="#FFFFFF")
 			)
 		),
 		column(width=4, 
 			box(
 				title="Selected Text", width=NULL, solidHeader=TRUE, status="primary",
 				collapsible=TRUE, collapsed=FALSE,
-				tableOutput("plot_status"),
-				tableOutput("plot_click"), br(),
-				tableOutput("select_text"), p("  "),
-				uiOutput("select_yes"), p("  "), # br(), 
-				uiOutput("select_no"), br(),
+				# info on main plot selection
+				tableOutput("plot_click"),
+				uiOutput("select_yes"),
+				uiOutput("select_no"),
+				# info on topics
+				# tableOutput("topic_click_text"),
+				tableOutput("topic_text"),
+				uiOutput("topic_yes"),
+				uiOutput("topic_no"),
 				tableOutput("abstract_info")
 			),
 			box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
@@ -259,7 +261,8 @@ observeEvent({
 		infostore$topic$color[which(infostore$topic$display==FALSE)]<-"#CCCCCC"
 })
 
-# plot window
+
+# MAIN PLOT
 output$plot_main<-renderPlotly({
 	do.call(plot_data$fun, list(
 		input_info= plotinfo[[plot_data$dataset]],
@@ -281,87 +284,51 @@ observe({
 		))
 })
 
-
-# barplot of topics
-observe({
-	output$plot_topic<-renderPlotly({
-		if(plot_data$dataset=="x"){n_tr<-infostore$topic$x_count}else{n_tr<-infostore$topic$y_count}
-		plot_article_bar(
-			x=plotinfo$topic,
-			n=infostore$topic[, paste0(plot_data$dataset, "_count")], # n_tr,
-			color=infostore$topic$color
-		)
-	})
-})
-# note: this should now redraw as topic counts change
-# try updating later.
-
-
-## POINT SELECTION FOR MAIN PLOT
-# set reactive values to observe when a point is clicked on the plot
+# set reactive values to observe when a point is clicked
 click_vals<-reactiveValues(d=c())
 observe({
 	click_data<-event_data("plotly_click", source="main_plot")$pointNumber + 1
 	click_vals$d<-which(
 		infostore[[plot_data$dataset]]$id == plotinfo[[plot_data$dataset]]$id[click_data]
 	)
-})
-
-output$plot_status<-renderPrint({
-	if(length(click_vals$d)==0){
-		cat("")
-	}else{
-		if(infostore[[plot_data$dataset]]$tested[click_vals$d]){
-			if(infostore[[plot_data$dataset]]$selected[click_vals$d]){
-				cat("<b>Status:</b> Included")
-			}else{
-				cat("<b>Status:</b> Excluded")
-			}
-		}else{
-			cat("")
-		}
-	}
+	topic_click$d<-c()
 })
 
 output$plot_click<-renderPrint({
 	if(length(click_vals$d)==0){
 		cat("")
 	}else{
-		cat(plotinfo[[plot_data$dataset]]$caption[click_vals$d])
-	}
-})
-
-
-output$abstract_info<-renderPrint({
-	if(length(click_vals$d)==0){
-		cat("")
-	}else{
-		if(any(colnames(plotinfo[[plot_data$dataset]])=="abstract")){
-			cat(paste0(
-				"<b>Abstract</b><br>",
-				plotinfo[[plot_data$dataset]]$abstract[click_vals$d]
-			))
+		# report whether article has already been selected/excluded
+		if(infostore[[plot_data$dataset]]$tested[click_vals$d]){
+			if(infostore[[plot_data$dataset]]$selected[click_vals$d]){
+				status_tr<-"<b>Status:</b> Included</br>"
+			}else{
+				status_tr<-"<b>Status:</b> Excluded</br>"
+			}
 		}else{
-			cat("")
+			status_tr<-""
 		}
-	}
-})
-
-
-# controls for selector keys
-output$select_text<-renderPrint({
-	if(length(click_vals$d)>0){
+		# paste appropriate heading for selector labels
 		if(sidebar_tracker$content=="articles"){
-			cat("<strong>Select Article?</strong>")
+			select_tr<-"</br></br><strong>Select Article?</strong></br>"
 		}else{
-			cat("<strong>Exclude Word?</strong>")
+			select_tr<-"</br></br><strong>Exclude Word?</strong></br>"
 		}
+		row_tr<-which(plotinfo[[plot_data$dataset]]$id == infostore[[plot_data$dataset]]$id[click_vals$d])
+		topic_text<-paste0(" [Topic #", plotinfo[[plot_data$dataset]]$topic[row_tr], "]")
+		# merge
+		cat(paste0(
+			status_tr,
+			plotinfo[[plot_data$dataset]]$caption[click_vals$d],
+			topic_text,
+			select_tr
+		))
 	}
 })
 
 output$select_yes<-renderPrint({
 	if(length(click_vals$d)>0 & sidebar_tracker$content=="articles"){
-		actionButton("return_yes", "Select") #, style="color: #fff; background-color: #428bca;")}
+		actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
 	}else{
 		cat("")
 	}
@@ -369,9 +336,23 @@ output$select_yes<-renderPrint({
 
 output$select_no<-renderPrint({
 	if(length(click_vals$d)>0){
-		actionButton("return_no", "Exclude") #, style="color: #fff; background-color: #428bca;")}
+		actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")
 	}else{
 		cat("")
+	}
+})
+
+output$abstract_info<-renderPrint({
+	if(length(click_vals$d)==0){
+		cat("")
+	}else{
+		if(any(colnames(plotinfo[[plot_data$dataset]])=="abstract")){
+			abstract_info<-plotinfo[[plot_data$dataset]]$abstract[click_vals$d]
+			if(is.na(abstract_info)){cat("")
+			}else{
+				cat(paste0("</br><b>Abstract</b><br>", abstract_info))
+			}
+		}else{cat("")}
 	}
 })
 
@@ -380,7 +361,8 @@ observeEvent(input$return_yes, {
 	infostore[[plot_data$dataset]]$selected[click_vals$d]<-TRUE 
 	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
-	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#000000" 
+	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#000000"
+	# note: section needed here to update infostore$topic if changed from excluded to included
 	click_vals$d<-c()
 })
 
@@ -392,38 +374,101 @@ observeEvent(input$return_no, {
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#CCCCCC" 
 	# update topic plot
-	topic_tr<-infostore[[plot_data$dataset]]$topic[click_vals$d]
+	row_tr<-which(plotinfo[[plot_data$dataset]]$id == infostore[[plot_data$dataset]]$id[click_vals$d])
+	topic_tr<-plotinfo[[plot_data$dataset]]$topic[row_tr]
 	row_tr<-which(infostore$topic$topic==topic_tr)
 	col_tr<-paste0(plot_data$dataset, "_count")
 	infostore$topic[row_tr, col_tr]<-(infostore$topic[row_tr, col_tr]-1)
 	click_vals$d<-c()
-	# NOTE: possible error here - appears to be selecting wrong rows.
 })
 
 
-# NEXT add infrastructure to topic selection/excusion.
 
-# info for topic clicks
-# click yes
-	# if(sidebar_tracker$level=="topics"){
-		# dataset_full<-substr(plot_data$dataset,  1, 1)
-		# rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
-		# infostore[[dataset_full]]$tested[rows]<-TRUE
-		# infostore[[dataset_full]]$selected[rows]<-TRUE
-		# infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
-		# infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
-		# infostore[[dataset_full]]$color[rows]<-"#000000"
-	# }	
-	# # if you have ben altering topics, ensure articles are updated to match
-	# if(sidebar_tracker$level=="topics"){
-		# dataset_full<-substr(plot_data$dataset,  1, 1)
-		# rows<-which(plotinfo[[dataset_full]]$topic==infostore[[plot_data$dataset]]$topic[click_vals$d])
-		# infostore[[dataset_full]]$tested[rows]<-TRUE
-		# infostore[[dataset_full]]$selected[rows]<-FALSE
-		# infostore[[dataset_full]]$display[rows]<-FALSE
-		# infostore[[dataset_full]]$topic_counter[rows]<-topic_counter
-		# infostore[[dataset_full]]$decision_time[rows]<-as.character(Sys.time())
-		# infostore[[dataset_full]]$color[rows]<-"#CCCCCC"
+# TOPIC BARPLOT
+observe({
+	output$plot_topic<-renderPlotly({
+		plot_article_bar(
+			x=plotinfo$topic,
+			n=infostore$topic[, paste0(plot_data$dataset, "_count")], 
+			color=infostore$topic$color
+		)
+	})
+})
+
+topic_click<-reactiveValues(d=c())
+observe({
+	topic_click$d<-event_data("plotly_click", source="topic_plot")$pointNumber + 1
+	click_vals$d<-c()
+})
+
+output$topic_text<-renderPrint({
+	if(length(topic_click$d)==0){
+		cat("")
+	}else{
+		# paste appropriate heading for selector labels
+		if(sidebar_tracker$content=="articles"){
+			select_tr<-"</br></br><strong>Select Topic?</strong></br>"
+		}else{
+			select_tr<-"</br></br><strong>Exclude Topic?</strong></br>"
+		}
+		# merge
+		cat(paste0(
+			"<b>Topic #", topic_click$d, "</b><br>",
+			plotinfo$topic$caption[topic_click$d], "</br>",
+			select_tr
+		))
+	}
+})
+
+output$topic_yes<-renderPrint({
+	if(length(topic_click$d)>0 & sidebar_tracker$content=="articles"){
+		actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
+	}else{
+		cat("")
+	}
+})
+
+output$topic_no<-renderPrint({
+	if(length(topic_click$d)>0){
+		actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
+	}else{
+		cat("")
+	}
+})
+
+observeEvent(input$topic_yes, {
+	infostore$topic$tested[topic_click$d]<-TRUE
+	infostore$topic$selected[topic_click$d]<-TRUE 
+	infostore$topic$color[topic_click$d]<-"#000000" 
+	# select all points in this topic
+	topic_rows<-which(plotinfo[[plot_data$dataset]]$topic == topic_click$d)
+	ids_tr<-plotinfo[[plot_data$dataset]]$id[topic_rows]
+	rows_tr<-which(infostore[[plot_data$dataset]]$id %in% ids_tr)
+	infostore[[plot_data$dataset]]$tested[rows_tr]<-TRUE
+	infostore[[plot_data$dataset]]$selected[rows_tr]<-TRUE
+	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter
+	infostore[[plot_data$dataset]]$decision_time[rows_tr]<-as.character(Sys.time())
+	infostore[[plot_data$dataset]]$color[rows_tr]<-"#000000" 
+	topic_click$d<-c()
+})
+
+observeEvent(input$topic_no, {
+	# deselect topics
+	infostore$topic$tested[topic_click$d]<-TRUE
+	infostore$topic$selected[topic_click$d]<-FALSE 
+	infostore$topic$color[topic_click$d]<-"#CCCCCC" 
+	# deselect all points in this topic
+	topic_rows<-which(plotinfo[[plot_data$dataset]]$topic == topic_click$d)
+	ids_tr<-plotinfo[[plot_data$dataset]]$id[topic_rows]
+	rows_tr<-which(infostore[[plot_data$dataset]]$id %in% ids_tr)
+	infostore[[plot_data$dataset]]$tested[rows_tr]<-TRUE
+	infostore[[plot_data$dataset]]$selected[rows_tr]<-FALSE
+	infostore[[plot_data$dataset]]$display[rows_tr]<-FALSE
+	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter
+	infostore[[plot_data$dataset]]$decision_time[rows_tr]<-as.character(Sys.time())
+	infostore[[plot_data$dataset]]$color[rows_tr]<-"#CCCCCC" 
+	topic_click$d<-c()
+})
 
 
 
@@ -440,7 +485,7 @@ observeEvent(input$go_LDA, {
 		iter=input$iterations)
 
 	# static data
-	x_matrix<-posterior(infostore$model)$topics # article x topic
+	x_matrix<-posterior(infostore$model)$topics # article * topic
 	y_matrix<-t(posterior(infostore$model)$terms)
 	keep_cols<-c("id", "caption", "abstract")
 	initial_captions<-plotinfo$x[, keep_cols[which(keep_cols %in% colnames(plotinfo$x))]]
@@ -463,7 +508,6 @@ observeEvent(input$go_LDA, {
 		stringsAsFactors=FALSE
 	)
 	plotinfo$topic<-build_topic_df_simple(plotinfo$x, y_matrix)
-	# plotinfo$y_topic<-build_topic_df(plotinfo$y, x_matrix, type="y", xdata= plotinfo$x)
 
 	topic_counter<-topic_counter+1
 })
