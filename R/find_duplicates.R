@@ -92,7 +92,7 @@ find_duplicates<-function(x){
 			# combine
 			comp_rows<-which(unchecked_test & year_test & journal_test)
 			comp_rows <- comp_rows[which(comp_rows != row_start)]
-			text_similarity <- stringdist(x.lower$title[row_start], x.lower$title[comp_rows])
+			text_similarity <- stringdist::stringdist(x.lower$title[row_start], x.lower$title[comp_rows])
 			if(any(text_similarity < 5)){
 				checked_rows<-c(row_start, comp_rows[which(text_similarity < 5)])
 				x.lower$duplicate_group[checked_rows]<-group_increment

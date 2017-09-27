@@ -3,3 +3,18 @@ summary.bibliography, print.bibliography, summary.review_info,
 format_citation,
 make_reference_dataframe, find_duplicates, extract_unique_references,
 make_DTM, run_LDA, start_review_window)
+importFrom(shinydashboard, sidebarMenu)
+importFrom(shinydashboard, menuItem)
+importFrom(shinydashboard, menuSubItem)
+importFrom(shiny, sliderInput)
+importFrom(shiny, selectInput)
+importFrom(shiny, textInput)
+importFrom(shiny, actionButton)
+importFrom(shiny, tableOutput)
+importFrom(shiny, uiOutput)
+importFrom(shiny, reactiveValues)
+importFrom(shiny, observeEvent)
+importFrom(shiny, observe)
+importFrom(shiny, renderPrint)
+importFrom(plotly, renderPlotly)
+importFrom(plotly, event_data)

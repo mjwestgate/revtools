@@ -20,12 +20,12 @@ make_DTM<-function(
 	}else{stop.words<-unique(c(tm::stopwords(), stop.words))}
 
 	# convert to document term matrix
-	corp <- Corpus(VectorSource(text_vector))
-		corp <- tm_map(corp, content_transformer(tolower))
-		corp <- tm_map(corp, removePunctuation)
-		corp <- tm_map(corp, removeWords, stop.words)
-		corp <- tm_map(corp, removeNumbers)
-		stem.corp <- tm_map(corp, stemDocument)
+	corp <- tm::Corpus(tm::VectorSource(text_vector))
+		corp <- tm::tm_map(corp, content_transformer(tolower))
+		corp <- tm::tm_map(corp, removePunctuation)
+		corp <- tm::tm_map(corp, removeWords, stop.words)
+		corp <- tm::tm_map(corp, removeNumbers)
+		stem.corp <- tm::tm_map(corp, stemDocument)
 
 	# create a lookup data.frame
 	term<-unlist(lapply(as.list(corp), function(a){
@@ -34,15 +34,15 @@ make_DTM<-function(
 		return(result[which(result!=c(""))])
 		}))
 	word_freq<-as.data.frame(xtabs(~ term), stringsAsFactors=FALSE)
-	word_freq$stem<-stemDocument(word_freq$term)
+	word_freq$stem<-tm::stemDocument(word_freq$term)
 
 	# use control in DTM code to do remaining work
 	dtm.control <- list(
 		wordLengths = c(3, Inf),
 		minDocFreq=5,
 		weighting = weightTf)
-	dtm<-DocumentTermMatrix(stem.corp , control= dtm.control)
-	dtm<-removeSparseTerms(dtm, sparse= 0.99) # remove rare terms (cols)
+	dtm<-tm::DocumentTermMatrix(stem.corp , control= dtm.control)
+	dtm<-tm::removeSparseTerms(dtm, sparse= 0.99) # remove rare terms (cols)
 	output<-as.matrix(dtm) # convert back to matrix
 	rownames(output)<-x$ID
 

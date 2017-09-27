@@ -1,5 +1,5 @@
 plot1_3D<-function(input_info, color, pointsize=10, height=400){
-	p<-plot_ly(input_info,
+	p<-plotly::plot_ly(input_info,
 		x=~Axis1, y=~Axis2, z=~Axis3, 
 		type="scatter3d", 
 		mode="markers",	
@@ -18,8 +18,8 @@ plot1_3D<-function(input_info, color, pointsize=10, height=400){
 		height=height,
 		source="main_plot"
 		) %>%
-	add_markers() %>%
-	layout(
+	plotly::add_markers() %>%
+	plotly::layout(
 		showlegend=FALSE,
 		scene=list(
 			xaxis=list(showticklabels=FALSE),
@@ -31,7 +31,7 @@ plot1_3D<-function(input_info, color, pointsize=10, height=400){
 
 
 plot1_2D<-function(input_info, color, pointsize=10, height=400){
-	p<-plot_ly(input_info,
+	p<-plotly::plot_ly(input_info,
 		x=~Axis1, y=~Axis2,
 		type="scatter", 
 		mode="markers",	
@@ -45,8 +45,8 @@ plot1_2D<-function(input_info, color, pointsize=10, height=400){
 		height=height,
 		source="main_plot"
 		) %>%
-	add_markers() %>%
-	layout(
+	plotly::add_markers() %>%
+	plotly::layout(
 		showlegend=FALSE,
 		xaxis=list(showticklabels=FALSE),
 		yaxis=list(showticklabels=FALSE)
@@ -56,7 +56,7 @@ plot1_2D<-function(input_info, color, pointsize=10, height=400){
 
 
 plot_article_bar<-function(x, n, color){
-	p<-plot_ly(x,
+	p<-plotly::plot_ly(x,
 		x=n,
 		y=~topic,
 		marker=list(color=color),
@@ -66,7 +66,7 @@ plot_article_bar<-function(x, n, color){
 		text = ~ caption,
 		source="topic_plot",
 		type="bar", orientation="h") %>%
-	layout(
+	plotly::layout(
 		xaxis=list(title="Count"),
 		yaxis=list(title="Topic")
 	)

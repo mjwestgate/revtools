@@ -17,16 +17,16 @@ if(class(info)!="review_info"){
 		if(default_topics < 3){default_topics <-5}
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n.topics=default_topics)
-	palette_initial <-magma(n=model@k, alpha=0.9, begin=0, end=0.9)
+	palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
 	# data to send to plotinfo
-	x_matrix<-posterior(model)$topics # article x topic
-	y_matrix<-t(posterior(model)$terms)
+	x_matrix<-topicmodels::posterior(model)$topics # article x topic
+	y_matrix<-t(topicmodels::posterior(model)$terms)
 	plot_list<-list(
 		x=data.frame(
 			id=rownames(dtm),
 			label= info$label[which(x_keep)],
-			dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
+			ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
 			topic= apply(x_matrix, 1, which.max),
 			weight= apply(x_matrix, 1, max),
 			caption=apply(info, 1, format_citation_dataframe),
@@ -34,7 +34,7 @@ if(class(info)!="review_info"){
 		y=data.frame(
 			id=paste0("y", c(1:nrow(y_matrix))),
 			label=rownames(y_matrix),
-			dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
+			ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
 			topic= apply(y_matrix, 1, which.max),
 			weight= apply(y_matrix, 1, max),
 			caption=rownames(y_matrix),
@@ -66,8 +66,6 @@ if(class(info)!="review_info"){
 			id= plot_list$topic$id,
 			topic= plot_list$topic$topic,
 			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
-			# topic_counter=0, # not relevant for topics
-			# decision_time="", # ditto
 			x_count=plot_list$topic$x_count,
 			y_count=plot_list$topic$y_count,
 			color=palette_initial[plot_list$topic$topic],
@@ -77,9 +75,8 @@ if(class(info)!="review_info"){
 
 
 # build user interface
-# icon options: http://fontawesome.io/icons/
-header<- dashboardHeader(title="revtools")
-sidebar<-dashboardSidebar(
+header<- shinydashboard::dashboardHeader(title="revtools")
+sidebar<-shinydashboard::dashboardSidebar(
 	sidebarMenu(
 		id="tabs",
 		menuItem("Plot", icon=icon("bar-chart-o"),	
@@ -127,38 +124,42 @@ sidebar<-dashboardSidebar(
 	)
 )
 
-body<-dashboardBody(
+body<-shinydashboard::dashboardBody(
 	fluidRow(
 		column(width=8,
-			box(width=NULL,
-				withSpinner(plotlyOutput("plot_main"))# , type=2, color.background="#FFFFFF")
+			shinydashboard::box(width=NULL,
+				shinycssloaders::withSpinner(plotly::plotlyOutput("plot_main"))
 			)
 		),
 		column(width=4, 
-			box(
+			shinydashboard::box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=FALSE,
+				plotly::plotlyOutput("plot_topic")
+			),
+			shinydashboard::box(
 				title="Selected Text", width=NULL, solidHeader=TRUE, status="primary",
 				collapsible=TRUE, collapsed=FALSE,
-				# info on main plot selection
 				tableOutput("plot_click"),
-				uiOutput("select_yes"),
-				uiOutput("select_no"),
-				# info on topics
-				# tableOutput("topic_click_text"),
-				tableOutput("topic_text"),
-				uiOutput("topic_yes"),
-				uiOutput("topic_no"),
-				tableOutput("abstract_info")
+				shiny::splitLayout(
+					uiOutput("select_yes"),
+					uiOutput("select_no"),
+					cellWidths=c("25%", "25%")
+				),
+				shiny::splitLayout(
+					uiOutput("topic_yes"),
+					uiOutput("topic_no"),
+					cellWidths=c("25%", "25%")
+				)
 			),
-			box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
-					collapsible=TRUE, collapsed=FALSE,
-					plotlyOutput("plot_topic")
+			shinydashboard::box(title="Abstract", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=TRUE,
+				tableOutput("abstract_info")
 			)
 		)
 	)
 )
 
-ui<-dashboardPage(header, sidebar, body)
-
+ui<-shinydashboard::dashboardPage(header, sidebar, body)
 
 server <- function(input, output, session) {
 
@@ -262,7 +263,7 @@ observeEvent({
 })
 
 
-# MAIN PLOT
+# PLOTS
 output$plot_main<-renderPlotly({
 	do.call(plot_data$fun, list(
 		input_info= plotinfo[[plot_data$dataset]],
@@ -275,14 +276,26 @@ output$plot_main<-renderPlotly({
 
 # update (not redraw) when colors change
 observe({
-	plotlyProxy("plot_main", session) %>%
-		plotlyProxyInvoke("restyle", list(
+	plotly::plotlyProxy("plot_main", session) %>%
+		plotly::plotlyProxyInvoke("restyle", list(
 			marker=list(
 				size = input$point_size, 
 				color=infostore[[plot_data$dataset]]$color[infostore[[plot_data$dataset]]$present]
 			)
 		))
 })
+
+# topic barplot
+observe({
+	output$plot_topic<-renderPlotly({
+		plot_article_bar(
+			x=plotinfo$topic,
+			n=infostore$topic[, paste0(plot_data$dataset, "_count")], 
+			color=infostore$topic$color
+		)
+	})
+})
+
 
 # set reactive values to observe when a point is clicked
 click_vals<-reactiveValues(d=c())
@@ -294,68 +307,84 @@ observe({
 	topic_click$d<-c()
 })
 
+topic_click<-reactiveValues(d=c())
+observe({
+	topic_click$d<-event_data("plotly_click", source="topic_plot")$pointNumber + 1
+	click_vals$d<-c()
+})
+
 output$plot_click<-renderPrint({
-	if(length(click_vals$d)==0){
+	if(length(click_vals$d)==0 & length(topic_click$d)==0){
 		cat("")
 	}else{
-		# report whether article has already been selected/excluded
-		if(infostore[[plot_data$dataset]]$tested[click_vals$d]){
-			if(infostore[[plot_data$dataset]]$selected[click_vals$d]){
-				status_tr<-"<b>Status:</b> Included</br>"
+		if(length(click_vals$d)>0){
+			# report whether article has already been selected/excluded
+			if(infostore[[plot_data$dataset]]$tested[click_vals$d]){
+				if(infostore[[plot_data$dataset]]$selected[click_vals$d]){
+					status_tr<-"<b>Status:</b> Included</br>"
+				}else{
+					status_tr<-"<b>Status:</b> Excluded</br>"
+				}
 			}else{
-				status_tr<-"<b>Status:</b> Excluded</br>"
+				status_tr<-""
 			}
-		}else{
-			status_tr<-""
+			row_tr<-which(plotinfo[[plot_data$dataset]]$id == infostore[[plot_data$dataset]]$id[click_vals$d])
+			topic_text<-paste0(" [Topic #", plotinfo[[plot_data$dataset]]$topic[row_tr], "]")
+			cat(paste0(
+				status_tr,
+				plotinfo[[plot_data$dataset]]$caption[click_vals$d],
+				topic_text, "<br><br>"
+			))
+		}else{ # topics
+			cat(paste0(
+				"<b>Topic #", topic_click$d, "</b> ",
+				plotinfo$topic$caption[topic_click$d]
+			))
 		}
-		# paste appropriate heading for selector labels
-		if(sidebar_tracker$content=="articles"){
-			select_tr<-"</br></br><strong>Select Article?</strong></br>"
-		}else{
-			select_tr<-"</br></br><strong>Exclude Word?</strong></br>"
-		}
-		row_tr<-which(plotinfo[[plot_data$dataset]]$id == infostore[[plot_data$dataset]]$id[click_vals$d])
-		topic_text<-paste0(" [Topic #", plotinfo[[plot_data$dataset]]$topic[row_tr], "]")
-		# merge
-		cat(paste0(
-			status_tr,
-			plotinfo[[plot_data$dataset]]$caption[click_vals$d],
-			topic_text,
-			select_tr
-		))
 	}
 })
 
+# selector buttons
 output$select_yes<-renderPrint({
 	if(length(click_vals$d)>0 & sidebar_tracker$content=="articles"){
 		actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
-	}else{
-		cat("")
 	}
 })
 
 output$select_no<-renderPrint({
 	if(length(click_vals$d)>0){
 		actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")
-	}else{
-		cat("")
 	}
 })
 
+output$topic_yes<-renderPrint({
+	if(length(topic_click$d)>0 & sidebar_tracker$content=="articles"){
+		actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
+	}
+})
+
+output$topic_no<-renderPrint({
+	if(length(topic_click$d)>0){
+		actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
+	}
+})
+
+# abstracts
 output$abstract_info<-renderPrint({
 	if(length(click_vals$d)==0){
 		cat("")
 	}else{
 		if(any(colnames(plotinfo[[plot_data$dataset]])=="abstract")){
 			abstract_info<-plotinfo[[plot_data$dataset]]$abstract[click_vals$d]
-			if(is.na(abstract_info)){cat("")
+			if(is.na(abstract_info)){cat("No abstract available")
 			}else{
-				cat(paste0("</br><b>Abstract</b><br>", abstract_info))
+				cat(abstract_info)
 			}
-		}else{cat("")}
+		}else{cat("No abstracts available")}
 	}
 })
 
+# click info
 observeEvent(input$return_yes, {
 	infostore[[plot_data$dataset]]$tested[click_vals$d]<-TRUE
 	infostore[[plot_data$dataset]]$selected[click_vals$d]<-TRUE 
@@ -380,60 +409,6 @@ observeEvent(input$return_no, {
 	col_tr<-paste0(plot_data$dataset, "_count")
 	infostore$topic[row_tr, col_tr]<-(infostore$topic[row_tr, col_tr]-1)
 	click_vals$d<-c()
-})
-
-
-
-# TOPIC BARPLOT
-observe({
-	output$plot_topic<-renderPlotly({
-		plot_article_bar(
-			x=plotinfo$topic,
-			n=infostore$topic[, paste0(plot_data$dataset, "_count")], 
-			color=infostore$topic$color
-		)
-	})
-})
-
-topic_click<-reactiveValues(d=c())
-observe({
-	topic_click$d<-event_data("plotly_click", source="topic_plot")$pointNumber + 1
-	click_vals$d<-c()
-})
-
-output$topic_text<-renderPrint({
-	if(length(topic_click$d)==0){
-		cat("")
-	}else{
-		# paste appropriate heading for selector labels
-		if(sidebar_tracker$content=="articles"){
-			select_tr<-"</br></br><strong>Select Topic?</strong></br>"
-		}else{
-			select_tr<-"</br></br><strong>Exclude Topic?</strong></br>"
-		}
-		# merge
-		cat(paste0(
-			"<b>Topic #", topic_click$d, "</b><br>",
-			plotinfo$topic$caption[topic_click$d], "</br>",
-			select_tr
-		))
-	}
-})
-
-output$topic_yes<-renderPrint({
-	if(length(topic_click$d)>0 & sidebar_tracker$content=="articles"){
-		actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
-	}else{
-		cat("")
-	}
-})
-
-output$topic_no<-renderPrint({
-	if(length(topic_click$d)>0){
-		actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
-	}else{
-		cat("")
-	}
 })
 
 observeEvent(input$topic_yes, {
@@ -470,9 +445,6 @@ observeEvent(input$topic_no, {
 	topic_click$d<-c()
 })
 
-
-
-## TOPIC MODELS
 # if asked, re-run LDA
 observeEvent(input$go_LDA, {
 	infostore$x$present<-infostore$x$display
@@ -492,7 +464,7 @@ observeEvent(input$go_LDA, {
 	plotinfo$x<-data.frame(
 		id=rownames(infostore$dtm)[infostore$x$present],
 		label= infostore$x$label[infostore$x$present],
-		dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
+		ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
 		topic= apply(x_matrix, 1, which.max),
 		weight= apply(x_matrix, 1, max),
 		stringsAsFactors=FALSE
@@ -501,7 +473,7 @@ observeEvent(input$go_LDA, {
 	plotinfo$y<-data.frame(
 		id=infostore$y$id[infostore$y$present],
 		label=rownames(y_matrix),
-		dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
+		ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
 		topic= apply(y_matrix, 1, which.max),
 		weight= apply(y_matrix, 1, max),
 		caption=rownames(y_matrix),
@@ -533,6 +505,6 @@ observeEvent(input$save, {
 
 } # end server
 
-shinyApp(ui, server) # run
+shiny::shinyApp(ui, server) # run
 
 } # end function
