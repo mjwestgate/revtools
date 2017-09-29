@@ -3,7 +3,7 @@
 \title{Methods for class 'bibliography'}
 \description{Print information contained within object of class 'bibliography'.}
 \usage{
-print(x, ...)
+\method{print}{bibliography}(x, ...)
 }
 \arguments{
   \item{x}{An object of class 'bibliography'}

@@ -3,7 +3,7 @@
 \title{Summary method for class 'bibliography'}
 \description{Display basic information on object of class 'bibliography'.}
 \usage{
-summary(object, ...)
+\method{summary}{bibliography}(object, ...)
 }
 \arguments{
   \item{object}{An object of class 'bibliography'}

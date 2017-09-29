@@ -3,7 +3,7 @@
 \title{Methods for class 'review_info'}
 \description{Tools to display useful information on class 'review_info'.}
 \usage{
-summary(object, ...)
+\method{summary}{review_info}(object, ...)
 }
 \arguments{
   \item{object}{An object of class 'review_info'}
