@@ -178,7 +178,7 @@ observeEvent(input$tabs, {
 	if(any(c("2d", "3d")==input$tabs)){
 		sidebar_tracker$dimensions<-input$tabs}
 	if(any(c("magma", "viridis", "inferno", "plasma")==input$tabs)){
-		sidebar_tracker$color_scheme<-paste0("viridisLite::", input$tabs)}
+		sidebar_tracker$color_scheme<-input$tabs} # paste0("viridisLite::", input$tabs)}
 	if(any(c("lda", "ctm")==input$tabs)){
 		sidebar_tracker$model_type<-input$tabs}
 })
