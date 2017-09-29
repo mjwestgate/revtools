@@ -1,10 +1,13 @@
-# function to run the topic model  requested by the user - used by plot_bibliography
+# function to run a topic model with specified parameters
 run_LDA<-function(
 	x,  # DTM
-	topic.model="lda", n.topics=6, iter=2000, ...)
-	{
-	LDA.control<-list(iter=iter)
-	switch(topic.model,
-		"ctm"={topicmodels::CTM(x, k= n.topics)},
-		"lda"={topicmodels::LDA(x, k= n.topics, method="Gibbs",  control = LDA.control)})
+	topic_model="lda", 
+	n_topics=5, 
+	iterations=2000, 
+	...
+	){
+	LDA_control<-list(iter=iterations)
+	switch(topic_model,
+		"ctm"={topicmodels::CTM(x, k= n_topics)},
+		"lda"={topicmodels::LDA(x, k= n_topics, method="Gibbs",  control = LDA_control)})
 	}

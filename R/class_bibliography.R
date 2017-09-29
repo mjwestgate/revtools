@@ -1,5 +1,5 @@
 # contains info on class("bibdata")
-summary.bibliography<-function(x){
+summary.bibliography<-function(x, ...){
 
 	# are any abstracts completely missing? 
 	null.check<-unlist(lapply(x, function(a){is.null(a$abstract)}))
@@ -27,13 +27,11 @@ summary.bibliography<-function(x){
 		collapse="\n")
 	}
 	cat(result, sep="\n")
-	}
+}
 
 
-print.bibliography<-function(x){
+print.bibliography<-function(x, ...){
 	if(length(x)>5){n<-5}else{n<-length(x)}
 	text.tr<-lapply(x[1:n], format_citation)
-	cat(
-		# paste("Bibliography containing ", length(x), " entries, the first ", n, " of which are:\n\n", sep=""),
-		paste(unlist(text.tr), collapse="\n\n"))
-	}
+	cat(paste(unlist(text.tr), collapse="\n\n"))
+}

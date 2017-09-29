@@ -13,7 +13,7 @@ if(class(info)!="review_info"){
 	dtm<-dtm[apply(dtm , 1, sum)>0, order(colnames(dtm))]
 	x_keep<-apply(dtm , 1, sum)>0
 	cat("running Topic Model\n")
-	model<-run_LDA(dtm, n.topics=5)
+	model<-run_LDA(dtm, n_topics=5)
 	palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
 	# data to send to plotinfo
@@ -193,6 +193,7 @@ if(class(info)=="review_info"){
 		model= info$model
 	)
 	topic_counter<-max(info$x$topic_counter)+1
+	info<-info$info
 }else{
 	infostore<-reactiveValues(
 		x = dynamic_list$x,
@@ -450,10 +451,10 @@ observeEvent(input$go_LDA, {
 	# kept_rows<-rows[which(apply(infostore$dtm[rows, cols], 1, sum)>0 )]
 	infostore$model<-run_LDA(
 		x=infostore$dtm[infostore$x$present, infostore$y$present],
-		topic.model=sidebar_tracker$model_type,
-		n.topics=input$n_topics,
-		iter=input$iterations)
-	x_matrix<-posterior(infostore$model)$topics # article * topic
+		topic_model=sidebar_tracker$model_type,
+		n_topics=input$n_topics,
+		iterations=input$iterations)
+	x_matrix<-posterior(infostore$model)$topics
 	y_matrix<-t(posterior(infostore$model)$terms)
 	keep_cols<-c("id", "caption", "abstract")
 	initial_captions<-plotinfo$x[, keep_cols[which(keep_cols %in% colnames(plotinfo$x))]]
@@ -522,6 +523,7 @@ observeEvent(input$save, {
 		write.csv(ouput, input$saveas, row.names=FALSE)
 	}else{
 		output<-list(
+			info = info,
 			x= infostore$x,
 			y= infostore$y, 
 			topic= infostore$topic,

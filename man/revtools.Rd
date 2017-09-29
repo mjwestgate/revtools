@@ -2,7 +2,4 @@
 \name{revtools}
 \alias{revtools-package}
 \title{revtools}
-\description{
-Tools to support systematic review and meta-analysis in R
-}
-
+\description{Tools to support literature review and evidence synthesis in R}

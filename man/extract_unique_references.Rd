@@ -7,7 +7,7 @@ extract_unique_references(x, show_source=FALSE)
 }
 \arguments{
   \item{x}{a data.frame as returned by find_duplicates}
-  \item{show_source}{logical; should a matrix of source values be returned? Defaults to FALSE}
+  \item{show_source}{Logical; should a matrix of source values be returned? Defaults to FALSE}
 }
 \value{
 a data.frame containing basic information for each reference (row)
