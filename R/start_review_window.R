@@ -1,45 +1,54 @@
 # user call to run a shiny interface to bibliographic data
-start_review_window<-function(info){
+start_review_window<-function(x){
 
 # throw a warning if a known file type isn't given
-if(any(c("bibliography", "review_info", "data.frame")==class(info))==FALSE){
+if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
 	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review")}
-if(class(info)=="bibliography"){info <-make_reference_dataframe(info)}
-	
-if(class(info)!="review_info"){
+switch(class(x),
+	"bibliography"={info<-make_reference_dataframe(x)},
+	"data.frame"={info<-x},
+	"review_info"={info<-x$info})
+
+if(class(x)=="review_info"){
+	dtm<-x$dtm
+	model<-x$model
+	x_keep<-x$x$present
+}else{
 	cat("building Document Term Matrix\n")
 	dtm<-make_DTM(info)
 	rownames(dtm)<-paste0("x", c(1:nrow(dtm)))
 	dtm<-dtm[apply(dtm , 1, sum)>0, order(colnames(dtm))]
-	x_keep<-apply(dtm , 1, sum)>0
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n_topics=5)
-	palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
+	x_keep<-apply(dtm , 1, sum)>0
+}
+palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
-	# data to send to plotinfo
-	x_matrix<-topicmodels::posterior(model)$topics # article x topic
-	y_matrix<-t(topicmodels::posterior(model)$terms)
-	plot_list<-list(
-		x=data.frame(
-			id=rownames(dtm),
-			label= info$label[which(x_keep)],
-			ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
-			topic= apply(x_matrix, 1, which.max),
-			weight= apply(x_matrix, 1, max),
-			caption=apply(info, 1, format_citation_dataframe),
-			stringsAsFactors=FALSE),
-		y=data.frame(
-			id=paste0("y", c(1:nrow(y_matrix))),
-			label=rownames(y_matrix),
-			ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
-			topic= apply(y_matrix, 1, which.max),
-			weight= apply(y_matrix, 1, max),
-			caption=rownames(y_matrix),
-			stringsAsFactors=FALSE)
-		)
-	if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
-	plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix)
+# data to send to plotinfo
+x_matrix<-topicmodels::posterior(model)$topics # article x topic
+y_matrix<-t(topicmodels::posterior(model)$terms)
+plot_list<-list(
+	x=data.frame(
+		id=rownames(dtm),
+		label= info$label[which(x_keep)],
+		ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
+		topic= apply(x_matrix, 1, which.max),
+		weight= apply(x_matrix, 1, max),
+		caption=apply(info, 1, format_citation_dataframe),
+		stringsAsFactors=FALSE),
+	y=data.frame(
+		id=paste0("y", c(1:nrow(y_matrix))),
+		label=rownames(y_matrix),
+		ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
+		topic= apply(y_matrix, 1, which.max),
+		weight= apply(y_matrix, 1, max),
+		caption=rownames(y_matrix),
+		stringsAsFactors=FALSE)
+	)
+if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
+plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix)
 
+if(class(x)!="review_info"){
 	# generate info to pass to infostore: it updates the display, but not the whole plot
 	# further, this information remains of constant length as go_LDA is run
 	dynamic_list<-list(
@@ -72,6 +81,7 @@ if(class(info)!="review_info"){
 			stringsAsFactors=FALSE)
 		)
 }
+
 
 # build user interface
 header<- shinydashboard::dashboardHeader(title="revtools")
@@ -184,16 +194,15 @@ observeEvent(input$tabs, {
 })
 
 # create reactiveValues objects to store all data during shiny operations
-if(class(info)=="review_info"){
+if(class(x)=="review_info"){
 	infostore<-reactiveValues(
-		x = info$x,
-		y = info$y,
-		topic= info$topic,
-		dtm= info$dtm,
-		model= info$model
+		x = x$x,
+		y = x$y,
+		topic= x$topic,
+		dtm= x$dtm,
+		model= x$model
 	)
 	topic_counter<-max(info$x$topic_counter)+1
-	info<-info$info
 }else{
 	infostore<-reactiveValues(
 		x = dynamic_list$x,
@@ -203,7 +212,8 @@ if(class(info)=="review_info"){
 		model=model
 	)
 	topic_counter<-1
-	}
+	rm(dynamic_list)
+}
 
 plotinfo<-reactiveValues(
 	x = plot_list$x,
@@ -211,7 +221,7 @@ plotinfo<-reactiveValues(
 	topic = plot_list$topic
 )
 
-rm(dynamic_list, plot_list, dtm, model)
+rm(plot_list, dtm, model)
 
 
 ## PLOT
