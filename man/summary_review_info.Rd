@@ -1,12 +1,12 @@
-\name{class_review_info)}
+\name{summary.review_info)}
 \alias{summary.review_info}
 \title{Methods for class 'review_info'}
-\description{}
+\description{Tools to display useful information on class 'review_info'.}
 \usage{
-summary(x, ...)
+summary(object, ...)
 }
 \arguments{
-  \item{x}{An object of class 'review_info'}
+  \item{object}{An object of class 'review_info'}
   \item{...}{Any further information}
 }
 \value{

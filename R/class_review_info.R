@@ -1,5 +1,5 @@
 # methods for class(review_info)
-summary.review_info<-function(x, ...){
+summary.review_info<-function(object, ...){
 	# 1: article summary
 	cat("Number of entries:\n")
 		cat(paste("  total: ", nrow(x$x), "\n", sep=""))

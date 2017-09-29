@@ -1,5 +1,5 @@
 # contains info on class("bibdata")
-summary.bibliography<-function(x, ...){
+summary.bibliography<-function(object, ...){
 
 	# are any abstracts completely missing? 
 	null.check<-unlist(lapply(x, function(a){is.null(a$abstract)}))

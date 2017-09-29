@@ -3,8 +3,7 @@ run_LDA<-function(
 	x,  # DTM
 	topic_model="lda", 
 	n_topics=5, 
-	iterations=2000, 
-	...
+	iterations=2000
 	){
 	LDA_control<-list(iter=iterations)
 	switch(topic_model,

@@ -3,10 +3,10 @@
 \title{Interactive visualisation of bibliographic data}
 \description{Draw an interactive plot of a bibliography. Ordinations are calculated using LDA (library "topicmodels") and are displayed using Shiny and Plotly.}
 \usage{
-start_review_window(x)
+start_review_window(info)
 }
 \arguments{
-  \item{x}{Bibliographic data, in one of three formats: a list returned by read_bibliography(); a data.frame such as returned from make_reference_dataframe(); or a previously saved output from start_review_window (class("review_info")).}
+  \item{info}{Bibliographic data, in one of three formats: a list returned by read_bibliography(); a data.frame such as returned from make_reference_dataframe(); or a previously saved output from start_review_window (class("review_info")).}
 }
 \value{
 This function launches a Shiny app in the users' default browser. 

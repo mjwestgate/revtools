@@ -1,5 +1,5 @@
 # user call to run a shiny interface to bibliographic data
-start_review_window<-function(info){ # input can be an object of class("bibliography" | "review_info")
+start_review_window<-function(info){
 
 # throw a warning if a known file type isn't given
 if(any(c("bibliography", "review_info", "data.frame")==class(info))==FALSE){
