@@ -11,6 +11,7 @@ summary(x, ...)
 }
 \value{
 Prints useful information to the workspace.
+}
 \note{
 Class 'bibliography' is a format for exporting large quantities of data during reviews. It is typically stored within a .rds file in the working directory. When re-imported to R using readRDS, this file will contain an object of class 'review_info'.
 }

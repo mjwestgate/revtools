@@ -11,6 +11,7 @@ make_DTM(x, stop_words)
 }
 \value{
 An object of class 'matrix', listing the terms (columns) present in each reference (rows)
+}
 \note{
 This is primarily intended to be called internally by start_review_window(), but is made available for users to generate their own topic models with the same properties as those in revtools. It bascially takes any words in the title, keywords and abstracts of the supplied references, and uses them to construct a DTM.
 

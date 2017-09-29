@@ -13,6 +13,7 @@ run_LDA(x, topic_model, n_topics, iterations)
 }
 \value{
 A topic model with the specified parameters.
+}
 \note{
 This is a basic wrapper function designed to allow consistent specification of model parameters within Shiny apps. It doesn't do anything very clever.
 }
