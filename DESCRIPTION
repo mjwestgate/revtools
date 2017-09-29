@@ -5,6 +5,6 @@ Title: Tools to support systematic review in R
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
 Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
 Description: Tools to support literature review and evidence synthesis in R.
-Depends: R (>= 3.1.0)
-Imports: ade4, magrittr, plotly, shiny, shinycssloaders, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
+Depends: R (>= 3.1.0), magrittr
+Imports: ade4, plotly, shiny, shinycssloaders, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
 License: GPL-2
