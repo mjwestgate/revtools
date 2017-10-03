@@ -46,7 +46,7 @@ plot_list<-list(
 		stringsAsFactors=FALSE)
 	)
 if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
-plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix)
+plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix, dtm)
 
 if(class(x)!="review_info"){
 	# generate info to pass to infostore: it updates the display, but not the whole plot
@@ -89,23 +89,20 @@ sidebar<-shinydashboard::dashboardSidebar(
 	sidebarMenu(
 		id="tabs",
 		menuItem("Plot", icon=icon("bar-chart-o"),	
+			p("Display"),
 			menuSubItem("Articles", tabName="articles", selected=TRUE),
 			menuSubItem("Words", tabName="words"),
-			menuItem("Window",
-				sliderInput("screen_size", "Height (px)", min=400, max=1400, step=100, value= 600)
-			),
-			menuItem("Dimensions", 
-				menuSubItem("2D", tabName="2d", selected=TRUE),
-				menuSubItem("3D", tabName="3d")
-			)
+			p("Dimensions"),
+			menuSubItem("2D", tabName="2d", selected=TRUE),
+			menuSubItem("3D", tabName="3d"),
+			sliderInput("screen_size", "Window Height (px)", min=400, max=1400, step=100, value= 600)
 		),
 		menuItem("Colors", icon=icon("paint-brush"),
-			menuItem("Palette",
-				menuSubItem("Viridis", tabName="viridis"),
-				menuSubItem("Magma", tabName="magma", selected=TRUE),
-				menuSubItem("Inferno", tabName="inferno"),
-				menuSubItem("Plasma", tabName="plasma")
-			),
+			p("Palette"),
+			menuSubItem("Viridis", tabName="viridis"),
+			menuSubItem("Magma", tabName="magma", selected=TRUE),
+			menuSubItem("Inferno", tabName="inferno"),
+			menuSubItem("Plasma", tabName="plasma"),
 			menuItem("Options",			
 				sliderInput("color_alpha", "Opacity", min=0.2, max=1, step=0.1, value= 0.9),
 				sliderInput("color_hue", "Hue", min=0, max=1, step=0.05, value= c(0, 0.9)),
@@ -113,14 +110,12 @@ sidebar<-shinydashboard::dashboardSidebar(
 			)
 		),
 		menuItem("Topic Model", icon=icon("calculator"),
-			menuItem("Model Type",
-				menuSubItem("LDA", tabName="lda", selected=TRUE),
-				menuSubItem("CTM", tabName="ctm")
-			),
-			menuItem("Model Specs",
-				sliderInput("iterations", "# Iterations", min=1000, max=20000, step=1000, value= 2000),
-				sliderInput("n_topics", "# Topics", min=2, max=30, step=1, value=5)
-			),
+			p("Model Type"),
+			menuSubItem("LDA", tabName="lda", selected=TRUE),
+			menuSubItem("CTM", tabName="ctm"),
+			p("Model Specification"),
+			sliderInput("iterations", "# Iterations", min=1000, max=20000, step=1000, value= 2000),
+			sliderInput("n_topics", "# Topics", min=4, max=30, step=1, value=5),
 			actionButton("go_LDA", strong("Recalculate"))
 		),
 		menuItem("Save", icon=icon("save"),
@@ -266,7 +261,7 @@ observeEvent({
 	infostore$y$color[infostore$y$present]<-palette_tr[plotinfo$y$topic]
 		infostore$y$color[which(infostore$y$selected)]<-"#000000"
 		infostore$y$color[which(infostore$y$display==FALSE)]<-"#CCCCCC"
-	infostore$topic$color[infostore$topic$present]<-palette_tr[plotinfo$topic$topic]
+	infostore$topic$color<-palette_tr[plotinfo$topic$topic]
 		infostore$topic$color[which(infostore$topic$selected)]<-"#000000"
 		infostore$topic$color[which(infostore$topic$display==FALSE)]<-"#CCCCCC"
 })
@@ -346,8 +341,9 @@ output$plot_click<-renderPrint({
 			))
 		}else{ # topics
 			cat(paste0(
-				"<b>Topic #", topic_click$d, "</b> ",
-				plotinfo$topic$caption[topic_click$d]
+				"<b>Topic #", topic_click$d, "<br>Top terms:</b> ",
+				plotinfo$topic$caption[topic_click$d], "<br><b>Other relevant terms: </b>",
+				plotinfo$topic$caption_weighted[topic_click$d]
 			))
 		}
 	}
@@ -488,7 +484,9 @@ observeEvent(input$go_LDA, {
 		caption=rownames(y_matrix),
 		stringsAsFactors=FALSE
 	)
-	plotinfo$topic<-build_topic_df_simple(plotinfo$x, y_matrix)
+	plotinfo$topic<-build_topic_df_simple(plotinfo$x, 
+		y_matrix, 
+		dtm=infostore$dtm[infostore$x$present, infostore$y$present])
 	# update infostore
 	palette_tr<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 

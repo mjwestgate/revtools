@@ -12,7 +12,6 @@ plot1_3D<-function(input_info, color, pointsize=10, height=400){
 			bordercolor=grey(0.9),
 			namelength=200, 
 			font=list(color="black")
-			# opacity=0.7
 		),
 		text= ~ caption,
 		height=height,
@@ -68,7 +67,7 @@ plot_article_bar<-function(x, n, color){
 		type="bar", orientation="h") %>%
 	plotly::layout(
 		xaxis=list(title="Count"),
-		yaxis=list(title="Topic")
+		yaxis=list(title="Topic", tick0=1, dtick=1)
 	)
 	p
 }
