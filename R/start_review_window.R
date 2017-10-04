@@ -25,8 +25,8 @@ if(class(x)=="review_info"){
 palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
 # data to send to plotinfo
-x_matrix<-topicmodels::posterior(model)$topics # article x topic
-y_matrix<-t(topicmodels::posterior(model)$terms)
+x_matrix<-modeltools::posterior(model)$topics # article x topic
+y_matrix<-t(modeltools::posterior(model)$terms)
 plot_list<-list(
 	x=data.frame(
 		id=rownames(dtm),
@@ -460,8 +460,8 @@ observeEvent(input$go_LDA, {
 		topic_model=sidebar_tracker$model_type,
 		n_topics=input$n_topics,
 		iterations=input$iterations)
-	x_matrix<-posterior(infostore$model)$topics
-	y_matrix<-t(posterior(infostore$model)$terms)
+	x_matrix<-modeltools::posterior(infostore$model)$topics
+	y_matrix<-t(modeltools::posterior(infostore$model)$terms)
 	keep_cols<-c("id", "caption", "abstract")
 	initial_captions<-plotinfo$x[, keep_cols[which(keep_cols %in% colnames(plotinfo$x))]]
 	# update plotinfo
