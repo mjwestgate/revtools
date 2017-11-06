@@ -9,10 +9,20 @@ make_DTM<-function(
 
 	# collate data into a single vector
 	text_cols<-c("title", "keywords", "abstract")
-	x_textonly<-x[, text_cols[which(text_cols %in% colnames(x))]]
-	text_vector<-apply(x_textonly, 1, function(a){
-		if(all(is.na(a))){return("")
-		}else{paste(a[which(is.na(a)==FALSE)], collapse=" ")}})
+	available_cols<-which(text_cols %in% colnames(x))
+	if(any(available_cols)){
+		x_textonly<-x[, text_cols[available_cols]]
+	}else{
+		stop("no titles, keywords or abstracts available in selected object")
+	}
+
+	text_vector<-unlist(lapply(split(x_textonly, c(1:nrow(x))), function(a){
+		if(all(is.na(a))){
+			return("")
+		}else{
+			paste(a[which(is.na(a)==FALSE)], collapse=" ")
+			}
+		}))
 
 	# sort out stop words
 	if(missing(stop_words)){stop_words <-tm::stopwords()
