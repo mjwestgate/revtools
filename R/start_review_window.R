@@ -5,7 +5,7 @@ start_review_window<-function(x){
 if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
 	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review")}
 switch(class(x),
-	"bibliography"={info<-make_reference_dataframe(x)},
+	"bibliography"={info<-as.data.frame(x)},
 	"data.frame"={info<-x},
 	"review_info"={info<-x$info})
 

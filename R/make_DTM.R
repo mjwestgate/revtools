@@ -5,10 +5,12 @@ make_DTM<-function(
 	){
 
 	# check format
-	if(class(x)=="bibliography"){x<-make_reference_dataframe(x)}
+	if(class(x)=="bibliography"){x<-as.data.frame(x)}
 
 	# collate data into a single vector
-	text_vector<-apply(x[, c("title", "keywords", "abstract")], 1, function(a){
+	text_cols<-c("title", "keywords", "abstract")
+	x_textonly<-x[, text_cols[which(text_cols %in% colnames(x))]]
+	text_vector<-apply(x_textonly, 1, function(a){
 		if(all(is.na(a))){return("")
 		}else{paste(a[which(is.na(a)==FALSE)], collapse=" ")}})
 
