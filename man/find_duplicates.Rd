@@ -15,5 +15,5 @@ This function has a few odd features. It uses stringdist to locate article title
 
 A method that tests string distances between all pairs would locate more duplicates, but would be substantially slower. Conversely, a method that split the dataset into mutually exclusive groups could be vectorized and would be correspondingly faster, but as the identity of these groups is inherently ambigious, it would probably reduce the hit rate.
 
-In summary, this is the best solution for now, but will probably be updated in future. Later versions will probably allow some user flexiility to tradeoff speed vs accuracy.
+In summary, this is the best solution for now, but will probably be updated in future. Later versions will probably allow some user flexibility to tradeoff speed vs accuracy.
 }

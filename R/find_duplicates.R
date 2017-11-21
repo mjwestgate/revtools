@@ -1,5 +1,11 @@
 find_duplicates<-function(x){
 
+	if(class(x)=="bibliography"){x<-as.data.frame(x)}
+	if(class(x)!="data.frame"){stop("find_duplicates only accepts objects of class 'bibliography' or 'data.frame'")}
+	if(all(c("label", "title", "journal", "year") %in% colnames(x))==FALSE){
+		stop("x must contain columns named 'label', 'title', 'journal' and 'year' for find_duplicates to function")}
+	if(length(unique(x$label))<nrow(x)){x$label<-make.names(x$label, unique=TRUE)}
+
 	# prep a checkable data.frame
 	x.lower<-x
 	x.lower$title<-gsub("[[:punct:]]", "", tolower(x.lower$title)) # remove punctuation
@@ -62,7 +68,7 @@ find_duplicates<-function(x){
 	journal_groups<-text_dframe[, c("initial_title", "group")]
 	colnames(journal_groups)<-c("journal", "journal_group")
 	x.lower<-merge(x.lower, journal_groups, by="journal", all=TRUE)
-	x.lower<-x.lower[order(x.lower$ID), ]
+	x.lower<-x.lower[order(x.lower$label), ]
 
 	# prep for duplicate testing
 	x.lower$checked<-is.na(x.lower$title) # i.e. those that are missing titles are not checked
@@ -104,7 +110,7 @@ find_duplicates<-function(x){
 			group_increment <- group_increment + 1
 			}
 		}
-	x<-merge(x, x.lower[, c("ID", "duplicate_group")], by="ID", all=TRUE)
+	x<-merge(x, x.lower[, c("label", "duplicate_group")], by="label", all=TRUE)
 
 	# now ensure that entries that are missing titles are given a unique number
 	if(any(is.na(x$title))){

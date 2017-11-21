@@ -17,7 +17,7 @@ as.data.frame.bibliography<-function(x, ...){
 		}, cols = cols)
 
 	x_dframe<-data.frame(
-		label=names(x_list),
+		label=make.names(names(x_list), unique=TRUE),
 		do.call(rbind, x_list), 
 		stringsAsFactors=FALSE)
 	rownames(x_dframe)<-NULL
