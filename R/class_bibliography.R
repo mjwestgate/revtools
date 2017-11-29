@@ -7,21 +7,22 @@ summary.bibliography<-function(object, ...){
 	null.percent<-round((100/length(object)) * null.count, 1)
 
 	# how many sources?
-	n.sources<-unlist(lapply(object, function(a){a$journal}))
-	if(is.null(n.sources)==FALSE){
-		source.freq<-sort(xtabs(~n.sources), decreasing=TRUE)[1:5]
+	sources<-unlist(lapply(object, function(a){a$journal}))
+	if(is.null(sources)==FALSE){
+		n_sources<-length(unique(sources))
+		source.freq<-sort(xtabs(~sources), decreasing=TRUE)[c(1:min(5, n_sources))]
 		# put text together
 		result<-paste(
-			paste("Object of class 'bibliography' containing", length(object), "entries.", sep=" "), "\n\t",
-			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
-			paste("Number of sources:", length(unique(n.sources)), sep=" "), "\n",
-			"Most common sources:", "\n\t",
-			paste(names(source.freq), " (n = ", as.numeric(source.freq), ")", sep="", collapse="\n\t"),
+			paste0("Object of class 'bibliography' containing ", length(object), " entries."), "\n  ",
+			paste0("Number containing abstracts: ", null.count, " (", null.percent, "%)") , "\n",
+			paste0("Number of sources: ", n_sources), "\n",
+			"Most common sources:", "\n  ",
+			paste(names(source.freq), " (n = ", as.numeric(source.freq), ")", sep="", collapse="\n  "),
 		sep="",
 		collapse="\n")
 	}else{
 		result<-paste(
-			paste("Object of class 'bibliography' containing", length(object), "entries.", sep=" "), "\n\t",
+			paste("Object of class 'bibliography' containing", length(object), "entries.", sep=" "), "\n  ",
 			paste("Number containing abstracts: ", null.count, " (", null.percent, "%)", sep="") , "\n",
 		sep="",
 		collapse="\n")
@@ -30,8 +31,7 @@ summary.bibliography<-function(object, ...){
 }
 
 
-print.bibliography<-function(x, ...){
-	if(length(x)>5){n<-5}else{n<-length(x)}
+print.bibliography<-function(x, n=5, ...){
 	text.tr<-lapply(x[1:n], format_citation)
 	cat(paste(unlist(text.tr), collapse="\n\n"))
 }

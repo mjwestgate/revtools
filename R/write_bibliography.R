@@ -1,6 +1,7 @@
 # function to export data in .bib format
-write_bibliography<-function(x, filename="bibviewr_export.ris", format="ris"){
+write_bibliography<-function(x, filename, format="ris"){
 
+if(missing(filename)){stop("argument 'filename' is missing, with no default")}
 
 if(format=="bib"){
 	# process basic text

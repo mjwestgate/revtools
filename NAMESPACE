@@ -1,15 +1,15 @@
-export(read_bibliography, write_bibliography,
+export(as.bibliography, read_bibliography, write_bibliography,
 summary.bibliography, print.bibliography, summary.review_info,
-format_citation,
-make_reference_dataframe, find_duplicates, extract_unique_references,
+format_citation, find_duplicates, extract_unique_references,
 make_DTM, run_LDA, start_review_window)
 S3method(print, bibliography)
 S3method(summary, bibliography)
+S3method(as.data.frame, bibliography)
 S3method(summary, review_info)
+importFrom(ade4, dudi.coa)
 importFrom(grDevices, grey)
-importFrom(magrittr,"%>%")
 importFrom(modeltools, posterior)
-importFrom(plotly, renderPlotly, event_data)
+importFrom(plotly, renderPlotly, event_data, "%>%")
 importFrom(shiny, sliderInput, selectInput, textInput, actionButton, tableOutput, uiOutput, reactiveValues, observeEvent, observe, renderPrint, isolate, fluidRow, strong, column, icon, p)
 importFrom(shinydashboard, sidebarMenu, menuItem, menuSubItem)
 importFrom(stats, xtabs)

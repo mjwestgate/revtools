@@ -5,12 +5,24 @@ make_DTM<-function(
 	){
 
 	# check format
-	if(class(x)=="bibliography"){x<-make_reference_dataframe(x)}
+	if(class(x)=="bibliography"){x<-as.data.frame(x)}
 
 	# collate data into a single vector
-	text_vector<-apply(x[, c("title", "keywords", "abstract")], 1, function(a){
-		if(all(is.na(a))){return("")
-		}else{paste(a[which(is.na(a)==FALSE)], collapse=" ")}})
+	text_cols<-c("title", "keywords", "abstract")
+	available_cols<-which(text_cols %in% colnames(x))
+	if(any(available_cols)){
+		x_textonly<-x[, text_cols[available_cols]]
+	}else{
+		stop("no titles, keywords or abstracts available in selected object")
+	}
+
+	text_vector<-unlist(lapply(split(x_textonly, c(1:nrow(x))), function(a){
+		if(all(is.na(a))){
+			return("")
+		}else{
+			paste(a[which(is.na(a)==FALSE)], collapse=" ")
+			}
+		}))
 
 	# sort out stop words
 	if(missing(stop_words)){stop_words <-tm::stopwords()
