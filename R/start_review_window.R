@@ -17,10 +17,11 @@ if(class(x)=="review_info"){
 	cat("building Document Term Matrix\n")
 	dtm<-make_DTM(info)
 	rownames(dtm)<-paste0("x", c(1:nrow(dtm)))
-	dtm<-dtm[apply(dtm , 1, sum)>0, order(colnames(dtm))]
+	x_keep<-apply(dtm , 1, sum)>0
+	dtm<-dtm[x_keep, order(colnames(dtm))]
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n_topics=5)
-	x_keep<-apply(dtm , 1, sum)>0
+
 }
 palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 
@@ -34,7 +35,7 @@ plot_list<-list(
 		ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
 		topic= apply(x_matrix, 1, which.max),
 		weight= apply(x_matrix, 1, max),
-		caption=apply(info, 1, format_citation_dataframe),
+		caption=apply(info[x_keep, ], 1, format_citation_dataframe),
 		stringsAsFactors=FALSE),
 	y=data.frame(
 		id=paste0("y", c(1:nrow(y_matrix))),
