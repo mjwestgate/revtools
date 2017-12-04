@@ -13,7 +13,7 @@ read_bibliography<-function(
 	}else{
 		file<-paste(path, x, sep="/")
 		}
-	Sys.setlocale("LC_ALL", "C")
+	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
 	z<-scan(file, sep="\t", what="character", quote="", quiet=TRUE, blank.lines.skip=FALSE)
 	Encoding(z)<-"latin1"
 	z<-gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
@@ -21,8 +21,8 @@ read_bibliography<-function(
 	# detect whether file is bib-like or ris-like via the most common single characters
 	nrows<-min(c(200, length(z)))
 	zsub<-z[c(1: nrows)]
-	invisible(Sys.setlocale('LC_ALL', 'C')) # gets around errors in import with special characters
-	if(length(grep("=\\{", zsub))>30){data.type<-"bib"}else{data.type<-"ris"}
+	# invisible(Sys.setlocale('LC_ALL', 'C'))  # duplicated line
+	if(length(grep("\\{", zsub))>30){data.type<-"bib"}else{data.type<-"ris"}
 
 	if(data.type=="bib"){result<-read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
@@ -167,6 +167,40 @@ read_medline<-function(x){
 }
 
 
+# generate unique label for entries, using as much author & year data as possible
+generate_bibliographic_names<-function(x){
+	nonunique_names<-unlist(lapply(x, function(a){
+		name_vector<-rep("", 3)
+		if(any(names(a)=="author")){
+			name_vector[1]<-strsplit(a$author[1], ",")[[1]][1]}
+		if(any(names(a)=="year")){name_vector[2]<-a$year}
+		if(any(names(a)=="journal")){
+			journal_info<-strsplit(a$journal, " ")[[1]]
+			name_vector[3]<-paste(substr(journal_info, 1, min(nchar(journal_info), 4)), collapse="")
+			}
+		name_vector<-name_vector[which(name_vector!="")]
+		if(length(name_vector)==0){return("ref")
+		}else{return(paste(name_vector, collapse="_"))}		
+		}))
+
+	# where this is not possible, give a 'ref1' style result only as a last resort.
+	if(any(nonunique_names=="ref")){
+		rows.tr<-which(nonunique_names=="ref")
+		nonunique_names[rows.tr]<-paste("ref", c(1:length(rows.tr)), sep="_")
+		}
+
+	# ensure names are unique
+	if(length(unique(nonunique_names))<length(nonunique_names)){
+		name_counts<-xtabs(~nonunique_names)
+		duplicated_names<-names(which(name_counts>1))
+		for(i in 1:length(duplicated_names)){
+			rows<-which(nonunique_names== duplicated_names[i])
+			new_names<-paste(nonunique_names[rows], letters[1:length(rows)], sep="_")
+			nonunique_names[rows]<-new_names}}
+			
+	return(nonunique_names)
+}
+			
 
 # RIS
 read_ris<-function(x){
@@ -318,39 +352,7 @@ read_ris<-function(x){
 		return(final_result)
 		})
 
-	# generate unique label for entries, using as much author & year data as possible
-	nonunique_names<-unlist(lapply(x.final, function(a){
-		name_vector<-rep("", 3)
-		if(any(names(a)=="author")){
-			name_vector[1]<-strsplit(a$author[1], ",")[[1]][1]}
-		if(any(names(a)=="year")){name_vector[2]<-a$year}
-		if(any(names(a)=="journal")){
-			journal_info<-strsplit(a$journal, " ")[[1]]
-			name_vector[3]<-paste(substr(journal_info, 1, min(nchar(journal_info), 4)), collapse="")
-			}
-		name_vector<-name_vector[which(name_vector!="")]
-		if(length(name_vector)==0){return("ref")
-		}else{return(paste(name_vector, collapse="_"))}		
-		}))
-
-	# where this is not possible, give a 'ref1' style result only as a last resort.
-	if(any(nonunique_names=="ref")){
-		rows.tr<-which(nonunique_names=="ref")
-		nonunique_names[rows.tr]<-paste("ref", c(1:length(rows.tr)), sep="_")
-		}
-
-	# ensure names are unique
-	if(length(unique(nonunique_names))<length(nonunique_names)){
-		name_counts<-xtabs(~nonunique_names)
-		duplicated_names<-names(which(name_counts>1))
-		for(i in 1:length(duplicated_names)){
-			rows<-which(nonunique_names== duplicated_names[i])
-			new_names<-paste(nonunique_names[rows], letters[1:length(rows)], sep="_")
-			nonunique_names[rows]<-new_names}}
-
-	names(x.final)<-nonunique_names
-
-	# final stuff
+	names(x.final)<-generate_bibliographic_names(x.final)
 	class(x.final)<-"bibliography"
 	return(x.final)
 	}
@@ -360,46 +362,43 @@ read_ris<-function(x){
 # BIB
 read_bib<-function(x){
 
-	# convert to data.frame with tags and content in separate columns
-	x.split<-strsplit(x, "=\\{")
-	x.split<-lapply(x.split, function(a){
-		if(length(a==1) & nchar(a[1])>8){
-			if(substr(a[1], 2, 8)=="ARTICLE"){
-				result<-c("@ARTICLE", substr(a, 10, nchar(a)))
-				return(result)
-			}else{return(a)}
-		}else{return(a)}
-		})
-	x.split<-lapply(x.split, function(a){gsub("=|\\}|\\,[^\\,]*$", "", a)})
+	# which lines start with @article?
+	group_vec<-rep(0, length(x))
+	group_vec[which(tolower(substr(x, 1, 8))=="@article")]<-1
+	x.split<-split(x, cumsum(group_vec))
+	length_vals<-unlist(lapply(x.split, length))
+	x.split<-x.split[which(length_vals>3)]
 
-	x.new<-as.data.frame(do.call(rbind, x.split), stringsAsFactors=FALSE)
-	colnames(x.new)<-c("tag", "text")
-
-	# clean
-	x.new<-x.new[which(x.new$text!=""), ]
-	x.new$ref<-cumsum(x.new$tag=="@ARTICLE")
-
-	# get labels
-	ref.labels<-x.new$text[which(x.new$tag=="@ARTICLE")]
-	if(anyDuplicated(ref.labels)){
-		nonUniqueVals<-ref.labels[which(duplicated(ref.labels))]
-		for(i in 1:length(nonUniqueVals)){
-			rows<-which(ref.labels== nonUniqueVals[i])
-			ref.labels[rows]<-paste(ref.labels[rows], letters[c(1:length(rows))], sep="")}
-		}	
+	x.final<-lapply(x.split, function(z){
+		delimiter_lookup<-regexpr("=\\{", gsub("\\s", "", z))
+		single_entry_matrix<-(apply(cbind(z, delimiter_lookup), 1, function(a){c(
+			tag=substr(a[1], 1, as.numeric(a[2])-1),
+			value=substr(a[1], as.numeric(a[2]), nchar(a[1]))
+			)
+		}))
+		entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors=FALSE)
+		if(any(entry_dframe$value=="}")){entry_dframe<-entry_dframe[c(2:(which(entry_dframe$value=="}")[1]-1)), ]}
 	
-	# remove label rows, convert to list
-	x.new<-x.new[which(x.new$tag!="@ARTICLE"), ]	
-	x.split<-split(x.new[, 1:2], x.new$ref)
-	x.split<-lapply(x.split, function(a){
-		b<-as.list(a$text)
-		names(b)<-a$tag
-		if(any(names(b)=="author")){b$author<-strsplit(b$author, " and ")[[1]]}
-		return(b)})
-	names(x.split)<-ref.labels
-
-	# final stuff
-	class(x.split)<-"bibliography"
-	return(x.split)
+		# strip curly brackets etc
+		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\}|\\},|\\}\\}}|\\}\\},"
+		entry_dframe$value<-gsub(bib_tag_string, "", entry_dframe$value)
+		entry_dframe$value<-gsub("^\\s+|\\s+$",  "", entry_dframe$value)
+	
+		# convert each entry to a list
+		label_group<-rep(0, nrow(entry_dframe))
+		tag_rows<-which(entry_dframe$tag!="")
+		label_group[tag_rows]<-1
+		tag_names<-entry_dframe$tag[tag_rows]
+		entry_list<-split(entry_dframe$value, cumsum(label_group))
+		names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
+	
+		entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
+		if(any(names(entry_list)=="author")){entry_list$author<-strsplit(entry_list$author, " and ")[[1]]}
+		return(entry_list)
+	})
+	
+	names(x.final)<-generate_bibliographic_names(x.final)
+	class(x.final)<-"bibliography"
+	return(x.final)
 	
 	}
