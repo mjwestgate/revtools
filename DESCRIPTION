@@ -4,7 +4,7 @@ Date: 2017-12-06
 Title: Tools to Support Evidence Synthesis in R
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
 Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
-Description: Tools to support literature review and evidence synthesis in R. Includes functions to import, de-duplicate, and interactively screen bibliographic data.
+Description: Tools to support literature review and evidence synthesis in R. Includes functions to import, deduplicate, and interactively screen bibliographic data.
 Depends: R (>= 3.1.0)
 Imports: ade4, plotly, shiny, shinycssloaders, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite, methods, modeltools
 License: GPL-2
