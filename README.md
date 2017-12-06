@@ -1,9 +1,7 @@
 revtools
 ==========
 
-Tools to support literature review and evidence synthesis in R.
-
-Note: This package includes tools to import, de-duplicate, and display bibliographic data. It is in the early stages of development, so use at your own risk!
+Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
 
 # Example:
 ```
