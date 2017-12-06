@@ -17,9 +17,15 @@ This function creates a simplified version of that given by find_duplicates, by 
 }
 \examples{
 # import data
-x<-read_bibliography("my_file.bib")
+x<-read_bibliography("example_bibliography.ris")
+
+# generate some 'fake' duplicates
+x_duplicated<-as.data.frame(x)
+x_duplicated<-rbind(x_duplicated, x_duplicated[1:5,])
+
 # look for duplicates
-x_duplicates<-find_duplicates(as.data.frame(x))
+x_check<-find_duplicates(x_duplicated)
+
 # if any are found, extract unique values
-x_unique<-extract_unique_references(x_duplicates)
+x_unique<-extract_unique_references(x_check)
 }

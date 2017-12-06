@@ -21,10 +21,3 @@ The selection panel gives information on progress in selecting/deselecting artic
 
 Upon completion, the user can export information to a .csv or .rda file (saved to the working directory) using the 'export options' tab.
 }
-\examples{
-# import some data
-x<-read_bibliography("my_data.ris")
-# display
-start_review_window(x)
-# NOTE: This may take some time, especially for large files.
-}
