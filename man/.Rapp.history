@@ -1,0 +1,1 @@
+data("example_bibliography", package="revtools")

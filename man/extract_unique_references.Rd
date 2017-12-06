@@ -17,7 +17,7 @@ This function creates a simplified version of that given by find_duplicates, by 
 }
 \examples{
 # import data
-x<-read_bibliography("example_bibliography.ris")
+x<-data("example_bibliography", package="revtools")
 
 # generate some 'fake' duplicates
 x_duplicated<-as.data.frame(x)
