@@ -17,11 +17,11 @@ This function creates a simplified version of that given by find_duplicates, by 
 }
 \examples{
 # import data
-x<-data("example_bibliography", package="revtools")
+data("example_bibliography")
 
 # generate some 'fake' duplicates
-x_duplicated<-as.data.frame(x)
-x_duplicated<-rbind(x_duplicated, x_duplicated[1:5,])
+x<-as.data.frame(example_bibliography)
+x_duplicated<-rbind(x, x[1:5,])
 
 # look for duplicates
 x_check<-find_duplicates(x_duplicated)
