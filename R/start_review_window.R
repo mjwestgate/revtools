@@ -47,7 +47,7 @@ plot_list<-list(
 		stringsAsFactors=FALSE)
 	)
 if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
-plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix, dtm)
+plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix, dtm, topicmodels::get_terms(model, 5))
 
 if(class(x)!="review_info"){
 	# generate info to pass to infostore: it updates the display, but not the whole plot
@@ -342,8 +342,8 @@ output$plot_click<-renderPrint({
 			))
 		}else{ # topics
 			cat(paste0(
-				"<b>Topic #", topic_click$d, "<br>Top terms:</b> ",
-				plotinfo$topic$caption[topic_click$d], "<br><b>Other relevant terms: </b>",
+				"<b>Topic #", topic_click$d, "</b> | Key terms<br><em>Most likely:</em> ",
+				plotinfo$topic$caption[topic_click$d], "<br><em>Heighest weighted:</em> ",
 				plotinfo$topic$caption_weighted[topic_click$d]
 			))
 		}
@@ -487,7 +487,9 @@ observeEvent(input$go_LDA, {
 	)
 	plotinfo$topic<-build_topic_df_simple(plotinfo$x, 
 		y_matrix, 
-		dtm=infostore$dtm[infostore$x$present, infostore$y$present])
+		dtm=infostore$dtm[infostore$x$present, infostore$y$present],
+		topicmodels::get_terms(infostore$model, 5)
+		)
 	# update infostore
 	palette_tr<-do.call(sidebar_tracker$color_scheme, list(
 		n=infostore$model@k, 

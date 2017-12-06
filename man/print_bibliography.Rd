@@ -3,10 +3,11 @@
 \title{Methods for class 'bibliography'}
 \description{Print information contained within object of class 'bibliography'.}
 \usage{
-\method{print}{bibliography}(x, ...)
+\method{print}{bibliography}(x, n, ...)
 }
 \arguments{
   \item{x}{An object of class 'bibliography'}
+  \item{n}{Number of items to print}
   \item{...}{Any further information}
 }
 \value{
