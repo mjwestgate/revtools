@@ -1,5 +1,5 @@
 Package: revtools
-Version: 0.1
+Version: 0.1.1
 Date: 2016-05-12
 Title: Tools to support systematic review in R
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
