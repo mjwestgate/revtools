@@ -1,7 +1,7 @@
 Package: revtools
 Version: 0.1.1
-Date: 2016-05-12
-Title: Tools to support systematic review in R
+Date: 2017-12-06
+Title: Tools to support evidence synthesis
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
 Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
 Description: Tools to support literature review and evidence synthesis in R.

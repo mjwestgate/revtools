@@ -8,3 +8,10 @@
   \item{path}{Path to specified file}
 }
 \value{Returns an object of class 'bibliography', which is a list where each entry is a list containing data on each reference. This function auto-detects document formatting, meaning that specified file formats are ignored except to locate the file.}
+\examples{
+# import data
+x<-read_bibliography("my_file.bib")
+# view information in x
+summary(x)
+print(x)
+}
