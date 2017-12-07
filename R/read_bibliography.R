@@ -370,17 +370,18 @@ read_bib<-function(x){
 	x.split<-x.split[which(length_vals>3)]
 
 	x.final<-lapply(x.split, function(z){
-		delimiter_lookup<-regexpr("=\\{", gsub("\\s", "", z))
-		single_entry_matrix<-(apply(cbind(z, delimiter_lookup), 1, function(a){c(
+		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\{", gsub("\\s", "", z))
+		single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
 			tag=substr(a[1], 1, as.numeric(a[2])-1),
 			value=substr(a[1], as.numeric(a[2]), nchar(a[1]))
 			)
-		}))
+		})
 		entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors=FALSE)
+		colnames(entry_dframe)<-c("tag", "value")
 		if(any(entry_dframe$value=="}")){entry_dframe<-entry_dframe[c(2:(which(entry_dframe$value=="}")[1]-1)), ]}
 	
 		# strip curly brackets etc
-		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\}|\\},|\\}\\}}|\\}\\},"
+		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\{|}\\}|\\},|\\}\\}}|\\}\\},"
 		entry_dframe$value<-gsub(bib_tag_string, "", entry_dframe$value)
 		entry_dframe$value<-gsub("^\\s+|\\s+$",  "", entry_dframe$value)
 	
@@ -389,7 +390,7 @@ read_bib<-function(x){
 		tag_rows<-which(entry_dframe$tag!="")
 		label_group[tag_rows]<-1
 		tag_names<-entry_dframe$tag[tag_rows]
-		entry_list<-split(entry_dframe$value, cumsum(label_group))
+		entry_list<-split(entry_dframe$value, cumsum(label_group)+1)
 		names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
 	
 		entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
