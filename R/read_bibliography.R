@@ -364,13 +364,15 @@ read_bib<-function(x){
 
 	# which lines start with @article?
 	group_vec<-rep(0, length(x))
-	group_vec[which(tolower(substr(x, 1, 8))=="@article")]<-1
-	x.split<-split(x, cumsum(group_vec))
+	row_id<-which(regexpr("^@", x)==1) 
+	group_vec[row_id]<-1
+	group_vec<-cumsum(group_vec)
+	x.split<-split(x[-row_id], group_vec[-row_id])
 	length_vals<-unlist(lapply(x.split, length))
 	x.split<-x.split[which(length_vals>3)]
 
 	x.final<-lapply(x.split, function(z){
-		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\{", gsub("\\s", "", z))
+		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{", gsub("\\s", "", z))
 		single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
 			tag=substr(a[1], 1, as.numeric(a[2])-1),
 			value=substr(a[1], as.numeric(a[2]), nchar(a[1]))
@@ -378,10 +380,10 @@ read_bib<-function(x){
 		})
 		entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors=FALSE)
 		colnames(entry_dframe)<-c("tag", "value")
-		if(any(entry_dframe$value=="}")){entry_dframe<-entry_dframe[c(2:(which(entry_dframe$value=="}")[1]-1)), ]}
+		if(any(entry_dframe$value=="}")){entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]}
 	
 		# strip curly brackets etc
-		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|\\{|}\\}|\\},|\\}\\}}|\\}\\},"
+		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|}\\}|\\},|\\}\\}}|\\}\\},"
 		entry_dframe$value<-gsub(bib_tag_string, "", entry_dframe$value)
 		entry_dframe$value<-gsub("^\\s+|\\s+$",  "", entry_dframe$value)
 	
