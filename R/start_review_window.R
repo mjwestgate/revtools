@@ -3,7 +3,7 @@ start_review_window<-function(x){
 
 # throw a warning if a known file type isn't given
 if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
-	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review")}
+	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review_window")}
 switch(class(x),
 	"bibliography"={info<-as.data.frame(x)},
 	"data.frame"={info<-x},

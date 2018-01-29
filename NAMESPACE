@@ -1,10 +1,11 @@
 export(as.bibliography, read_bibliography, write_bibliography,
-summary.bibliography, print.bibliography, summary.review_info,
+summary.bibliography, print.bibliography, '[.bibliography', summary.review_info,
 format_citation, find_duplicates, extract_unique_references,
 make_DTM, run_LDA, start_review_window)
 S3method(print, bibliography)
 S3method(summary, bibliography)
 S3method(as.data.frame, bibliography)
+S3method([, bibliography)
 S3method(summary, review_info)
 importFrom(ade4, dudi.coa)
 importFrom(grDevices, grey)
