@@ -1,6 +1,6 @@
 \name{bibliography-class}
 \alias{as.bibliography}
-\alias{"[.bibliography"}
+\alias{'[.bibliography'}
 \alias{print.bibliography}
 \alias{summary.bibliography}
 \title{Methods for class 'bibliography'}
