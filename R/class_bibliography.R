@@ -31,7 +31,22 @@ summary.bibliography<-function(object, ...){
 }
 
 
-print.bibliography<-function(x, n=5, ...){
+print.bibliography<-function(x, n, ...){
+	length.tr<-length(x)
+	if(missing(n)){
+		n<-min(c(length.tr, 5))
+	}else{
+		if(n>length.tr){n<-length.tr}
+	}
 	text.tr<-lapply(x[1:n], format_citation)
 	cat(paste(unlist(text.tr), collapse="\n\n"))
+}
+
+
+'[.bibliography'<-function(x, n){
+class(x)<-"list"
+if(all(n %in% c(1:length(x)))==FALSE){stop("subset out of bounds")}
+z<-x[n]
+class(z)<-"bibliography"
+return(z)
 }

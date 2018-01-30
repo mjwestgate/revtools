@@ -3,16 +3,19 @@ start_review_window<-function(x){
 
 # throw a warning if a known file type isn't given
 if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
-	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review")}
+	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review_window")}
+
+# get data in a standard format
 switch(class(x),
 	"bibliography"={info<-as.data.frame(x)},
 	"data.frame"={info<-x},
 	"review_info"={info<-x$info})
 
 if(class(x)=="review_info"){
-	dtm<-x$dtm
-	model<-x$model
-	x_keep<-x$x$present
+	dtm <- x$dtm
+	model <- x$model
+	plot_list<- x$plotinfo
+	x_keep<-x$infostore$x$display
 }else{
 	cat("building Document Term Matrix\n")
 	dtm<-make_DTM(info)
@@ -21,149 +24,16 @@ if(class(x)=="review_info"){
 	dtm<-dtm[x_keep, order(colnames(dtm))]
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n_topics=5)
-
-}
-palette_initial <-viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
-
-# data to send to plotinfo
-x_matrix<-modeltools::posterior(model)$topics # article x topic
-y_matrix<-t(modeltools::posterior(model)$terms)
-plot_list<-list(
-	x=data.frame(
-		id=rownames(dtm),
-		label= info$label[which(x_keep)],
-		ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
-		topic= apply(x_matrix, 1, which.max),
-		weight= apply(x_matrix, 1, max),
-		caption=apply(info[x_keep, ], 1, format_citation_dataframe),
-		stringsAsFactors=FALSE),
-	y=data.frame(
-		id=paste0("y", c(1:nrow(y_matrix))),
-		label=rownames(y_matrix),
-		ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
-		topic= apply(y_matrix, 1, which.max),
-		weight= apply(y_matrix, 1, max),
-		caption=rownames(y_matrix),
-		stringsAsFactors=FALSE)
-	)
-if(any(colnames(info)=="abstract")){plot_list$x$abstract<-info$abstract[x_keep]}
-plot_list$topic<-build_topic_df_simple(plot_list$x, y_matrix, dtm, topicmodels::get_terms(model, 5))
-
-if(class(x)!="review_info"){
-	# generate info to pass to infostore: it updates the display, but not the whole plot
-	# further, this information remains of constant length as go_LDA is run
-	dynamic_list<-list(
-		x=data.frame(
-			id=rownames(dtm),
-			label= plot_list$x$label,
-			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
-			topic_counter=0,
-			decision_time="",
-			topic=plot_list$x$topic,
-			color=palette_initial[plot_list$x$topic],
-			stringsAsFactors=FALSE),
-		y=data.frame(
-			id=plot_list$y$id,
-			label=colnames(dtm),
-			frequency=apply(dtm, 2, sum),
-			tested=FALSE, selected=FALSE, display=TRUE, present=TRUE,
-			topic_counter=0,
-			decision_time="",
-			topic=plot_list$y$topic,
-			color=palette_initial[plot_list$y$topic],
-			stringsAsFactors=FALSE),
-		topic=data.frame(
-			id= plot_list$topic$id,
-			topic= plot_list$topic$topic,
-			tested=FALSE, selected=FALSE, display=TRUE,
-			x_count=plot_list$topic$x_count,
-			y_count=plot_list$topic$y_count,
-			color=palette_initial[plot_list$topic$topic],
-			stringsAsFactors=FALSE)
-		)
+	plot_list<-build_plot_data(info, model, dtm, x_keep)
+	palette_initial <- viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 }
 
 
-# build user interface
-header<- shinydashboard::dashboardHeader(title="revtools")
-sidebar<-shinydashboard::dashboardSidebar(
-	sidebarMenu(
-		id="tabs",
-		menuItem("Plot", icon=icon("bar-chart-o"),	
-			p("Display"),
-			menuSubItem("Articles", tabName="articles", selected=TRUE),
-			menuSubItem("Words", tabName="words"),
-			p("Dimensions"),
-			menuSubItem("2D", tabName="2d", selected=TRUE),
-			menuSubItem("3D", tabName="3d"),
-			sliderInput("screen_size", "Window Height (px)", min=400, max=1400, step=100, value= 600)
-		),
-		menuItem("Colors", icon=icon("paint-brush"),
-			p("Palette"),
-			menuSubItem("Viridis", tabName="viridis"),
-			menuSubItem("Magma", tabName="magma", selected=TRUE),
-			menuSubItem("Inferno", tabName="inferno"),
-			menuSubItem("Plasma", tabName="plasma"),
-			menuItem("Options",			
-				sliderInput("color_alpha", "Opacity", min=0.2, max=1, step=0.1, value= 0.9),
-				sliderInput("color_hue", "Hue", min=0, max=1, step=0.05, value= c(0, 0.9)),
-				sliderInput("point_size", "Point Size", min=0, max=20, step=2, value= 12)
-			)
-		),
-		menuItem("Topic Model", icon=icon("calculator"),
-			p("Model Type"),
-			menuSubItem("LDA", tabName="lda", selected=TRUE),
-			menuSubItem("CTM", tabName="ctm"),
-			p("Model Specification"),
-			sliderInput("iterations", "# Iterations", min=1000, max=20000, step=1000, value= 2000),
-			sliderInput("n_topics", "# Topics", min=4, max=30, step=1, value=5),
-			actionButton("go_LDA", strong("Recalculate"))
-		),
-		menuItem("Save", icon=icon("save"),
-			selectInput("save_type", "File Type", 
-				choices=c(".csv (selection data)", ".rds (all data)")),
-			textInput("saveas", "Save As:", "revtools_results.csv"),
-			actionButton("save", "Save")
-		)
-	)
-)
+# create user interface
+ui_data<-revtools_ui()
+ui<-shinydashboard::dashboardPage(ui_data$header, ui_data$sidebar, ui_data$body)
 
-body<-shinydashboard::dashboardBody(
-	fluidRow(
-		column(width=8,
-			shinydashboard::box(width=NULL,
-				shinycssloaders::withSpinner(plotly::plotlyOutput("plot_main"))
-			)
-		),
-		column(width=4, 
-			shinydashboard::box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
-				collapsible=TRUE, collapsed=FALSE,
-				plotly::plotlyOutput("plot_topic")
-			),
-			shinydashboard::box(
-				title="Selected Text", width=NULL, solidHeader=TRUE, status="primary",
-				collapsible=TRUE, collapsed=FALSE,
-				tableOutput("plot_click"),
-				shiny::splitLayout(
-					uiOutput("select_yes"),
-					uiOutput("select_no"),
-					cellWidths=c("25%", "25%")
-				),
-				shiny::splitLayout(
-					uiOutput("topic_yes"),
-					uiOutput("topic_no"),
-					cellWidths=c("25%", "25%")
-				)
-			),
-			shinydashboard::box(title="Abstract", width=NULL, solidHeader=TRUE, status="primary",
-				collapsible=TRUE, collapsed=TRUE,
-				tableOutput("abstract_info")
-			)
-		)
-	)
-)
 
-ui<-shinydashboard::dashboardPage(header, sidebar, body)
 
 server <- function(input, output, session) {
 
@@ -190,34 +60,26 @@ observeEvent(input$tabs, {
 })
 
 # create reactiveValues objects to store all data during shiny operations
+# 'infostore' updates the display, but not whole plot
 if(class(x)=="review_info"){
 	infostore<-reactiveValues(
-		x = x$x,
-		y = x$y,
-		topic= x$topic,
-		dtm= x$dtm,
-		model= x$model
+		x = x$infostore$x,
+		y = x$infostore$y,
+		topic = x$infostore$topic
 	)
-	topic_counter<-max(info$x$topic_counter)+1
+	modelstore <- reactiveValues(model=x$model)
 }else{
-	infostore<-reactiveValues(
-		x = dynamic_list$x,
-		y = dynamic_list$y,
-		topic = dynamic_list$topic,
-		dtm=dtm,
-		model=model
-	)
-	topic_counter<-1
-	rm(dynamic_list)
+	infostore <- build_infostore(plot_list, dtm, palette_initial)
+	modelstore <- reactiveValues(model=model)
 }
-
+# 'plotinfo' stores the coordinates that are actually drawn
 plotinfo<-reactiveValues(
 	x = plot_list$x,
 	y = plot_list$y,
 	topic = plot_list$topic
 )
+topic_counter<-reactiveValues(x=1) # input$go_LDA # 0 #max(infostore$x$topic_counter)+1
 
-rm(plot_list, dtm, model)
 
 
 ## PLOT
@@ -252,7 +114,7 @@ observeEvent({
 	input$point_size
 	}, {
 	palette_tr<-do.call(sidebar_tracker$color_scheme, list(
-		n=infostore$model@k, 
+		n=modelstore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
 		end=input$color_hue[2]))
@@ -394,7 +256,7 @@ output$abstract_info<-renderPrint({
 observeEvent(input$return_yes, {
 	infostore[[plot_data$dataset]]$tested[click_vals$d]<-TRUE
 	infostore[[plot_data$dataset]]$selected[click_vals$d]<-TRUE 
-	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter
+	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter$x
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#000000"
 	# note: section needed here to update infostore$topic if changed from excluded to included
@@ -405,7 +267,7 @@ observeEvent(input$return_no, {
 	infostore[[plot_data$dataset]]$tested[click_vals$d]<-TRUE
 	infostore[[plot_data$dataset]]$selected[click_vals$d]<-FALSE
 	infostore[[plot_data$dataset]]$display[click_vals$d]<-FALSE
-	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter
+	infostore[[plot_data$dataset]]$topic_counter[click_vals$d]<-topic_counter$x
 	infostore[[plot_data$dataset]]$decision_time[click_vals$d]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[click_vals$d]<-"#CCCCCC" 
 	# update topic plot
@@ -427,7 +289,7 @@ observeEvent(input$topic_yes, {
 	rows_tr<-which(infostore[[plot_data$dataset]]$id %in% ids_tr)
 	infostore[[plot_data$dataset]]$tested[rows_tr]<-TRUE
 	infostore[[plot_data$dataset]]$selected[rows_tr]<-TRUE
-	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter
+	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter$x
 	infostore[[plot_data$dataset]]$decision_time[rows_tr]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[rows_tr]<-"#000000" 
 	topic_click$d<-c()
@@ -445,7 +307,7 @@ observeEvent(input$topic_no, {
 	infostore[[plot_data$dataset]]$tested[rows_tr]<-TRUE
 	infostore[[plot_data$dataset]]$selected[rows_tr]<-FALSE
 	infostore[[plot_data$dataset]]$display[rows_tr]<-FALSE
-	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter
+	infostore[[plot_data$dataset]]$topic_counter[rows_tr]<-topic_counter$x
 	infostore[[plot_data$dataset]]$decision_time[rows_tr]<-as.character(Sys.time())
 	infostore[[plot_data$dataset]]$color[rows_tr]<-"#CCCCCC" 
 	topic_click$d<-c()
@@ -455,73 +317,29 @@ observeEvent(input$topic_no, {
 observeEvent(input$go_LDA, {
 	infostore$x$present<-infostore$x$display
 	infostore$y$present<-infostore$y$display
-	# kept_rows<-rows[which(apply(infostore$dtm[rows, cols], 1, sum)>0 )]
-	infostore$model<-run_LDA(
-		x=infostore$dtm[infostore$x$present, infostore$y$present],
+	modelstore$model<-run_LDA(
+		x=dtm[infostore$x$present, infostore$y$present],
 		topic_model=sidebar_tracker$model_type,
 		n_topics=input$n_topics,
-		iterations=input$iterations)
-	x_matrix<-modeltools::posterior(infostore$model)$topics
-	y_matrix<-t(modeltools::posterior(infostore$model)$terms)
-	keep_cols<-c("id", "caption", "abstract")
-	initial_captions<-plotinfo$x[, keep_cols[which(keep_cols %in% colnames(plotinfo$x))]]
+		iterations=input$iterations)	
 	# update plotinfo
-	x_update<-data.frame(
-		id=infostore$x$id[infostore$x$present],
-		label= infostore$x$label[infostore$x$present],
-		ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
-		topic= apply(x_matrix, 1, which.max),
-		weight= apply(x_matrix, 1, max),
-		stringsAsFactors=FALSE
-	)
-	x_update<-merge(x_update, initial_captions, by="id", all.x=TRUE, all.y=FALSE)
-	plotinfo$x<-x_update[order(x_update$id), ]
-	plotinfo$y<-data.frame(
-		id=infostore$y$id[infostore$y$present],
-		label=rownames(y_matrix),
-		ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
-		topic= apply(y_matrix, 1, which.max),
-		weight= apply(y_matrix, 1, max),
-		caption=rownames(y_matrix),
-		stringsAsFactors=FALSE
-	)
-	plotinfo$topic<-build_topic_df_simple(plotinfo$x, 
-		y_matrix, 
-		dtm=infostore$dtm[infostore$x$present, infostore$y$present],
-		topicmodels::get_terms(infostore$model, 5)
-		)
+	updated_plot_list<-build_plot_data(info, modelstore$model, 
+		dtm[infostore$x$present, infostore$y$present],
+		which(infostore$x$present))
+	plotinfo$x <- updated_plot_list$x
+	plotinfo$y <- updated_plot_list$y
+	plotinfo$topic <- updated_plot_list$topic
 	# update infostore
 	palette_tr<-do.call(sidebar_tracker$color_scheme, list(
-		n=infostore$model@k, 
+		n=modelstore$model@k, 
 		alpha=input$color_alpha,
 		begin=input$color_hue[1],
 		end=input$color_hue[2]))
-	col_order<-c("id", "label", "tested", "selected", "display", "present",
-		"topic_counter", "decision_time", "topic", "color")
-	update_x<-infostore$x[infostore$x$present, which(colnames(infostore$x)!="topic")]	
-	update_x<-merge(update_x, plotinfo$x[, c("id", "topic")], all=TRUE)[, col_order]
-	update_x$color<-palette_tr[update_x$topic]
-	update_x <-as.data.frame(rbind(update_x,
-		infostore$x[which(infostore$x$present==FALSE), ]))
-	infostore$x<-update_x
-	# ditto for y
-	col_order<-c(col_order[c(1, 2)], "frequency", col_order[c(3:10)])
-	update_y<-infostore$y[infostore$y$present, which(colnames(infostore$y)!="topic")]	
-	update_y <-merge(update_y, plotinfo$y[, c("id", "topic")], all=TRUE)[, col_order]
-	update_y$color<-palette_tr[update_y$topic]
-	update_y <-as.data.frame(rbind(update_y,
-		infostore$y[which(infostore$y$present==FALSE), ]))
-	infostore$y<-update_y
-	# and topics
-	infostore$topic<-data.frame(
-		id= plotinfo$topic$id,
-		topic= plotinfo$topic$topic,
-		tested=FALSE, selected=FALSE, display=TRUE,
-		x_count= plotinfo$topic$x_count,
-		y_count= plotinfo$topic$y_count,
-		color= palette_tr[plotinfo$topic$topic],
-		stringsAsFactors=FALSE)
-	topic_counter<-topic_counter+1
+	info_update <- update_infostore(infostore, palette_tr, plotinfo)
+	infostore$x <- info_update$x
+	infostore$y <- info_update$y
+	infostore$topic <- info_update$topic
+	topic_counter$x <- topic_counter$x+1
 })
 
 ## EXPORT
@@ -535,11 +353,10 @@ observeEvent(input$save, {
 	}else{
 		output<-list(
 			info = info,
-			x= infostore$x,
-			y= infostore$y, 
-			topic= infostore$topic,
-			dtm=infostore$dtm,
-			model=infostore$model
+			dtm = dtm,
+			model = modelstore$model,
+			plotinfo = list(x=plotinfo$x, y=plotinfo$y, topic=plotinfo$topic),
+			infostore = list(x= infostore$x, y= infostore$y, topic=infostore$topic)
 			)
 		class(output)<-"review_info"
 		saveRDS(output, input$saveas)
