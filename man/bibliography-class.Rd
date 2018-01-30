@@ -1,9 +1,9 @@
 \name{bibliography-class}
+\title{Methods for class 'bibliography'}
 \alias{as.bibliography}
-\alias{\[.bibliography}
 \alias{print.bibliography}
 \alias{summary.bibliography}
-\title{Methods for class 'bibliography'}
+\alias{[.bibliography}
 \description{This is a small number of standard methods for interacting with class 'bibliography'. More may be added later}
 \usage{
 	as.bibliography(x, ...)
