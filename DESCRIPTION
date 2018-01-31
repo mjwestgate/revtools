@@ -1,11 +1,11 @@
 Package: revtools
-Version: 0.1.1
-Date: 2017-12-06
+Version: 0.2.0
+Date: 2018-01-31
 Title: Tools to Support Evidence Synthesis in R
 Author: Martin J. Westgate <martinjwestgate@gmail.com>
 Maintainer: Martin J. Westgate <martinjwestgate@gmail.com>
-Description: Tools to support literature review and evidence synthesis in R. Includes functions to import, deduplicate, and interactively screen bibliographic data.
-Depends: R (>= 3.1.0)
+Description: Tools to support literature review and evidence synthesis in R. Includes functions to import references, remove duplicates, and interactively select or exclude individual articles.
+Depends: R (>= 3.4.0)
 Imports: ade4, plotly, shiny, shinycssloaders, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite, methods, modeltools
 License: GPL-2
 LazyData: true
