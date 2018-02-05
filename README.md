@@ -10,11 +10,13 @@ library(devtools)
 install_github("mjwestgate/revtools")
 library(revtools)
 
-x<-read_bibliography("example_bibliography.ris")  # import
+# import and explore some data
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-read_bibliography(file_location)
 summary(x) # show number of entries, sources, etc.
 print(x) # show first 5 entries
 
-start_review_window(x) # run interactive figure with Shiny
+start_review_window(x) # run interactive figure with shiny & plotly
 
 # to reload a previously saved version
 y<-readRDS("saved_object.rds")
