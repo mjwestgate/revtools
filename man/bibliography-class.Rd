@@ -1,7 +1,7 @@
 \name{bibliography-class}
 \title{Description of class 'bibliography'}
 \alias{bibliography-class}
-\description{Class 'bibliography' is an S3 class designed to store data from common bibliographic formats in a standard way. It is a nested list format; each object is a list containing multiple references, where each reference is a list with information on author, journal etc. Because different formats code their information differently, class bibliography uses bib-like headings to ensure that reference names give a meaningful description of its' content (i.e. 'author' instead of 'AU'). This means that an .ris or medline and pubmed files have their tags converted on import by read_bibliography, while .bib tags are not altered.}
+\description{Class 'bibliography' is an S3 class designed to store data from common bibliographic formats in a standard way. It is a nested list format; each object is a list containing multiple references, where each reference is a list with information on author, journal etc. Because different formats code their information differently, class bibliography uses bib-like headings to ensure that reference names give a meaningful description of its' content (i.e. 'author' instead of 'AU'). This means that an .ris or medline and pubmed files have their tags converted on import by \code{read_bibliography}, while .bib tags are not altered.}
 \section{slots}{
 Class 'bibliography' will import all information given in a file, and will attempt to assign it to a sensible heading. Possible entry names are (in this order):
 	\itemize{

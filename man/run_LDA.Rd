@@ -1,7 +1,7 @@
 \name{run_LDA}
 \alias{run_LDA}
 \title{Calculate a topic model}
-\description{Run a topic model using either 'LDA' or 'CTM' from the topicmodel package.}
+\description{Run a topic model using either \code{LDA} or \code{CTM} from the \code{topicmodels} package.}
 \usage{
 run_LDA(x, topic_model, n_topics, iterations)
 }
@@ -15,5 +15,5 @@ run_LDA(x, topic_model, n_topics, iterations)
 A topic model with the specified parameters.
 }
 \note{
-This is a basic wrapper function designed to allow consistent specification of model parameters within Shiny apps. It doesn't do anything very clever.
+This is a basic wrapper function designed to allow consistent specification of model parameters within \code{shiny} apps. It doesn't do anything very clever.
 }

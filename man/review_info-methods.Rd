@@ -2,7 +2,7 @@
 \alias{review_info-methods}
 \alias{summary.review_info}
 \title{Methods for class 'review_info'}
-\description{Tools to display useful information on class 'review_info'.}
+\description{Tools to display useful information on class \code{review_info}.}
 \usage{
 \method{summary}{review_info}(object, ...)
 }
@@ -14,5 +14,5 @@
 Prints useful information to the workspace.
 }
 \note{
-Class 'review_info' is a format for exporting large quantities of data during reviews. It is typically stored within a .rds file in the working directory. When re-imported to R using readRDS, this file will contain an object of class 'review_info'.
+Class \code{review_info} is a format for exporting large quantities of data during reviews. It is typically stored within a .rds file in the working directory. When re-imported to R using \code{readRDS}, this file will contain an object of class \code{review_info}.
 }

@@ -6,7 +6,7 @@
 \alias{summary.bibliography}
 \alias{[.bibliography}
 \alias{bibliography-methods}
-\description{This is a small number of standard methods for interacting with class 'bibliography'. More may be added later}
+\description{This is a small number of standard methods for interacting with class 'bibliography'. More may be added later.}
 \usage{
 	as.bibliography(x, ...)
 	as.data.frame(x, ...)
