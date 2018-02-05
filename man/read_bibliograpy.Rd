@@ -8,3 +8,7 @@
   \item{path}{Path to specified file}
 }
 \value{Returns an object of class \code{bibliography}, which is a list where each entry is a list containing data on each reference. This function auto-detects document formatting, meaning that specified file formats are ignored except to locate the file.}
+\examples{
+x<-read_bibliography("avian_ecology_bibliography.ris")
+summary(x)
+}

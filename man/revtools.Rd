@@ -2,9 +2,8 @@
 \name{revtools-package}
 \alias{revtools}
 \title{revtools: Tools to support reviews and evidence synthesis}
-\description{Researchers commonly need to summarize scientific information, a process known as 'evidence synthesis'. The first stage of a synthesis process (such as a Systematic Review or Meta-analysis) is to download a list of references from academic search engines such as Web of Knowledge or Scopus. This information can be sorted manually (the 'traditional' approach to systematic review), or the user can draw on tools from machine learning to help them visualise patterns in the corpus. Revtools uses topic models to render ordinations of text drawn from article titles, keywords and abstracts, and allows the user to interactively select or exclude individual refereces, words or topics. Revtools does not currently provide tools for analysis of data drawn from those references, which is available in other packages such as metagear or metafor.}
+\description{Researchers commonly need to summarize scientific information, a process known as 'evidence synthesis'. The first stage of a synthesis process (such as a Systematic Review or Meta-analysis) is to download a list of references from academic search engines such as Web of Knowledge or Scopus. This information can be sorted manually (the 'traditional' approach to systematic review), or the user can draw on tools from machine learning to help them visualise patterns in the corpus. Revtools uses topic models to render ordinations of text drawn from article titles, keywords and abstracts, and allows the user to interactively select or exclude individual references, words or topics. Revtools does not currently provide tools for analysis of data drawn from those references, which is available in other packages such as metagear or metafor.}
 \section{Functions}{
-	revtools contains the following functions:
 	\strong{Import & export}
 	\itemize{
 		\item \code{\link{read_bibliography}} Import bibliographic data

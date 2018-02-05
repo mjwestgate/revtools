@@ -8,7 +8,7 @@ Class 'review_info' has five slots containing the following information:
 		\item \strong{info} duplicate of data passed to \code{start_review_window}
 		\item \strong{dtm} document-term matrix, created by \code{make_DTM}
 		\item \strong{model} most recent topic model
-		\item \strong{plotinfo} data listing points to be plotted in\code{start_review_window}
+		\item \strong{plotinfo} data listing points to be plotted in \code{start_review_window}
 		\item \strong{infostore} data listing decisions about inclusion/exclusion of references, words or topics
 	}		
 }
