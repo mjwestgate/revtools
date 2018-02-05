@@ -9,7 +9,7 @@
 \description{This is a small number of standard methods for interacting with class 'bibliography'. More may be added later.}
 \usage{
 	as.bibliography(x, ...)
-	as.data.frame(x, ...)
+	\method{as.data.frame}{bibliography}(x, ...)
 	\method{[}{bibliography}(x, n)
 	\method{print}{bibliography}(x, n, ...)
 	\method{summary}{bibliography}(object, ...)

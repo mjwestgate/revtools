@@ -15,7 +15,9 @@ a data.frame containing basic information for each reference (row)
 \note{
 This function creates a simplified version of that given by find_duplicates, by extracting the first reference from each group of unique references. There is no additional processing to ensure this is the 'best' reference from that list.
 }
-\seealso{\link{\code{find_duplicates}}}
+\seealso{
+	\code{\link{find_duplicates}}.
+}
 \examples{
 # import data
 file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
