@@ -11,5 +11,14 @@ write_bibliography(x, filename, format="ris")
   \item{format}{Format of the exported file. Should be either "ris" (default) or "bib"}
 }
 \value{
-exports results as a txt file of the correct format for .ris or .bib files.
+exports results as a .ris or .bib file.
+}
+\examples{
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-read_bibliography(file_location)
+
+# export a subset of entries as a new file
+write_bibliography(x[1:5], 
+  filename=paste0(tempdir(), "/x_out.ris"),
+  format="ris")
 }

@@ -21,3 +21,8 @@ The selection panel gives information on progress in selecting/deselecting artic
 
 Upon completion, the user can export information to a .csv or .rda file (saved to the working directory) using the 'export options' tab.
 }
+\examples{
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-read_bibliography(file_location)
+\dontrun{start_review_window(x)}
+}

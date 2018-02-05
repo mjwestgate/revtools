@@ -18,15 +18,9 @@ This function creates a simplified version of that given by find_duplicates, by 
 \seealso{\link{\code{find_duplicates}}}
 \examples{
 # import data
-data("example_bibliography")
-
-# generate some 'fake' duplicates
-x<-as.data.frame(example_bibliography)
-x_duplicated<-rbind(x, x[1:5,])
-
-# look for duplicates
-x_check<-find_duplicates(x_duplicated)
-
-# if any are found, extract unique values
-x_unique<-extract_unique_references(x_check)
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-as.data.frame(read_bibliography(file_location))
+x_duplicated<-rbind(x, x[1:5,]) # generate some 'fake' duplicates
+x_check<-find_duplicates(x_duplicated) # look for duplicates
+x_unique<-extract_unique_references(x_check) # if any are found, extract unique values
 }

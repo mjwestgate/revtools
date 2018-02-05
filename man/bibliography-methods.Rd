@@ -20,3 +20,12 @@
   \item{n}{Number of items to select/print}
   \item{...}{Any further information}
 }
+\examples{
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-read_bibliography(file_location)
+summary(x) # basic description
+print(x) # formatted citations
+x[1] # subset
+y<-as.data.frame(x) # convert to data.frame
+x_new<-as.bibliography(y) # covert back to bibliography
+}

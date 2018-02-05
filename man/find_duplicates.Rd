@@ -16,14 +16,9 @@ This function has a few odd features. It uses  \code{stringdist} to locate artic
 A method that tests string distances between all pairs would locate more duplicates, but would be substantially slower. Conversely, a method that split the dataset into mutually exclusive groups could be vectorized and would be correspondingly faster, but as the identity of these groups is inherently ambigious, it would probably reduce the hit rate.
 }
 \examples{
-# import data
-data("example_bibliography")
-
-# generate some 'fake' duplicates
-x<-as.data.frame(example_bibliography)
-x_duplicated<-rbind(x, x[1:5,])
-
-# look for duplicates
-x_check<-find_duplicates(x_duplicated)
-# returns a data.frame with an added 'group' column
+file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
+x<-as.data.frame(read_bibliography(file_location)) # import data
+x_duplicated<-rbind(x, x[1:5,]) # generate some 'fake' duplicates
+x_check<-find_duplicates(x_duplicated) # look for duplicates
+  # returns a data.frame with an added 'group' column
 }
