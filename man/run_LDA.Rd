@@ -18,9 +18,12 @@ A topic model with the specified parameters.
 This is a basic wrapper function designed to allow consistent specification of model parameters within \code{shiny} apps. It doesn't do anything very clever.
 }
 \examples{
+# import data
 file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
 x<-read_bibliography(file_location)
-# The following lines can take a very long time to run, especially for large datasets!
+
+# run a topic model based on these data
+# note: the following lines can take a very long time to run, especially for large datasets!
 x_DTM<-make_DTM(x)
 \dontrun{x_LDA<-run_LDA(x_DTM, "lda", 5, 5000)}
 }

@@ -18,8 +18,12 @@ This is primarily intended to be called internally by \code{start_review_window(
 This function uses some standard tools like stemming, converting words to lower case, and removal of numbers or punctuation. It also replaces stemmed words with the most common full word, which doesn't affect the calculations, but makes the resulting analyses easier to interpret. It doesn't use part-of-speech tagging.
 }
 \examples{
+# import some data
 file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
 x<-read_bibliography(file_location)
-x_DTM<-make_DTM(x) # can take a long time to run for large datasets
+
+# construct a document-term matrix
+# note: this can take a long time to run for large datasets
+x_DTM<-make_DTM(x)
 dim(x_DTM) # 20 articles, 1069 words
 }

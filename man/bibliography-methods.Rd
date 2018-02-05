@@ -21,11 +21,16 @@
   \item{...}{Any further information}
 }
 \examples{
+# import some data
 file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
 x<-read_bibliography(file_location)
-summary(x) # basic description
-print(x) # formatted citations
-x[1] # subset
-y<-as.data.frame(x) # convert to data.frame
-x_new<-as.bibliography(y) # covert back to bibliography
+
+# basic descriptions
+summary(x)
+print(x)
+x[1]
+
+# conversion to and from data.frame
+y<-as.data.frame(x)
+x_new<-as.bibliography(y)
 }
