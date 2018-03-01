@@ -23,12 +23,12 @@ build_topic_df_simple<-function(
 }	
 
 # data to send to plotinfo
-build_plot_data<-function(info, model, dtm, x_keep){
+build_plot_data<-function(info, model, dtm, x_keep, y_keep){
 	x_matrix<-modeltools::posterior(model)$topics # article x topic
 	y_matrix<-t(modeltools::posterior(model)$terms)
 	plot_list<-list(
 		x=data.frame(
-			id=rownames(dtm),
+			id=rownames(dtm)[x_keep],
 			label= info$label[x_keep],
 			ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li,
 			topic= apply(x_matrix, 1, which.max),
@@ -36,7 +36,7 @@ build_plot_data<-function(info, model, dtm, x_keep){
 			caption=apply(info[x_keep, ], 1, format_citation_dataframe),
 			stringsAsFactors=FALSE),
 		y=data.frame(
-			id=paste0("y", c(1:nrow(y_matrix))),
+			id=colnames(dtm)[y_keep],
 			label=rownames(y_matrix),
 			ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
 			topic= apply(y_matrix, 1, which.max),

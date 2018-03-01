@@ -1,9 +1,12 @@
 # user call to run a shiny interface to bibliographic data
-start_review_window<-function(x){
+start_review_window<-function(x, remove_words){
 
 # throw a warning if a known file type isn't given
 if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
 	stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review_window")}
+
+if(missing(remove_words)){remove_words <-tm::stopwords()
+}else{remove_words <- as.character(remove_words)}
 
 # get data in a standard format
 switch(class(x),
@@ -16,15 +19,17 @@ if(class(x)=="review_info"){
 	model <- x$model
 	plot_list<- x$plotinfo
 	x_keep<-x$infostore$x$display
+	y_keep<-x$infostore$y$display
 }else{
 	cat("building Document Term Matrix\n")
-	dtm<-make_DTM(info)
+	dtm<-make_DTM(info, stop_words = remove_words)
 	rownames(dtm)<-paste0("x", c(1:nrow(dtm)))
 	x_keep<-apply(dtm , 1, sum)>0
+	y_keep<-c(1:ncol(dtm))
 	dtm<-dtm[x_keep, order(colnames(dtm))]
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n_topics=5)
-	plot_list<-build_plot_data(info, model, dtm, x_keep)
+	plot_list<-build_plot_data(info, model, dtm, x_keep, y_keep)
 	palette_initial <- viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
 }
 
@@ -90,7 +95,7 @@ plot_lookup<-expand.grid(
 	stringsAsFactors=FALSE)
 plot_lookup<-plot_lookup[order(plot_lookup$content), ]
 plot_lookup$tag<-rep(c("x", "y"), each=2)
-plot_lookup$fun<-paste("plot1_", rep(c("2D", "3D"), 2), sep="")
+plot_lookup$fun<-paste0("plot1_", rep(c("2D", "3D"), 2))
 
 # keep track of which plot type and dataset to use
 plot_data<-reactiveValues(dataset="x", fun="plot1_2D")
@@ -325,15 +330,21 @@ observeEvent(input$go_LDA, {
 	)
 	infostore$x$present<-infostore$x$display
 	infostore$y$present<-infostore$y$display
+	x_keep <- which(infostore$x$present)
+	y_keep <- which(infostore$y$present)	
 	modelstore$model<-run_LDA(
-		x=dtm[infostore$x$present, infostore$y$present],
+		x=dtm[x_keep, y_keep],
 		topic_model=sidebar_tracker$model_type,
 		n_topics=input$n_topics,
 		iterations=input$iterations)	
 	# update plotinfo
-	updated_plot_list<-build_plot_data(info, modelstore$model, 
-		dtm[infostore$x$present, infostore$y$present],
-		which(infostore$x$present))
+	updated_plot_list<-build_plot_data(
+		info, 
+		model = modelstore$model, 
+		dtm = dtm,
+		x_keep, 
+		y_keep
+		)
 	plotinfo$x <- updated_plot_list$x
 	plotinfo$y <- updated_plot_list$y
 	plotinfo$topic <- updated_plot_list$topic

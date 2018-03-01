@@ -26,7 +26,7 @@ make_DTM<-function(
 
 	# sort out stop words
 	if(missing(stop_words)){stop_words <-tm::stopwords()
-	}else{stop_words <-unique(c(tm::stopwords(), stop_words))}
+	}else{stop_words <-unique(c(tm::stopwords(), tolower(stop_words)))}
 
 	# convert to document term matrix
 	corp <- tm::Corpus(tm::VectorSource(text_vector))
