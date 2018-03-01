@@ -20,7 +20,7 @@ The plot window shows an ordination of article weights calculated using LDA, wit
 
 The selection panel gives information on progress in selecting/deselecting articles. It also contains windwos for displaying topic-level infromation and article abstracts. All boxes in this panel can be minimized when not required.
 
-Upon completion, the user can export information to a .csv or .rda file (saved to the working directory) using the 'export options' tab.
+Upon completion, the user can export information to a .csv or .rda file (saved to the working directory) using the 'Save' tab.
 }
 \examples{
 file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")

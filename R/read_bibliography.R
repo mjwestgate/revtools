@@ -75,6 +75,15 @@ read_bibliography<-function(
 			z_rollsum<-rollingsum(z.dframe$ris == "ER")
 			if(any(z_rollsum>1)){z.dframe<-z.dframe[which(z_rollsum <=1), ]}
 			}
+		if(delimiter=="endrow"){
+			row_df<-data.frame(
+				start=which(z.dframe$ris=="TY"),
+				end=which(z.dframe$ris=="ER")
+				)
+			z.list<-apply(row_df, 1, function(a){c(a[1]:a[2])})
+			z.list<-lapply(z.list, function(a, lookup){lookup[a, ]}, lookup=z.dframe)
+			z.dframe<-as.data.frame(do.call(rbind, z.list))
+		}
 
 		# cleaning
 		z.dframe$ref<-c(0, cumsum(z.dframe$ris=="ER")[c(1:(nrow(z.dframe)-1))]) # split by reference
