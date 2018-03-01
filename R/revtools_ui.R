@@ -48,7 +48,7 @@ body<-shinydashboard::dashboardBody(
 	fluidRow(
 		column(width=8,
 			shinydashboard::box(width=NULL,
-				shinycssloaders::withSpinner(plotly::plotlyOutput("plot_main"))
+				plotly::plotlyOutput("plot_main")
 			)
 		),
 		column(width=4, 

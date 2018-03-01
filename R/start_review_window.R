@@ -313,8 +313,16 @@ observeEvent(input$topic_no, {
 	topic_click$d<-c()
 })
 
+
 # if asked, re-run LDA
 observeEvent(input$go_LDA, {
+	shiny::showModal(
+		shiny::modalDialog(
+		title="Calculating Topic Model",
+		footer=NULL,
+		easyClose=FALSE
+		)
+	)
 	infostore$x$present<-infostore$x$display
 	infostore$y$present<-infostore$y$display
 	modelstore$model<-run_LDA(
@@ -340,6 +348,7 @@ observeEvent(input$go_LDA, {
 	infostore$y <- info_update$y
 	infostore$topic <- info_update$topic
 	topic_counter$x <- topic_counter$x+1
+	shiny::removeModal()
 })
 
 ## EXPORT
@@ -350,6 +359,13 @@ observeEvent(input$save, {
 			infostore$x[, c("label", "tested", "selected", "topic", "topic_counter", "decision_time")], 
 			by="label")
 		write.csv(ouput, input$saveas, row.names=FALSE)
+		shiny::showModal(
+			shiny::modalDialog(
+				title="csv object saved",
+				footer=shiny::modalButton("OK", icon=shiny::icon("check", lib="font-awesome")),
+				easyClose=TRUE
+			)
+		)
 	}else{
 		output<-list(
 			info = info,
@@ -360,6 +376,13 @@ observeEvent(input$save, {
 			)
 		class(output)<-"review_info"
 		saveRDS(output, input$saveas)
+		shiny::showModal(
+			shiny::modalDialog(
+				title="RDS object saved",
+				footer=shiny::modalButton("OK", icon=shiny::icon("check", lib="font-awesome")),
+				easyClose=TRUE
+			)
+		)
 	}
 })
 
