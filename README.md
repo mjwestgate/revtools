@@ -1,4 +1,4 @@
-revtools
+revtools v0.2.2
 ==========
 
 Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
