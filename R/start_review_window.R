@@ -41,7 +41,7 @@ ui<-shinydashboard::dashboardPage(
 	ui_data$sidebar, 
 	ui_data$body,
 	title="revtools",
-	skin="black"
+	skin="blue"
 )
 
 
