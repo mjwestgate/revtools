@@ -36,10 +36,54 @@ if(class(x)=="review_info"){
 
 # create user interface
 ui_data<-revtools_ui()
+
+# place body calculations here to fix bug in tags
+dashboard_body<-shinydashboard::dashboardBody(
+	tags$style(HTML("
+		.box.box-solid.box-primary>.box-header {
+			color:#fff;
+			background:#444444
+		}
+	")),
+	fluidRow(
+		column(width=8,
+			shinydashboard::box(width=NULL, height=800,
+				plotly::plotlyOutput("plot_main")
+			)
+		),
+		column(width=4, 
+			shinydashboard::box(title="Topics", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=FALSE,
+				plotly::plotlyOutput("plot_topic")
+			),
+			shinydashboard::box(
+				title="Selected Text", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=FALSE,
+				tableOutput("plot_click"),
+				shiny::splitLayout(
+					uiOutput("select_yes"),
+					uiOutput("select_no"),
+					cellWidths=c("25%", "25%")
+				),
+				shiny::splitLayout(
+					uiOutput("topic_yes"),
+					uiOutput("topic_no"),
+					cellWidths=c("25%", "25%")
+				)
+			),
+			shinydashboard::box(title="Abstract", width=NULL, solidHeader=TRUE, status="primary",
+				collapsible=TRUE, collapsed=TRUE,
+				tableOutput("abstract_info")
+			)
+		)
+	)
+)
+
+
 ui<-shinydashboard::dashboardPage(
 	ui_data$header, 
 	ui_data$sidebar, 
-	ui_data$body,
+	dashboard_body # ui_data$body,
 	title="revtools",
 	skin="black"
 )
