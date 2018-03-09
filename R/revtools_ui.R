@@ -46,7 +46,12 @@ sidebar<-shinydashboard::dashboardSidebar(
 )
 
 body<-shinydashboard::dashboardBody(
-	
+	tags$style(HTML("
+		.box.box-solid.box-primary>.box-header {
+			color:#fff;
+			background:#444444
+		}
+	")),
 	fluidRow(
 		column(width=8,
 			shinydashboard::box(width=NULL, height=800,
