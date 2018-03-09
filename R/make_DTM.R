@@ -34,8 +34,8 @@ make_DTM<-function(
 		corp <- tm::tm_map(corp, removePunctuation)
 		corp <- tm::tm_map(corp, removeWords, stop_words)
 		corp <- tm::tm_map(corp, removeNumbers)
-		stem.corp <- tm::tm_map(corp, stemDocument)
-
+		stem.corp <- tm::tm_map(corp, stemDocument) # SnowballC	
+		
 	# create a lookup data.frame
 	term<-unlist(lapply(as.list(corp), function(a){
 		result<-strsplit(a, " ")[[1]]
