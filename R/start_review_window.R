@@ -83,7 +83,7 @@ dashboard_body<-shinydashboard::dashboardBody(
 ui<-shinydashboard::dashboardPage(
 	ui_data$header, 
 	ui_data$sidebar, 
-	dashboard_body # ui_data$body,
+	dashboard_body, # ui_data$body,
 	title="revtools",
 	skin="black"
 )
