@@ -30,14 +30,19 @@ if(class(x)=="review_info"){
 	cat("running Topic Model\n")
 	model<-run_LDA(dtm, n_topics=5)
 	plot_list<-build_plot_data(info, model, dtm, x_keep, y_keep)
-	palette_initial <- viridisLite::magma(n=model@k, alpha=0.9, begin=0, end=0.9)
+	palette_initial <- viridisLite::viridis(n=model@k, alpha=0.9, begin=0, end=0.9)
 }
 
 
 # create user interface
 ui_data<-revtools_ui()
-ui<-shinydashboard::dashboardPage(ui_data$header, ui_data$sidebar, ui_data$body)
-
+ui<-shinydashboard::dashboardPage(
+	ui_data$header, 
+	ui_data$sidebar, 
+	ui_data$body,
+	title="revtools",
+	skin="black"
+)
 
 
 server <- function(input, output, session) {
@@ -49,7 +54,7 @@ options(warn=-1) # hide incompatibility between shiny and plotly
 sidebar_tracker<-reactiveValues(
 	content="articles",	
 	dimensions="2d",
-	color_scheme="magma",
+	color_scheme="viridis",
 	model_type="lda")
 
 # update the above as needed
@@ -220,25 +225,25 @@ output$plot_click<-renderPrint({
 # selector buttons
 output$select_yes<-renderPrint({
 	if(length(click_vals$d)>0 & sidebar_tracker$content=="articles"){
-		actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
+		actionButton("return_yes", "Select", style="color: #fff; background-color: #444444;")
 	}
 })
 
 output$select_no<-renderPrint({
 	if(length(click_vals$d)>0){
-		actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")
+		actionButton("return_no", "Exclude", style="color: #fff; background-color: #444444;")
 	}
 })
 
 output$topic_yes<-renderPrint({
 	if(length(topic_click$d)>0 & sidebar_tracker$content=="articles"){
-		actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
+		actionButton("topic_yes", "Select", style="color: #fff; background-color: #444444;")
 	}
 })
 
 output$topic_no<-renderPrint({
 	if(length(topic_click$d)>0){
-		actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
+		actionButton("topic_no", "Exclude", style="color: #fff; background-color: #444444;")
 	}
 })
 

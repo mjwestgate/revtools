@@ -2,6 +2,7 @@ revtools_ui<-function(){
 
 # build user interface
 header<- shinydashboard::dashboardHeader(title="revtools")
+	
 sidebar<-shinydashboard::dashboardSidebar(
 	sidebarMenu(
 		id="tabs",
@@ -45,9 +46,39 @@ sidebar<-shinydashboard::dashboardSidebar(
 )
 
 body<-shinydashboard::dashboardBody(
+    tags$style(HTML("
+		.content-wrapper, .right-side {
+				background-color: #e2e2e2;
+			}
+		.small-box.bg-black {
+			background-color: #444444 !important; 
+			color: #444444 !important;
+		} 
+		.skin-black .main-header .logo {
+			background-color: #444444;
+			color: #fff;
+    		font-size: 24px;
+		}
+		.skin-black .main-header .logo:hover {
+			background-color: #444444;
+		 }
+		.skin-black .main-header .navbar {
+			background-color: #444444;
+		}       
+		.box.box-solid.box-primary>.box-header {
+			color:#fff;
+			background:#444444
+		}
+		.box.box-solid.box-primary{
+			border-bottom-color:#444444;
+			border-left-color:#444444;
+			border-right-color:#444444;
+			border-top-color:#444444;
+		}
+	")),
 	fluidRow(
 		column(width=8,
-			shinydashboard::box(width=NULL,
+			shinydashboard::box(width=NULL, height=800,
 				plotly::plotlyOutput("plot_main")
 			)
 		),
