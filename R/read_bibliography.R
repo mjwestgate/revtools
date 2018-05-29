@@ -3,26 +3,20 @@
 # New function to import a file, regardless of format
 # This is based on auto-detection of key parameters
 read_bibliography<-function(
-	x, 
-	path
+	x
 	){
 
 	# import x
-	if(missing(path)){
-		file<-x
-	}else{
-		file<-paste(path, x, sep="/")
-		}
 	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-	z<-scan(file, sep="\t", what="character", quote="", quiet=TRUE, blank.lines.skip=FALSE)
+	z<-scan(x, sep="\t", what="character", quote="", quiet=TRUE, blank.lines.skip=FALSE)
 	Encoding(z)<-"latin1"
 	z<-gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
 
 	# detect whether file is bib-like or ris-like via the most common single characters
 	nrows<-min(c(200, length(z)))
 	zsub<-z[c(1: nrows)]
-	# invisible(Sys.setlocale('LC_ALL', 'C'))  # duplicated line
-	if(length(grep("\\{", zsub))>30){data.type<-"bib"}else{data.type<-"ris"}
+	prop_brackets<-length(grep("\\{", zsub))/length(zsub)
+	if(prop_brackets>0.3){data.type<-"bib"}else{data.type<-"ris"}
 
 	if(data.type=="bib"){result<-read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
@@ -376,25 +370,33 @@ read_bib<-function(x){
 	row_id<-which(regexpr("^@", x)==1) 
 	group_vec[row_id]<-1
 	group_vec<-cumsum(group_vec)
-	x.split<-split(x[-row_id], group_vec[-row_id])
-	length_vals<-unlist(lapply(x.split, length))
-	x.split<-x.split[which(length_vals>3)]
+	
+	# work out row names
+	ref_names <- gsub(".*\\{|,$", "", x[row_id])
+	ref_type <- gsub(".*@|\\{.*", "", x[row_id])
+		
+	# split by reference
+	x_split<-split(x[-row_id], group_vec[-row_id])
+	length_vals<-unlist(lapply(x_split, length))
+	x_split<-x_split[which(length_vals>3)]
 
-	x.final<-lapply(x.split, function(z){
-		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{", gsub("\\s", "", z))
+	x_final<-lapply(x_split, function(z){
+		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{", z)
 		single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
 			tag=substr(a[1], 1, as.numeric(a[2])-1),
-			value=substr(a[1], as.numeric(a[2]), nchar(a[1]))
+			value=substr(a[1], as.numeric(a[2])+1, nchar(a[1]))
 			)
 		})
 		entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors=FALSE)
 		colnames(entry_dframe)<-c("tag", "value")
-		if(any(entry_dframe$value=="}")){entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]}
+		if(any(entry_dframe$value=="}")){
+			entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]
+		}
 	
 		# strip curly brackets etc
-		bib_tag_string<-"=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{|}\\}|\\},|\\}\\}}|\\}\\},"
-		entry_dframe$value<-gsub(bib_tag_string, "", entry_dframe$value)
-		entry_dframe$value<-gsub("^\\s+|\\s+$",  "", entry_dframe$value)
+		entry_dframe <- as.data.frame(lapply(entry_dframe, trimws)) # remove whitespace
+		entry_dframe$value<-gsub("^\\{|^\\{\\{", "", entry_dframe$value) # opening brackets
+		entry_dframe$value<-gsub("\\}$|\\},$|\\}\\},$", "", entry_dframe$value) # closing brackets
 	
 		# convert each entry to a list
 		label_group<-rep(0, nrow(entry_dframe))
@@ -403,14 +405,22 @@ read_bib<-function(x){
 		tag_names<-entry_dframe$tag[tag_rows]
 		entry_list<-split(entry_dframe$value, cumsum(label_group)+1)
 		names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
-	
 		entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
-		if(any(names(entry_list)=="author")){entry_list$author<-strsplit(entry_list$author, " and ")[[1]]}
+		if(any(names(entry_list)=="author")){
+			if(length(entry_list$author)==1){
+				entry_list$author<-strsplit(entry_list$author, " and ")[[1]]
+			}
+		}
 		return(entry_list)
 	})
 	
-	names(x.final)<-generate_bibliographic_names(x.final)
-	class(x.final)<-"bibliography"
-	return(x.final)
+	# add type
+	x_final <- lapply(c(1:length(x_final)), function(a, type, data){
+		c(type=type[a], data[[a]])
+	}, type=ref_type, data= x_final)
+	
+	names(x_final)<-ref_names # generate_bibliographic_names(x.final)
+	class(x_final)<-"bibliography"
+	return(x_final)
 	
 	}

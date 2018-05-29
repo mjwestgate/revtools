@@ -13,5 +13,5 @@ bibentry(bibtype = "Article",
   author = person(c("Martin", "J."), "Westgate"),
   year = "2018",
   journal = "bioArXiv",
-  doi="https://doi.org/10.1101/262881"
+  doi="10.1101/262881"
 )
