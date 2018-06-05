@@ -1,4 +1,4 @@
-revtools_ui<-function(){
+ui_review_window<-function(){
 
 # build user interface
 header<- shinydashboard::dashboardHeader(title="revtools")
@@ -72,7 +72,7 @@ body<-shinydashboard::dashboardBody(
 					cellWidths=c("25%", "25%")
 				)
 			),
-			shinydashboard::box(title="Abstract", width=NULL, solidHeader=TRUE, status="primary",
+			shinydashboard::box(title= "Abstract", width=NULL, solidHeader=TRUE, status="primary",
 				collapsible=TRUE, collapsed=TRUE,
 				tableOutput("abstract_info")
 			)

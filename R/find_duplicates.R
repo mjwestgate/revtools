@@ -8,28 +8,21 @@ find_duplicates<-function(x){
 
 	# prep a checkable data.frame
 	x.lower<-x
-	x.lower$title<-gsub("[[:punct:]]", "", tolower(x.lower$title)) # remove punctuation
+	x.lower$title<-gsub("[[:punct:]]", " ", tolower(x.lower$title)) # remove punctuation
 	x.lower$journal<-tolower(x.lower$journal)
 	x.lower$year<-as.numeric(x.lower$year)
 
 	# check for similar journals - allows fuzzy matching of journal titles
-	journal_names<-sort(unique(x.lower$journal)) 
-	journals_cleaned<-gsub("\\b\\w{1,3}\\s|[[:punct:]]", "", journal_names) # remove all words <=3 characters
-	journals_cleaned <-gsub("  ", " ", journals_cleaned) # remove double spaces
-	# split into words
-	text_list<-strsplit(journals_cleaned, " ")
-	word_count<-unlist(lapply(text_list, length))
-	text_list<-lapply(text_list, function(a, n){
-		b<-rep(NA, n)
-		b[1:length(a)]<-a
-		return(b)
-		}, n=max(word_count))
-	text_dframe<-as.data.frame(do.call(rbind, text_list), stringsAsFactors=FALSE)
-	text_dframe$initial_title<-journal_names
-	text_dframe$word_count<-word_count
-	text_dframe<-text_dframe[order(text_dframe$word_count), ]
-	text_dframe$group<-0
-	text_dframe$checked<-FALSE
+	journal_names<-gsub("[[:punct:]]", " ", x.lower$journal)
+	journal_names <-gsub("  ", " ", journal_names) # remove double spaces
+	journal_names<-sort(unique(journal_names)) 
+
+	text_dframe<-data.frame(
+	  journal = journal_names,
+	  group = 0,
+	  checked = FALSE,
+	  stringsAsFactors=FALSE
+	)
 	
 	# use while loop to investigate possible duplication
 	while(all(text_dframe$checked)==FALSE){
@@ -42,27 +35,17 @@ find_duplicates<-function(x){
 			# select rows
 			row_tr<-unchecked_rows[1]
 			row_comparison<-unchecked_rows[-1]
-			cols_tr<-c(1:min(c(5, text_dframe$word_count[row_tr])))	
-			# group text for comparison
-			source_text<-paste(text_dframe[row_tr, cols_tr], collapse=" ")
-			if(length(cols_tr)==1){
-				comparison_text<-text_dframe[row_comparison, cols_tr]
+			similarity<-fuzz_token_set_ratio(
+			  text_dframe$journal[row_tr], 
+			  text_dframe$journal[row_comparison]
+			)
+			if(any(similarity > 0.7)){
+				selected_rows<-c(row_tr, row_comparison[which(similarity > 0.7)])
 			}else{
-				if(length(row_comparison)==1){
-					comparison_text<-paste(text_dframe[row_comparison, cols_tr], collapse=" ")
-				}else{ # >1
-					comparison_text<-apply(text_dframe[row_comparison, cols_tr], 1, 
-						function(a){paste(a, collapse=" ")})
-					}
-				}
-			similarity_check<-c(comparison_text == source_text)
-			# output results
-			if(any(similarity_check)){
-				rows_final<-c(row_tr, row_comparison[which(similarity_check)])
-			}else{
-				rows_final<-row_tr}
-			text_dframe$checked[rows_final]<-TRUE
-			text_dframe$group[rows_final]<-group_tr
+				selected_rows<-row_tr
+			}
+			text_dframe$group[selected_rows]<-group_tr
+			text_dframe$checked[selected_rows]<-TRUE
 		}
 	} # end loop
 	journal_groups<-text_dframe[, c("initial_title", "group")]

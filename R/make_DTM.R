@@ -8,14 +8,14 @@ make_DTM<-function(
 	if(class(x)=="bibliography"){x<-as.data.frame(x)}
 
 	# collate data into a single vector
-	text_cols<-c("title", "keywords", "abstract")
-	available_cols<-which(text_cols %in% colnames(x))
-	if(any(available_cols)){
-		x_textonly<-x[, text_cols[available_cols]]
-	}else{
-		stop("no titles, keywords or abstracts available in selected object")
-	}
-
+	if(class(x)=="data.frame"){
+		text_cols<-c("title", "keywords", "abstract")
+		available_cols<-which(text_cols %in% colnames(x))
+		if(any(available_cols)){
+			x_textonly<-x[, text_cols[available_cols]]
+		}else{
+			stop("no titles, keywords or abstracts available in selected object")
+		}		
 	text_vector<-unlist(lapply(split(x_textonly, c(1:nrow(x))), function(a){
 		if(all(is.na(a))){
 			return("")
@@ -23,7 +23,10 @@ make_DTM<-function(
 			paste(a[which(is.na(a)==FALSE)], collapse=" ")
 			}
 		}))
-
+	}else{
+		if(class(x)=="character"){text_vector<-x}
+	}
+	
 	# sort out stop words
 	if(missing(stop_words)){stop_words <-tm::stopwords()
 	}else{stop_words <-unique(c(tm::stopwords(), tolower(stop_words)))}
@@ -53,8 +56,12 @@ make_DTM<-function(
 	dtm<-tm::DocumentTermMatrix(stem.corp , control= dtm.control)
 	dtm<-tm::removeSparseTerms(dtm, sparse= 0.99) # remove rare terms (cols)
 	output<-as.matrix(dtm) # convert back to matrix
-	rownames(output)<-x$ID
-
+	if(class(x)=="data.frame"){
+		rownames(output)<-x$ID
+	}else{
+		rownames(output)<-paste0("V", c(1:nrow(output)))
+	}
+	
 	# replace stemmed version with most common full word
 	term_vec<-unlist(lapply(colnames(output), function(a, check){
 		if(any(check$stem==a)){

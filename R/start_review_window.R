@@ -35,7 +35,7 @@ if(class(x)=="review_info"){
 
 
 # create user interface
-ui_data<-revtools_ui()
+ui_data<-ui_review_window()
 ui<-shinydashboard::dashboardPage(
 	ui_data$header, 
 	ui_data$sidebar, 
