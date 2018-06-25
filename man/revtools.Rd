@@ -18,6 +18,7 @@
 	}
 	\strong{Duplicate detection}
 	\itemize{
+    \item \code{\link{fuzzywuzzy_functions}} Fuzzy string matching
 		\item \code{\link{find_duplicates}} Locate potentially duplicated references
 		\item \code{\link{extract_unique_references}} return a data.frame with only 'unique' references
 	}
