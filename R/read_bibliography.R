@@ -8,7 +8,13 @@ read_bibliography<-function(
 
 	# import x
 	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-	z<-scan(x, sep="\t", what="character", quote="", quiet=TRUE, blank.lines.skip=FALSE)
+	z<-scan(x,
+    sep="\t",
+    what="character",
+    quote="",
+    quiet=TRUE,
+    blank.lines.skip=FALSE
+  )
 	Encoding(z)<-"latin1"
 	z<-gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
 
@@ -16,9 +22,14 @@ read_bibliography<-function(
 	nrows<-min(c(200, length(z)))
 	zsub<-z[c(1: nrows)]
 	prop_brackets<-length(grep("\\{", zsub))/length(zsub)
-	if(prop_brackets>0.3){data.type<-"bib"}else{data.type<-"ris"}
+	if(prop_brackets>0.3){
+    data_type<-"bib"
+  }else{
+    data_type<-"ris"
+  }
 
-	if(data.type=="bib"){result<-read_bib(z)  # simple case - no further work needed
+	if(data_type=="bib"){
+    result<-read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
 
 		# detect delimiters between references, starting with strings that start with "ER"
@@ -26,20 +37,28 @@ read_bibliography<-function(
 		}else{
 			# special break: same character repeated >6 times, no other characters
 			char_list<-strsplit(zsub, "")
-			char_break_test<-unlist(lapply(char_list, function(a){length(unique(a))==1 & length(a>6)}))
+			char_break_test<-unlist(
+        lapply(char_list,
+          function(a){length(unique(a)) == 1 & length(a > 6)}
+        )
+      )
 			if(any(char_break_test)){delimiter<-"character"
 			}else{
 				# use space as a ref break (last choice)
-				space_break_check<-unlist(lapply(char_list, function(a){all(a=="" | a==" ")}))
-				if(any(space_break_check)){delimiter<-"space"
-				}else{stop("import failed: unknown reference delimiter")}
+				space_break_check<-unlist(lapply(char_list, function(a){all(a == "" | a == " ")}))
+				if(any(space_break_check)){
+          delimiter<-"space"
+				}else{
+          stop("import failed: unknown reference delimiter")
+        }
 			}
 		}
 
 		# detect tags
 		zlist<-as.list(z)
 		zlist<-lapply(zlist, function(a){
-			if(a==""){return(a)
+			if(a==""){
+        return(a)
 			}else{
 				caps_present<-gregexpr("^[[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1}", a)[[1]]
 				if(any(caps_present==1)){
@@ -63,9 +82,13 @@ read_bibliography<-function(
 				)]<-"ER"}
 		if(delimiter=="space"){
 			z.dframe$ris[which(
-				unlist(lapply(strsplit(z, ""), function(a){all(a=="" | a==" ")})))]<-"ER"
+				unlist(
+          lapply(strsplit(z, ""), function(a){all(a=="" | a==" ")}))
+        )]<-"ER"
 			# ensure multiple consecutive empty rows are removed
-			rollingsum<-function(a, n=2L){tail(cumsum(a) - cumsum(c(rep(0, n), head(a, -n))), -n + 1)}
+			rollingsum<-function(a, n=2L){
+        tail(cumsum(a) - cumsum(c(rep(0, n), head(a, -n))), -n + 1)
+      }
 			z_rollsum<-rollingsum(z.dframe$ris == "ER")
 			if(any(z_rollsum>1)){z.dframe<-z.dframe[which(z_rollsum <=1), ]}
 			}
@@ -86,7 +109,7 @@ read_bibliography<-function(
 
 		# fill missing tags
 		z.split<-split(z.dframe, z.dframe$ref)
-		z.split<-lapply(z.split, function(a){		
+		z.split<-lapply(z.split, function(a){
 			if(a$ris[1]==""){a$ris[1]<-"ZZ"}
 			accum_ris<-Reduce(c, a$ris, accumulate=TRUE)
 			a$ris<-unlist(lapply(accum_ris, function(b){
@@ -109,37 +132,37 @@ read_bibliography<-function(
 read_medline<-function(x){
 
 	names(x)[3]<-"order"
-	# data from https://www.nlm.nih.gov/bsd/mms/medlineelements.html	
+	# data from https://www.nlm.nih.gov/bsd/mms/medlineelements.html
 	lookup<-data.frame(ris=c(
-		"AB", "CI", 
-		"AD", "IRAD", "AID", 
-		"AU", "AUID", "FAU", "BTI", "CTI", 
-		"COI", "CN", "CRDT", "DCOM", "DA", 
-		"LR", "DEP", "DP", "EN", "ED", "FED", 
-		"EDAT", "GS", "GN", "GR", "IR", "FIR", 
-		"ISBN", "IS", "IP", "TA", "JT", 
-		"LA", "LID", "MID", "MHDA", "MH", 
-		"JID", "RF", "OAB", "OCI", "OID", 
+		"AB", "CI",
+		"AD", "IRAD", "AID",
+		"AU", "AUID", "FAU", "BTI", "CTI",
+		"COI", "CN", "CRDT", "DCOM", "DA",
+		"LR", "DEP", "DP", "EN", "ED", "FED",
+		"EDAT", "GS", "GN", "GR", "IR", "FIR",
+		"ISBN", "IS", "IP", "TA", "JT",
+		"LA", "LID", "MID", "MHDA", "MH",
+		"JID", "RF", "OAB", "OCI", "OID",
 		"OT", "OTO", "OWN", "PG", "PS",
-		"FPS", "PL", 
-		"PHST", "PST", "PT", "PUBM", 
-		"PMC", "PMCR", "PMID", 
-		"RN", "NM", "SI", "SO", "SFM", 
-		"STAT", "SB", "TI", "TT", "VI", "VTI"),   
-	bib=c("abstract", "copyright_info", 
-		"affiliation", "investigator_affiliation", "article_id", 
-		"author", "author_id", "author_full", "book_title", "collection_title", 
-		"conflict_of_interest", "author_corporate", "date_added", "date_completed", "date_created", 
-		"date_revised", "date_published_elec", "date_published", "edition", "editor", "editor_full", 
-		"date_added", "gene_symbol", "general_note", "grant_number", "investigator", "investigator_full", 
-		"isbn", "issn", "issue", "journal_abbreviated", "journal", 
-		"language", "location_id", "manuscript_id", "mesh_date", "mesh_terms", 
-		"nlm_id", "references_n", "abstract_other", "copyright_info_other", "id_other", 
-		"term_other", "term_owner_other", "owner", "pages", "personal_name_as_subject", 
-		"personal_name_as_subject_full", "place_published", 
-		"publication_history_status", "publication_status", "publication_type", "publishing_model", 
-		"pubmed_central_identitfier", "pubmed_central_release", "pubmed_id", 
-		"registry_number", "substance_name", "secondary_source_id", "source", "space_flight_mission", 
+		"FPS", "PL",
+		"PHST", "PST", "PT", "PUBM",
+		"PMC", "PMCR", "PMID",
+		"RN", "NM", "SI", "SO", "SFM",
+		"STAT", "SB", "TI", "TT", "VI", "VTI"),
+	bib=c("abstract", "copyright_info",
+		"affiliation", "investigator_affiliation", "article_id",
+		"author", "author_id", "author_full", "book_title", "collection_title",
+		"conflict_of_interest", "author_corporate", "date_added", "date_completed", "date_created",
+		"date_revised", "date_published_elec", "date_published", "edition", "editor", "editor_full",
+		"date_added", "gene_symbol", "general_note", "grant_number", "investigator", "investigator_full",
+		"isbn", "issn", "issue", "journal_abbreviated", "journal",
+		"language", "location_id", "manuscript_id", "mesh_date", "mesh_terms",
+		"nlm_id", "references_n", "abstract_other", "copyright_info_other", "id_other",
+		"term_other", "term_owner_other", "owner", "pages", "personal_name_as_subject",
+		"personal_name_as_subject_full", "place_published",
+		"publication_history_status", "publication_status", "publication_type", "publishing_model",
+		"pubmed_central_identitfier", "pubmed_central_release", "pubmed_id",
+		"registry_number", "substance_name", "secondary_source_id", "source", "space_flight_mission",
 		"status", "subset", "title", "title_transliterated", "volume", "volume_title"),
 	stringsAsFactors=FALSE)
 	x.merge<-merge(x, lookup, by="ris", all.x=TRUE, all.y=FALSE)
@@ -183,7 +206,7 @@ generate_bibliographic_names<-function(x){
 			}
 		name_vector<-name_vector[which(name_vector!="")]
 		if(length(name_vector)==0){return("ref")
-		}else{return(paste(name_vector, collapse="_"))}		
+		}else{return(paste(name_vector, collapse="_"))}
 		}))
 
 	# where this is not possible, give a 'ref1' style result only as a last resort.
@@ -200,33 +223,33 @@ generate_bibliographic_names<-function(x){
 			rows<-which(nonunique_names== duplicated_names[i])
 			new_names<-paste(nonunique_names[rows], letters[1:length(rows)], sep="_")
 			nonunique_names[rows]<-new_names}}
-			
+
 	return(nonunique_names)
 }
-			
+
 
 # RIS
 read_ris<-function(x){
 
 	# merge data with lookup info, to provide bib-style tags
-	lookup<-data.frame(ris=c("TY", 
+	lookup<-data.frame(ris=c("TY",
 			"AU", paste("A", c(1:5), sep=""), # author
 			"PY", "Y1", # year
 			"TI", "T1", # title
 			"JO", "T2", "T3", "SO", "JT", "JF", "JA", # journal
-			"VL", "IS", 
+			"VL", "IS",
 			"EP", "BP", "SP", # pages
 			"AB", "N2", # abstract
 			"KW", "DE", # "ID", # keywords
-			"DO", "CN", 
-			"SN", "UR", "AN", "CY", "PB", 
-			"PP", "AD", "ED", "ET", "LA"), 
+			"DO", "CN",
+			"SN", "UR", "AN", "CY", "PB",
+			"PP", "AD", "ED", "ET", "LA"),
 		bib=c("type", rep("author", 6), rep("year", 2), rep("title", 2,),
 			rep("journal", 7),
-			"volume", "number", 
+			"volume", "number",
 			rep("pages", 3),
-			rep("abstract", 2), 
-			rep("keywords", 2), 
+			rep("abstract", 2),
+			rep("keywords", 2),
 			"doi", "call",
 			"issn", "url", "accession", "institution", "publisher",
 			"pubplace", "address", "editor", "edition", "language"),
@@ -247,7 +270,7 @@ read_ris<-function(x){
 	year_check<-regexpr("\\d{4}", x.merge$text)
 	if(any(year_check>0)){
 		check_rows<-which(year_check>0)
-		year_strings<-as.numeric(substr(x.merge$text[check_rows], 
+		year_strings<-as.numeric(substr(x.merge$text[check_rows],
 			year_check[check_rows],  year_check[check_rows]+3))
 		if(any(x.merge$bib[check_rows]=="year", na.rm=TRUE)){
 			year_rows<-which(x.merge$bib[check_rows]=="year")
@@ -255,7 +278,7 @@ read_ris<-function(x){
 		}else{
 			possible_rows<-which(year_strings>1850 & year_strings <= as.numeric(format(Sys.Date(), "%Y")))
 			tag_frequencies<-as.data.frame(
-				xtabs(~x.merge$ris[check_rows[possible_rows]]), 
+				xtabs(~x.merge$ris[check_rows[possible_rows]]),
 				stringsAsFactors=FALSE)
 				colnames(tag_frequencies)<-c("tag", "n")
 			# now work out what proportion of each tag contain year data
@@ -278,9 +301,9 @@ read_ris<-function(x){
 	if(any(doi_check>0)){
 		check_rows<-which(doi_check>0)
 		x.merge$bib[check_rows]<-"doi"
-		x.merge$order[check_rows]<-11	
-		x.merge$text[check_rows]<-substr(x.merge$text[check_rows], 
-			start=doi_check[check_rows]+1, 
+		x.merge$order[check_rows]<-11
+		x.merge$text[check_rows]<-substr(x.merge$text[check_rows],
+			start=doi_check[check_rows]+1,
 			stop=nchar(x.merge$text[check_rows]))
 		}
 
@@ -311,7 +334,7 @@ read_ris<-function(x){
 		if(any(names(result)=="further_info")){
 			names(result$further_info)<-a$ris[which(a$bib=="further_info")]}
 		# YEAR
-		if(any(names(result)=="year")){	
+		if(any(names(result)=="year")){
 			if(any(nchar(result$year)>=4)){
 				year_check<-regexpr("\\d{4}", result$year)
 				if(any(year_check>0)){
@@ -335,9 +358,9 @@ read_ris<-function(x){
 				unique_journals<-unique_journals[order(nchar(unique_journals), decreasing=FALSE)]
 				result$journal<-unique_journals[1]
 				result$journal_secondary<-paste(unique_journals[c(2:length(unique_journals))], collapse=" ")
-			}else{result$journal<-unique_journals}		
+			}else{result$journal<-unique_journals}
 			result$journal <-gsub("  ", " ", result$journal)
-			result$journal <-sub("\\.$", "", result$journal) 
+			result$journal <-sub("\\.$", "", result$journal)
 			}
 		# ABSTRACT
 		if(length(result$abstract>1)){
@@ -365,62 +388,67 @@ read_ris<-function(x){
 # BIB
 read_bib<-function(x){
 
-	# which lines start with @article?
-	group_vec<-rep(0, length(x))
-	row_id<-which(regexpr("^@", x)==1) 
-	group_vec[row_id]<-1
-	group_vec<-cumsum(group_vec)
-	
-	# work out row names
-	ref_names <- gsub(".*\\{|,$", "", x[row_id])
-	ref_type <- gsub(".*@|\\{.*", "", x[row_id])
-		
-	# split by reference
-	x_split<-split(x[-row_id], group_vec[-row_id])
-	length_vals<-unlist(lapply(x_split, length))
-	x_split<-x_split[which(length_vals>3)]
+  # which lines start with @article?
+  group_vec<-rep(0, length(x))
+  row_id<-which(regexpr("^@", x)==1)
+  group_vec[row_id]<-1
+  group_vec<-cumsum(group_vec)
 
-	x_final<-lapply(x_split, function(z){
-		delimiter_lookup<-regexpr("=\\s\\{|=\\s\\{\\{|=\\{|=\\{\\{", z)
-		single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
-			tag=substr(a[1], 1, as.numeric(a[2])-1),
-			value=substr(a[1], as.numeric(a[2])+1, nchar(a[1]))
-			)
-		})
-		entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors=FALSE)
-		colnames(entry_dframe)<-c("tag", "value")
-		if(any(entry_dframe$value=="}")){
-			entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]
-		}
-	
-		# strip curly brackets etc
-		entry_dframe <- as.data.frame(lapply(entry_dframe, trimws)) # remove whitespace
-		entry_dframe$value<-gsub("^\\{|^\\{\\{", "", entry_dframe$value) # opening brackets
-		entry_dframe$value<-gsub("\\}$|\\},$|\\}\\},$", "", entry_dframe$value) # closing brackets
-	
-		# convert each entry to a list
-		label_group<-rep(0, nrow(entry_dframe))
-		tag_rows<-which(entry_dframe$tag!="")
-		label_group[tag_rows]<-1
-		tag_names<-entry_dframe$tag[tag_rows]
-		entry_list<-split(entry_dframe$value, cumsum(label_group)+1)
-		names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
-		entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
-		if(any(names(entry_list)=="author")){
-			if(length(entry_list$author)==1){
-				entry_list$author<-strsplit(entry_list$author, " and ")[[1]]
-			}
-		}
-		return(entry_list)
-	})
-	
-	# add type
-	x_final <- lapply(c(1:length(x_final)), function(a, type, data){
-		c(type=type[a], data[[a]])
-	}, type=ref_type, data= x_final)
-	
-	names(x_final)<-ref_names # generate_bibliographic_names(x.final)
-	class(x_final)<-"bibliography"
-	return(x_final)
-	
-	}
+  # work out row names
+  ref_names <- gsub(".*\\{|,$", "", x[row_id])
+  ref_type <- gsub(".*@|\\{.*", "", x[row_id])
+
+  # split by reference
+  x_split<-split(x[-row_id], group_vec[-row_id])
+  length_vals<-unlist(lapply(x_split, length))
+  x_split<-x_split[which(length_vals>3)]
+
+  x_final<-lapply(x_split, function(z){
+  	delimiter_lookup<-regexpr("=[[:blank:]]*\\{+", z)
+  	single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
+  		tag=substr(a[1], 1, as.numeric(a[2])-1),
+  		value=substr(a[1], as.numeric(a[2])+1, nchar(a[1]))
+  		)
+  	})
+  	entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors = FALSE)
+  	colnames(entry_dframe)<-c("tag", "value")
+  	if(any(entry_dframe$value=="}")){
+  		entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]
+  	}
+
+    # remove whitespace
+    entry_dframe <- as.data.frame(
+      lapply(entry_dframe, trimws),
+      stringsAsFactors = FALSE
+    )
+    # remove 1 or more opening brackets
+    entry_dframe$value<-gsub("^\\{+", "", entry_dframe$value)
+    # remove 1 or more closing brackets followed by zero or more punctuation marks
+    entry_dframe$value<-gsub("\\}+[[:punct:]]*$", "", entry_dframe$value)
+
+    # convert each entry to a list
+    label_group<-rep(0, nrow(entry_dframe))
+    tag_rows<-which(entry_dframe$tag!="")
+    label_group[tag_rows]<-1
+    tag_names<-entry_dframe$tag[tag_rows]
+    entry_list<-split(entry_dframe$value, cumsum(label_group)+1)
+    names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
+    entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
+    if(any(names(entry_list)=="author")){
+      if(length(entry_list$author)==1){
+    		entry_list$author<-strsplit(entry_list$author, " and ")[[1]]
+      }
+    }
+    return(entry_list)
+  })
+
+  # add type
+  x_final <- lapply(c(1:length(x_final)), function(a, type, data){
+    c(type=type[a], data[[a]])
+  }, type=ref_type, data= x_final)
+
+  names(x_final)<-ref_names # generate_bibliographic_names(x.final)
+  class(x_final)<-"bibliography"
+  return(x_final)
+
+}

@@ -1,4 +1,4 @@
-plot1_3D<-function(input_info, color, pointsize=10, height=400){
+plot_3D<-function(input_info, color, pointsize=10, height=400){
 	p<-plotly::plot_ly(input_info,
 		x=~Axis1, y=~Axis2, z=~Axis3, 
 		type="scatter3d", 
@@ -29,7 +29,7 @@ plot1_3D<-function(input_info, color, pointsize=10, height=400){
 }
 
 
-plot1_2D<-function(input_info, color, pointsize=10, height=400){
+plot_2D<-function(input_info, color, pointsize=10, height=400){
 	p<-plotly::plot_ly(input_info,
 		x=~Axis1, y=~Axis2,
 		type="scatter", 
