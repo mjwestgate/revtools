@@ -1,7 +1,5 @@
 # Duplicate of functions from the Python library fuzzywuzzy
 # # https://github.com/seatgeek/fuzzywuzzy
-# Note: alternative of installing library(Rfuzzywuzzy) not used as it requires Python to be installed
-
 # these functions coded by Martin Westgate on 4th June 2018 based on description given here:
 # http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/
 

@@ -4,7 +4,7 @@
 \alias{fuzz_token_sort_ratio}
 \alias{fuzz_token_set_ratio}
 \title{Functions for fuzzy string matching}
-\description{Duplicate of functions from the Python library fuzzywuzzy (https://github.com/seatgeek/fuzzywuzzy). These functions have been recoded from scratch based on the description given [here](http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/)}
+\description{Duplicate of functions from the Python library fuzzywuzzy (\url{https://github.com/seatgeek/fuzzywuzzy}). These functions have been recoded from scratch based on the description given \href{http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python}{here}.}
 \usage{
 fuzz_m_ratio(x, y)
 fuzz_partial_ratio(x, y)
