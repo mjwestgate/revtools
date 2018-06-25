@@ -5,9 +5,6 @@
 # these functions coded by Martin Westgate on 4th June 2018 based on description given here:
 # http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/
 
-
-# x<-"journal of applied ecology"
-# y<-"journal"
 fuzz_m_ratio <- function(x, y){
   out<-lapply(y, function(y, x){
     z <- c(x, y)
@@ -17,22 +14,15 @@ fuzz_m_ratio <- function(x, y){
   }, x=x)
   return(as.numeric(out))
 }
-# fuzz_m_ratio("abc", "a")
-# fuzz_m_ratio("aabc", "a")
-# fuzz_m_ratio("aabc", "aa")
-# fuzz_m_ratio("NEW YORK METS", "NEW YORK MEATS")
-# fuzz_m_ratio("this is a test", c("this is a test!", "this is not a test")) # matches github example
 
 
-# x<-"journal"
-# y<-c("journal of applied ecology", "plos one")
 fuzz_partial_ratio<-function(x, y){
   out<-lapply(y, function(y, x){
     z <- c(x, y)
     zn <- nchar(z)
     n_reps <- (max(zn)-min(zn))
     z_list <- lapply(
-      c(0: n_reps), 
+      c(0: n_reps),
       function(a, lookup, keep){lookup[(keep+a)]},
       lookup=strsplit(z[which.max(zn)], "")[[1]],
       keep=c(1:min(zn))
@@ -45,9 +35,6 @@ fuzz_partial_ratio<-function(x, y){
   }, x=x)
   return(as.numeric(out))
 }
-# fuzz_partial_ratio("YANKEES", c("NEW YORK YANKEES", "something else", "YNAKEES"))
-# fuzz_partial_ratio("NEW YORK METS", "NEW YORK YANKEES")
-# fuzz_partial_ratio("journal of animal ecology", c("journal of applied ecology", "plos one"))
 
 
 fuzz_token_sort_ratio<-function(x, y){
@@ -58,7 +45,6 @@ fuzz_token_sort_ratio<-function(x, y){
   }, x=x)
   return(as.numeric(out))
 }
-# fuzz_token_sort_ratio("New York Mets vs Atlanta Braves", "Atlanta Braves vs New York Melts")
 
 
 fuzz_token_set_ratio<-function(x, y){
@@ -86,11 +72,3 @@ fuzz_token_set_ratio<-function(x, y){
   }, x=x)
   return(as.numeric(out))
 }
-# fuzz_token_set_ratio(
-  # x="mariners vs angels",
-  # y="los angeles angels of anaheim at seattle mariners"
-# ) 
-# fuzz_token_set_ratio(
-  # x="mariners vs angels other words",
-  # y=c("los angeles angels of anaheim at seattle mariners", "angeles angels of anaheim ")
-# ) 
