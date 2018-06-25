@@ -1,6 +1,6 @@
 export(as.bibliography, read_bibliography, write_bibliography,
 summary.bibliography, print.bibliography, '[.bibliography', summary.review_info,
-fuzzy_m_ratio, 
+fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
 make_DTM, run_LDA, start_review_window)
 S3method(print, bibliography)
