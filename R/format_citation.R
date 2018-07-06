@@ -5,7 +5,8 @@ format_citation<-function(
 	details = TRUE # whether to allow or suppress bibliographic details - name, year, journal
 	){
   	if(!details){
-      author.info <- ""
+      # author.info <- ""
+      result <- as.character(x["title"])
     }else{
   		if(any(names(x) == "author")){
   			# author info
@@ -32,26 +33,25 @@ format_citation<-function(
   				"3" = {paste0(author.data[1], ", ", author.data[2], " & ", author.data[3])},
   				"4" = {paste0(author.data[1], ", ", author.data[2], " et al.")})
   		}
+    # }
+  		# paste info in the correct order
+  		lookup.headers <- c("year", "title", "journal", "volume", "pages")
+  		lookup.result <- lookup.headers %in% names(x)
+  		if(all(lookup.result)){
+  			result <- paste0(
+          author.info,
+          " (", x$year, ") ",
+  				x$title, ". ", x$journal, " ", x$volume, ": ", x$pages
+        )
+  		}else{
+  			result <- paste(
+          author.info,
+          paste(x[lookup.headers[lookup.result]], collapse=" "),
+          sep=" "
+        )
+      }
+		  # note - the above doesn't add brackets around year
     }
-
-		# paste info in the correct order
-		lookup.headers <- c("year", "title", "journal", "volume", "pages")
-		lookup.result <- lookup.headers %in% names(x)
-		if(all(lookup.result)){
-			result <- paste0(
-        author.info,
-        " (", x$year, ") ",
-				x$title, ". ", x$journal, " ", x$volume, ": ", x$pages
-      )
-		}else{
-			result <- paste(
-        author.info,
-        paste(x[lookup.headers[lookup.result]], collapse=" "),
-        sep=" "
-      )
-    }
-		# note - the above doesn't add brackets around year
-
 		# add abstract if required
 		if(abstract & any(names(x) == "abstract")){
 			result <- paste0(result, ".<br><br><strong>Abstract</strong><br>", x$abstract)

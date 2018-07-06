@@ -231,7 +231,6 @@ server<-function(input, output, session){
   # PLOTS
   output$plot_main<-renderPlotly({
     validate(
-      # need(data$dtm, "Select data and run a DTM"),
       need(data$model, "Choose data & model parameters to continue")
     )
     do.call(
@@ -273,20 +272,26 @@ server<-function(input, output, session){
 
 
   # CLICK DATA
-  # observe({
-  # 	click_result <- event_data(
-  #     "plotly_click",
-  #     source = "main_plot"
-  #   )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
-  # 	click_data$main <- which(
-  # 		data[[plot_data$dataset]]$id == plotinfo[[plot_data$dataset]]$id[click_result]
-  # 	)
-  # 	click_result$topic <- c()
-  # })
+  observe({
+  	click_result <- event_data(
+      "plotly_click",
+      source = "main_plot"
+    )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
+  	click_data$main <- which(
+  		data$plot_ready[[input$plot_type]][, 1] == plot_features$appearance[[input$plot_type]]$id[click_result]
+  	)
+  	click_result$topic <- c()
+  })
 
   # test output
   output$example_text<-renderPrint({
-      str(data$plot_ready)
+    if(length(click_data$main)>0){
+      cat(format_citation(
+        data$plot_ready[[input$plot_type]][click_data$main, ],
+        abstract = FALSE,
+        details = (input$hide_names == FALSE)
+      ))
+    }
   })
 
 

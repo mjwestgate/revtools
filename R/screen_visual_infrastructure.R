@@ -55,8 +55,8 @@ create_grouped_dataframe <- function(data, response_variable, text_variables){
         response = response_variable
         )
       } # end if grouped
-      out<-do.call(rbind, data_list)
-      rownames(out)<-NULL
+      out <- do.call(rbind, data_list)
+      rownames(out) <- NULL
       return(out)
     }
   }
@@ -114,6 +114,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
 build_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
     data.frame(
+      id = a[, 1],
       tested = FALSE,
       selected = FALSE,
       display = TRUE,

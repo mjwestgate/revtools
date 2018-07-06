@@ -58,18 +58,29 @@ screen_visual_ui <- function(){
   body<-shinydashboard::dashboardBody(
     fluidRow(
       column(width = 8,
-        shinydashboard::box(width=NULL, height=800, title="Plot",  solidHeader=TRUE, status="primary",
-          # tableOutput("example_text")
+        shinydashboard::box(width=NULL, title = "Plot", solidHeader = TRUE, status = "primary",
           plotly::plotlyOutput("plot_main")
         )
       ),
       column(width=4,
-        shinydashboard::box(width=NULL, title="Topics",  solidHeader=TRUE, status="primary",
+        shinydashboard::box(width=NULL, title="Topics", solidHeader=TRUE, status="primary",
           plotly::plotlyOutput("plot_topic")
         ),
-        shinydashboard::box(width=NULL, title="Text",  solidHeader=TRUE, status="primary",
-          # plotly::plotlyOutput("plot_main")
-          tableOutput("example_text")
+        shinydashboard::box(width=NULL, title="Text", solidHeader=TRUE, status="primary",
+          tableOutput("example_text"),
+          shiny::splitLayout(
+            uiOutput("select_yes"),
+            uiOutput("select_no"),
+            cellWidths=c("25%", "25%")
+          ),
+          shiny::splitLayout(
+            uiOutput("topic_yes"),
+            uiOutput("topic_no"),
+            cellWidths=c("25%", "25%")
+          )
+        ),
+        shinydashboard::box(width=NULL, title = "Abstract", solidHeader = TRUE, status = "primary"
+          # tableOutput("example_text"),
         )
       )
     )
