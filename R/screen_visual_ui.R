@@ -19,9 +19,12 @@ screen_visual_ui <- function(){
         sliderInput("n_iterations", "# Iterations", min=1000, max=20000, step=1000, value= 2000),
         actionButton("calc_model", "Calculate Model")
       ),
-      # sidebarMenuOutput("plot_menu"),
       sidebarMenu(
         menuItem("Plot", icon = icon("bar-chart-o"),
+          selectInput("hide_names", "Hide authors etc?",
+            choices = c("FALSE", "TRUE"),
+            multiple = FALSE
+          ),
           selectInput("plot_type", "Display", choices = c(
             articles = "x",
             words = "y"
@@ -31,7 +34,6 @@ screen_visual_ui <- function(){
           sliderInput("screen_size", "Window Height (px)", min = 400, max = 1400, step = 100, value = 600)
         )
       ),
-      # sidebarMenuOutput("appearance_menu")
       sidebarMenu(
         menuItem("Appearance", icon = icon("paint-brush"),
           selectInput("palette", "Palette",

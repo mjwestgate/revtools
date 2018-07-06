@@ -48,15 +48,17 @@ server<-function(input, output, session){
     model = NULL,
     plot_ready = NULL
   )
-  plot_features <- reactiveValues(appearance = NULL)
-  colors <- reactiveValues(palette = NULL)
-  # ui_tracker <- reactiveValues(model = FALSE)
-  plot_tracker <- reactiveValues(
-    plot_dims = "2D",
-    plot_type = "x"
+  plot_features <- reactiveValues(
+    palette = NULL,
+    appearance = NULL
+  )
+  click_data <- reactiveValues(
+    main = c(),
+    topic = c()
   )
 
-  # ensure input data is processed correctly
+  # DATA INPUT
+  ## when specified, ensure input data is processed correctly
   observe({
   	source <- input$data_in
   	if(is.null(x)){
@@ -111,7 +113,7 @@ server<-function(input, output, session){
   })
 
 
-  # when requested, calculate a topic model
+  # TOPIC MODELS
   observeEvent(input$calc_model, {
 
     # if no variables are selected, do not run a topic model
@@ -162,13 +164,14 @@ server<-function(input, output, session){
 
       # create plottable information
       data$plot_ready <- build_plot_data(
-        data$grouped[x_keep, ],
-        data$dtm[x_keep, ],
-        data$model
+        info = data$grouped[x_keep, ],
+        dtm = data$dtm[x_keep, ],
+        model = data$model,
+        hide_names = input$hide_names
       )
 
       # create color palette
-      colors$palette <- viridisLite::viridis(
+      plot_features$palette <- viridisLite::viridis(
         n = data$model@k,
         alpha = 0.9,
         begin = 0,
@@ -177,7 +180,10 @@ server<-function(input, output, session){
       )
 
       # add appearance info
-      plot_features$appearance <- build_appearance(data$plot_ready, colors$palette)
+      plot_features$appearance <- build_appearance(
+        data$plot_ready,
+        plot_features$palette
+      )
 
       # exit modal
       shiny::removeModal()
@@ -198,7 +204,7 @@ server<-function(input, output, session){
     }else{
       k <- data$model@k
     }
-    colors$palette <- viridisLite::viridis(
+    plot_features$palette <- viridisLite::viridis(
       n = k,
       alpha = input$color_alpha,
       begin = input$color_hue[1],
@@ -207,8 +213,18 @@ server<-function(input, output, session){
     )
     plot_features$appearance <- update_appearance(
       plot_features$appearance,
-      colors$palette
+      plot_features$palette
     )
+  })
+
+  # update caption if required
+  observeEvent(input$hide_names, {
+    if(!is.null(data$plot_ready)){
+      data$plot_ready$x$caption <- apply(data$plot_ready$x, 1,
+        function(a, hide){format_citation_dataframe(a, hide_details = hide)
+        }, hide = input$hide_names
+      )
+    }
   })
 
 
@@ -219,24 +235,24 @@ server<-function(input, output, session){
       need(data$model, "Choose data & model parameters to continue")
     )
     do.call(
-      paste0("plot_", plot_tracker$plot_dims),
+      paste0("plot_", input$plot_dims),
       list(
-        input_info = data$plot_ready[[plot_tracker$plot_type]],
-        color = isolate(plot_features$appearance[[plot_tracker$plot_type]]$color),
+        input_info = data$plot_ready[[input$plot_type]],
+        color = isolate(plot_features$appearance[[input$plot_type]]$color),
         pointsize = 12,
         height = input$screen_size
       )
     )
   })
 
-  # update (not redraw) when colors change
+  # update (not redraw) when colours change
   observe({
   	plotly::plotlyProxy("plot_main", session) %>%
   		plotly::plotlyProxyInvoke("restyle", list(
   			marker = list(
   				size = input$point_size,
-  				color = plot_features$appearance[[plot_tracker$plot_type]]$color[
-            plot_features$appearance[[plot_tracker$plot_type]]$display
+  				color = plot_features$appearance[[input$plot_type]]$color[
+            plot_features$appearance[[input$plot_type]]$display
           ]
   			)
   		))
@@ -250,25 +266,27 @@ server<-function(input, output, session){
     )
     plot_article_bar(
       x = data$plot_ready$topic,
-      n = data$plot_ready$topic[[paste0("count_", plot_tracker$plot_type)]],
+      n = data$plot_ready$topic[[paste0("count_", input$plot_type)]],
       color = plot_features$appearance$topic$color
     )
   })
 
-  # update plot type as necessary
-  observeEvent({
-    input$plot_type
-    input$plot_dims
-  }, {
-    plot_tracker$plot_type <- input$plot_type
-    plot_tracker$plot_dims <- input$plot_dims
-  })
 
+  # CLICK DATA
+  # observe({
+  # 	click_result <- event_data(
+  #     "plotly_click",
+  #     source = "main_plot"
+  #   )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
+  # 	click_data$main <- which(
+  # 		data[[plot_data$dataset]]$id == plotinfo[[plot_data$dataset]]$id[click_result]
+  # 	)
+  # 	click_result$topic <- c()
+  # })
 
   # test output
   output$example_text<-renderPrint({
-      # str(data$plot_ready)
-      str(input$variable_selector) #, sep = ", ", collapse = "; ")
+      str(data$plot_ready)
   })
 
 

@@ -64,7 +64,7 @@ create_grouped_dataframe <- function(data, response_variable, text_variables){
 }
 
 
-build_plot_data <- function(info, dtm, model){
+build_plot_data <- function(info, dtm, model, hide_names){
   x_matrix<-modeltools::posterior(model)$topics # article x topic
   y_matrix<-t(modeltools::posterior(model)$terms)
 
@@ -78,11 +78,15 @@ build_plot_data <- function(info, dtm, model){
       )
     ),
     y = data.frame(
-      text = rownames(y_matrix),
+      caption = rownames(y_matrix),
       topic = apply(y_matrix, 1, which.max),
       ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
       stringsAsFactors = FALSE
     )
+  )
+  plot_list$x$caption <- apply(plot_list$x, 1, function(a, hide){
+    format_citation_dataframe(a, hide_details = hide)
+    }, hide = hide_names
   )
 
   # add topic information
