@@ -6,36 +6,36 @@ screen_visual_ui <- function(){
   )
 
   sidebar<-shinydashboard::dashboardSidebar(
-    sidebarMenu(
+    shinydashboard::sidebarMenu(
       id = "tabs",
-      menuItem("Data",
+      shinydashboard::menuItem("Data",
         icon = icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label = "Import"),
-        uiOutput("response_selector"),
-        sidebarMenuOutput("variable_menu"),
-        selectInput("model_type", label = "Model Type", choices = c("LDA", "CTM")),
-        sliderInput("n_topics", "# Topics", min = 4, max = 30, step = 1, value = 5),
-        sliderInput("n_iterations", "# Iterations", min = 1000, max = 20000, step = 1000, value = 2000),
-        actionButton("calc_model", "Calculate Model")
+        shiny::fileInput("data_in", label = "Import"),
+        shiny::uiOutput("response_selector"),
+        shinydashboard::sidebarMenuOutput("variable_menu"),
+        shiny::selectInput("model_type", label = "Model Type", choices = c("LDA", "CTM")),
+        shiny::sliderInput("n_topics", "# Topics", min = 4, max = 30, step = 1, value = 5),
+        shiny::sliderInput("n_iterations", "# Iterations", min = 1000, max = 20000, step = 1000, value = 2000),
+        shiny::actionButton("calc_model", "Calculate Model")
       ),
-      sidebarMenu(
-        menuItem("Plot", icon = icon("bar-chart-o"),
-          selectInput("hide_names", "Hide authors etc?",
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("Plot", icon = icon("bar-chart-o"),
+          shiny::selectInput("hide_names", "Hide authors etc?",
             choices = c("FALSE", "TRUE"),
             multiple = FALSE
           ),
-          selectInput("plot_type", "Display", choices = c(
+          shiny::selectInput("plot_type", "Display", choices = c(
             articles = "x",
             words = "y"
             )
           ),
-          selectInput("plot_dims", "Dimensions", choices = c("2D", "3D"))
+          shiny::selectInput("plot_dims", "Dimensions", choices = c("2D", "3D"))
         )
       ),
-      sidebarMenu(
-        menuItem("Appearance", icon = icon("paint-brush"),
-          selectInput("palette", "Palette",
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("Appearance", icon = icon("paint-brush"),
+          shiny::selectInput("palette", "Palette",
             choices = c(
               Viridis = "D",
               Magma = "A",
@@ -45,9 +45,9 @@ screen_visual_ui <- function(){
             ),
             multiple = FALSE
           ),
-          sliderInput("color_alpha", "Opacity", min = 0.2, max = 1, step = 0.1, value = 0.9),
-          sliderInput("color_hue", "Hue", min = 0, max = 1, step = 0.05, value = c(0, 0.9)),
-          sliderInput("point_size", "Point Size", min = 0, max = 20, step = 2, value = 12)
+          shiny::sliderInput("color_alpha", "Opacity", min = 0.2, max = 1, step = 0.1, value = 0.9),
+          shiny::sliderInput("color_hue", "Hue", min = 0, max = 1, step = 0.05, value = c(0, 0.9)),
+          shiny::sliderInput("point_size", "Point Size", min = 0, max = 20, step = 2, value = 12)
         )
       )
       # actionButton("save", "Save")	# add modal save in this version
@@ -89,12 +89,12 @@ screen_visual_ui <- function(){
   		}
   		#view
     ")),
-    fluidRow(
-      column(width = 8,
+    shiny::fluidRow(
+      shiny::column(width = 8,
         plotly::plotlyOutput("plot_main", height = "600px"),
         shiny::tableOutput("abstract_text")
       ),
-      column(width=4,
+      shiny::column(width=4,
         shinydashboard::box(
           width = NULL,
           title = "Topics",

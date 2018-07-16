@@ -14,7 +14,7 @@ importFrom(grDevices, grey)
 importFrom(modeltools, posterior)
 importFrom(plotly, renderPlotly, event_data, "%>%")
 importFrom(shiny,
-checkboxGroupInput,
+checkboxGroupInput, fileInput,
 sliderInput, selectInput, textInput, actionButton,
 tableOutput, uiOutput, reactiveValues, observeEvent,
 observe, renderPrint, isolate, fluidRow,
