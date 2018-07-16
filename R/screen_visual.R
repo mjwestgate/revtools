@@ -254,7 +254,6 @@ server<-function(input, output, session){
         input_info = data$plot_ready[[input$plot_type]],
         color = isolate(plot_features$appearance[[input$plot_type]]$color),
         pointsize = 12
-        # height = input$screen_size
       )
     )
   })
