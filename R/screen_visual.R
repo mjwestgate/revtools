@@ -31,7 +31,7 @@ ui <- shinydashboard::dashboardPage(
 	ui_data$header,
 	ui_data$sidebar,
 	ui_data$body,
-	skin = "blue"
+	skin = "black"
 )
 
 # start server

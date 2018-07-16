@@ -31,7 +31,6 @@ screen_visual_ui <- function(){
             )
           ),
           selectInput("plot_dims", "Dimensions", choices = c("2D", "3D"))
-          # sliderInput("screen_size", "Window Height (px)", min = 400, max = 1400, step = 100, value = 600)
         )
       ),
       sidebarMenu(
@@ -56,11 +55,43 @@ screen_visual_ui <- function(){
   )
 
   body<-shinydashboard::dashboardBody(
+    shiny::tag("style", shiny::HTML("
+    .content-wrapper,
+      .right-side {
+        background-color: #e2e2e2;
+      }
+      .small-box.bg-black {
+  			background-color: #777777 !important;
+  			color: #fff !important;
+  		}
+  		.skin-black .main-header .logo {
+  			background-color: #777777;
+  		}
+  		.skin-black .main-header .logo:hover {
+  			background-color: #777777;
+  		}
+  		.skin-black .main-header .navbar {
+  			background-color: #777777;
+  		}
+  		.box.box-solid.box-primary>.box-header {
+  			color:#fff;
+  			background:#444444
+  		}
+  		.box.box-solid.box-primary{
+  			border-bottom-color:#444444;
+  			border-left-color:#444444;
+  			border-right-color:#444444;
+  			border-top-color:#444444;
+  		}
+  		.download_class{
+  			background-color: #444444;
+  			color: #e2e2e2;
+  		}
+  		#view
+    ")),
     fluidRow(
       column(width = 8,
-        # shinydashboard::box(width = NULL, title = "Plot", solidHeader = TRUE, status = "primary",
         plotly::plotlyOutput("plot_main", height = "600px"),
-        # ),
         shiny::tableOutput("abstract_text")
       ),
       column(width=4,
@@ -91,10 +122,7 @@ screen_visual_ui <- function(){
             shiny::uiOutput("topic_no"),
             cellWidths = c("25%", "25%")
           )
-        )# ,
-        # shinydashboard::box(width = NULL, title = "Abstract", solidHeader = TRUE, status = "primary"
-          # tableOutput("example_text"),
-        # )
+        )
       )
     )
   )
