@@ -11,12 +11,12 @@ screen_visual_ui <- function(){
       menuItem("Data",
         icon = icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label="Import"),
+        fileInput("data_in", label = "Import"),
         uiOutput("response_selector"),
         sidebarMenuOutput("variable_menu"),
-        selectInput("model_type", label="Model Type", choices=c("LDA", "CTM")),
-        sliderInput("n_topics", "# Topics", min=4, max=30, step=1, value=5),
-        sliderInput("n_iterations", "# Iterations", min=1000, max=20000, step=1000, value= 2000),
+        selectInput("model_type", label = "Model Type", choices = c("LDA", "CTM")),
+        sliderInput("n_topics", "# Topics", min = 4, max = 30, step = 1, value = 5),
+        sliderInput("n_iterations", "# Iterations", min = 1000, max = 20000, step = 1000, value = 2000),
         actionButton("calc_model", "Calculate Model")
       ),
       sidebarMenu(
@@ -30,8 +30,8 @@ screen_visual_ui <- function(){
             words = "y"
             )
           ),
-          selectInput("plot_dims", "Dimensions", choices = c("2D", "3D")),
-          sliderInput("screen_size", "Window Height (px)", min = 400, max = 1400, step = 100, value = 600)
+          selectInput("plot_dims", "Dimensions", choices = c("2D", "3D"))
+          # sliderInput("screen_size", "Window Height (px)", min = 400, max = 1400, step = 100, value = 600)
         )
       ),
       sidebarMenu(
@@ -58,34 +58,53 @@ screen_visual_ui <- function(){
   body<-shinydashboard::dashboardBody(
     fluidRow(
       column(width = 8,
-        shinydashboard::box(width=NULL, title = "Plot", solidHeader = TRUE, status = "primary",
-          plotly::plotlyOutput("plot_main")
-        )
+        # shinydashboard::box(width = NULL, title = "Plot", solidHeader = TRUE, status = "primary",
+        plotly::plotlyOutput("plot_main", height = "600px"),
+        # ),
+        shiny::tableOutput("abstract_text")
       ),
       column(width=4,
-        shinydashboard::box(width=NULL, title="Topics", solidHeader=TRUE, status="primary",
+        shinydashboard::box(
+          width = NULL,
+          title = "Topics",
+          solidHeader = TRUE,
+          status = "primary",
+          collapsible = TRUE,
+          collapsed = FALSE,
           plotly::plotlyOutput("plot_topic")
         ),
-        shinydashboard::box(width=NULL, title="Text", solidHeader=TRUE, status="primary",
-          tableOutput("example_text"),
+        shinydashboard::box(
+          width = NULL,
+          title = "Selected Text",
+          solidHeader = TRUE,
+          status = "primary",
+          collapsible = TRUE,
+          collapsed = FALSE,
+          shiny::tableOutput("selector_text"),
           shiny::splitLayout(
             uiOutput("select_yes"),
             uiOutput("select_no"),
-            cellWidths=c("25%", "25%")
+            cellWidths = c("25%", "25%")
           ),
           shiny::splitLayout(
-            uiOutput("topic_yes"),
-            uiOutput("topic_no"),
-            cellWidths=c("25%", "25%")
+            shiny::uiOutput("topic_yes"),
+            shiny::uiOutput("topic_no"),
+            cellWidths = c("25%", "25%")
           )
-        ),
-        shinydashboard::box(width=NULL, title = "Abstract", solidHeader = TRUE, status = "primary"
+        )# ,
+        # shinydashboard::box(width = NULL, title = "Abstract", solidHeader = TRUE, status = "primary"
           # tableOutput("example_text"),
-        )
+        # )
       )
     )
   )
 
-return(list(header=header, sidebar=sidebar, body=body))
+return(
+  list(
+    header = header,
+    sidebar = sidebar,
+    body = body
+  )
+)
 
 }

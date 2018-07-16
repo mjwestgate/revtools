@@ -26,6 +26,6 @@
 	\itemize{
 		\item \code{\link{make_DTM}} Construct a Document-Term Matrix from bibliographic data
 		\item \code{\link{run_LDA}} Wrapper function for topic models
-		\item \code{\link{start_review_window}} Launch a Shiny app for reference sorting
+		\item \code{\link{screen_visual}} Launch a Shiny app for reference sorting
 	}
 }

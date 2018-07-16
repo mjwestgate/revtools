@@ -1,4 +1,4 @@
-plot_2D <- function(input_info, color, pointsize = 10, height = 400){
+plot_2D <- function(input_info, color, pointsize = 10) { #, height = 400){
   p <- plotly::plot_ly(input_info,
     x = ~ Axis1,
     y = ~ Axis2,
@@ -16,7 +16,7 @@ plot_2D <- function(input_info, color, pointsize = 10, height = 400){
       font = list(color = "black")
     ),
     text = ~ caption,
-    height = height,
+    # height = height,
     source = "main_plot"
     ) %>%
     plotly::add_markers() %>%
@@ -29,7 +29,7 @@ plot_2D <- function(input_info, color, pointsize = 10, height = 400){
 }
 
 
-plot_3D <- function(input_info, color, pointsize = 6, height = 400){
+plot_3D <- function(input_info, color, pointsize = 6){ #, height = 400){
   p <- plotly::plot_ly(input_info,
     x = ~ Axis1,
     y = ~ Axis2,
@@ -48,7 +48,7 @@ plot_3D <- function(input_info, color, pointsize = 6, height = 400){
       font = list(color="black")
     ),
     text = ~ caption,
-    height = height,
+    # height = height,
     source = "main_plot"
     ) %>%
     plotly::add_markers() %>%
@@ -82,7 +82,7 @@ plot_article_bar<-function(x, n, color){
     orientation = "h"
     ) %>%
     plotly::layout(
-      xaxis = list(title="Count"),
+      xaxis = list(title = "Count"),
       yaxis = list(
         title = "Topic",
         tick0 = 1,
