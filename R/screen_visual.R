@@ -96,14 +96,14 @@ server<-function(input, output, session){
   })
 
   # add a sidebar menu listing columns available in data$raw
-  output$variable_menu <- renderMenu({
+  output$variable_menu <- shinydashboard::renderMenu({
     if(!is.null(data$raw)){
-      sidebarMenu(
-        menuItem("Variables",
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("Variables",
           tabName = "variable_tab",
           icon = icon("pencil"),
           startExpanded = TRUE,
-          checkboxGroupInput("variable_selector",
+          shiny::checkboxGroupInput("variable_selector",
             "Select included variables:",
             choices = colnames(data$raw)
           )
@@ -229,7 +229,7 @@ server<-function(input, output, session){
 
 
   # PLOTS
-  output$plot_main<-renderPlotly({
+  output$plot_main <- plotly::renderPlotly({
     validate(
       need(data$model, "Choose data & model parameters to continue")
     )
@@ -259,7 +259,7 @@ server<-function(input, output, session){
 
   # topic barplot
   # note: may require an observe({}) to ensure updates
-  output$plot_topic <- renderPlotly({
+  output$plot_topic <- plotly::renderPlotly({
     validate(
       need(data$model, "Choose model parameters")
     )
@@ -273,7 +273,7 @@ server<-function(input, output, session){
 
   # CLICK DATA
   observe({
-  	click_result <- event_data(
+  	click_result <- plotly::event_data(
       "plotly_click",
       source = "main_plot"
     )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
@@ -284,7 +284,7 @@ server<-function(input, output, session){
   })
 
   # test output
-  output$example_text<-renderPrint({
+  output$example_text <- renderPrint({
     if(length(click_data$main)>0){
       cat(format_citation(
         data$plot_ready[[input$plot_type]][click_data$main, ],
