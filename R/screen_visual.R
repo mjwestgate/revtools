@@ -16,6 +16,7 @@ screen_visual <- function(x, remove_words){
     switch(class(x),
       "bibliography" = {x <- as.data.frame(x)},
       "data.frame" = {x <- x}
+    )
       # "review_info" = {x <- x$info})
   }
 
