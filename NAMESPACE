@@ -16,7 +16,8 @@ importFrom(plotly, renderPlotly, event_data, "%>%")
 importFrom(shiny,
 checkboxGroupInput, fileInput,
 sliderInput, selectInput, textInput, actionButton,
-tableOutput, uiOutput, reactiveValues, observeEvent,
+tableOutput, uiOutput, plotOutput, renderPlot,
+reactiveValues, observeEvent,
 observe, renderPrint, isolate, fluidRow,
 strong, column, icon, p)
 importFrom(shinydashboard, sidebarMenu, menuItem)

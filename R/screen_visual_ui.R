@@ -2,15 +2,7 @@ screen_visual_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
-    title = plotOutput("header")
-    # disable = TRUE
-    # title = "revtools"
-    # this fails
-    # title = shiny::img(
-    #   jpeg(width =)
-    #   plot(1 ~ 1)
-    #   text(1, 1, "some text!")
-    # )
+    title = shiny::plotOutput("header")
   )
 
   # dropdownMenuOutput might work to render a plot drawn in server.R
