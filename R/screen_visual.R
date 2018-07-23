@@ -3,23 +3,24 @@ start_review_window <- function(x, remove_words){
   screen_visual(x, remove_words)
 }
 
-screen_visual<-function(x, remove_words){
+screen_visual <- function(x, remove_words){
 
   if(missing(x)){x <- NULL}
   if(!is.null(x)){ # x<-as.data.frame(x)}
 
     # throw a warning if a known file type isn't given
-    if(any(c("bibliography", "review_info", "data.frame")==class(x))==FALSE){
-      stop("only classes 'bibliography', 'review_info' or 'data.frame' accepted by start_review_window")}
+    accepted_inputs <- c("bibliography", "data.frame")
+    if(any(accepted_inputs == class(x)) == FALSE){
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
 
     switch(class(x),
       "bibliography" = {x <- as.data.frame(x)},
-      "data.frame" = {x <- x},
-      "review_info" = {x <- x$info})
+      "data.frame" = {x <- x}
+      # "review_info" = {x <- x$info})
   }
 
   if(missing(remove_words)){
-    remove_words <- tm::stopwords()
+    remove_words <- stopwords()
   }else{
     remove_words <- as.character(remove_words)
   }
@@ -42,7 +43,7 @@ server<-function(input, output, session){
   # https://github.com/hrbrmstr/metricsgraphics/issues/49
 
   # establish reactiveValues objects
-  data <- shiny::reactiveValues(
+  data <- reactiveValues(
     raw = NULL,
     columns = NULL,
     grouped = NULL,
@@ -50,7 +51,7 @@ server<-function(input, output, session){
     model = NULL,
     plot_ready = NULL
   )
-  plot_features <- shiny::reactiveValues(
+  plot_features <- reactiveValues(
     palette = NULL,
     appearance = NULL
   )
@@ -58,25 +59,25 @@ server<-function(input, output, session){
   #   scatter = NULL,
   #   bar = NULL
   # )
-  click_data <- shiny::reactiveValues(
+  click_data <- reactiveValues(
     main = c(),
     topic = c()
   )
 
   # CREATE HEADER IMAGE
   output$header <- shiny::renderPlot({
-    graphics::plot(x = 1, y = 1, type = "n",
+    plot(x = 1, y = 1, type = "n",
       xlim = c(1, 505),
       ylim = c(1, 215),
       asp = 1,
       ann = FALSE, axes = FALSE
     )
-    graphics::rasterImage(revtools::logo, 1, 1, 505, 215)
+    rasterImage(revtools::logo, 1, 1, 505, 215)
   })
 
   # DATA INPUT
   ## when specified, ensure input data is processed correctly
-  shiny::observeEvent(input$data_in, {
+  observeEvent(input$data_in, {
   	source <- input$data_in
   	if(is.null(x)){
   	  if(is.null(source)){
@@ -99,7 +100,7 @@ server<-function(input, output, session){
   })
 
   # select a grouping variable
-  output$response_selector <- shiny::renderUI({
+  output$response_selector <- renderUI({
     if(!is.null(data$columns)){
     	choices <- data$columns
       if(any(choices == "label")){
@@ -107,7 +108,7 @@ server<-function(input, output, session){
       }else{
         selected <- choices[1]
       }
-      shiny::selectInput(
+      selectInput(
         "response_variable",
         label = "Show one point per:",
         choices = choices,
@@ -117,14 +118,14 @@ server<-function(input, output, session){
   })
 
   # add a sidebar menu listing columns available in data$raw
-  output$variable_menu <- shinydashboard::renderMenu({
+  output$variable_menu <- renderMenu({
     if(!is.null(data$columns)){
-      shinydashboard::sidebarMenu(
-        shinydashboard::menuItem("Variables",
+      sidebarMenu(
+        menuItem("Variables",
           tabName = "variable_tab",
           icon = icon("pencil"),
           startExpanded = TRUE,
-          shiny::checkboxGroupInput("variable_selector",
+          checkboxGroupInput("variable_selector",
             "Select included variables:",
             choices = data$columns
           )
@@ -135,12 +136,12 @@ server<-function(input, output, session){
 
 
   # TOPIC MODELS
-  shiny::observeEvent(input$calc_model, {
+  observeEvent(input$calc_model, {
 
     # if no variables are selected, do not run a topic model
     if(length(input$variable_selector) < 1){
-      shiny::showModal(
-    		shiny::modalDialog(
+      showModal(
+    		modalDialog(
           HTML("Please select 1 or more variables to include in the topic model<br><br>
           <em>Click anywhere to exit</em>"),
       		title = "Error: insufficient data",
@@ -150,8 +151,8 @@ server<-function(input, output, session){
     	)
 
     }else{
-    	shiny::showModal(
-    		shiny::modalDialog(
+    	showModal(
+    		modalDialog(
           HTML("Depending on the size of your dataset, this may take some time"),
       		title = "Calculating Topic Model",
       		footer = NULL,
@@ -198,7 +199,7 @@ server<-function(input, output, session){
       )
 
       # create color palette
-      plot_features$palette <- viridisLite::viridis(
+      plot_features$palette <- viridis(
         n = data$model@k,
         alpha = 0.9,
         begin = 0,
@@ -213,14 +214,14 @@ server<-function(input, output, session){
       )
 
       # exit modal
-      shiny::removeModal()
+      removeModal()
     } # end if
 
   }) # end topic model calculation
 
 
   # update color palette when inputs change
-  shiny::observeEvent({
+  observeEvent({
     input$palette
     input$color_alpha
     input$color_hue
@@ -231,7 +232,7 @@ server<-function(input, output, session){
     }else{
       k <- data$model@k
     }
-    plot_features$palette <- viridisLite::viridis(
+    plot_features$palette <- viridis(
       n = k,
       alpha = input$color_alpha,
       begin = input$color_hue[1],
@@ -245,7 +246,7 @@ server<-function(input, output, session){
   })
 
   # update caption if required
-  shiny::observeEvent(input$hide_names, {
+  observeEvent(input$hide_names, {
     if(!is.null(data$plot_ready)){
       data$plot_ready$x$caption <- apply(data$plot_ready$x, 1,
         function(a, hide){format_citation_dataframe(a, hide_details = hide)
@@ -256,9 +257,9 @@ server<-function(input, output, session){
 
 
   # PLOTS
-  output$plot_main <- plotly::renderPlotly({
-    shiny::validate(
-      shiny::need(data$model, "Choose data & model parameters to continue")
+  output$plot_main <- renderPlotly({
+    validate(
+      need(data$model, "Choose data & model parameters to continue")
     )
     do.call(
       paste0("plot_", input$plot_dims),
@@ -271,9 +272,9 @@ server<-function(input, output, session){
   })
 
   # update (not redraw) when colours change
-  shiny::observe({
-  	plotly::plotlyProxy("plot_main", session) %>%
-  		plotly::plotlyProxyInvoke("restyle", list(
+  observe({
+  	plotlyProxy("plot_main", session) %>%
+  		plotlyProxyInvoke("restyle", list(
   			marker = list(
   				size = input$point_size,
   				color = plot_features$appearance[[input$plot_type]]$color[
@@ -285,7 +286,7 @@ server<-function(input, output, session){
 
   # topic barplot
   # note: may require an observe({}) to ensure updates
-  output$plot_topic <- plotly::renderPlotly({
+  output$plot_topic <- renderPlotly({
     validate(
       need(data$model, "Choose model parameters")
     )
@@ -298,8 +299,8 @@ server<-function(input, output, session){
 
 
   # CAPTURE CLICK DATA
-  shiny::observe({
-  	click_main <- plotly::event_data(
+  observe({
+  	click_main <- event_data(
       "plotly_click",
       source = "main_plot"
     )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
@@ -309,8 +310,8 @@ server<-function(input, output, session){
   	click_data$topic <- c()
   })
 
-  shiny::observe({
-  	click_topic <- plotly::event_data(
+  observe({
+  	click_topic <- event_data(
       "plotly_click",
       source = "topic_plot"
     )$pointNumber + 1
@@ -320,7 +321,7 @@ server<-function(input, output, session){
   })
 
   # render 'selection' text
-  output$selector_text <- shiny::renderPrint({
+  output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
       if(any(c("label", "title") == input$response_variable)){
         cat(format_citation(
@@ -348,7 +349,7 @@ server<-function(input, output, session){
   })
 
   # render abstracts
-  output$abstract_text <- shiny::renderPrint({
+  output$abstract_text <- renderPrint({
   	if(length(click_data$main) == 0){
   		cat("")
   	}else{
@@ -369,9 +370,9 @@ server<-function(input, output, session){
   })
 
   # render selector buttons
-  output$select_choice <- shiny::renderUI({
+  output$select_choice <- renderUI({
     if(length(click_data$main) > 0 & input$plot_type == "x"){
-      shiny::radioButtons("select_point",
+      radioButtons("select_point",
         label = "Selection:",
         choices = c("Select", "Exclude"),
         inline = TRUE
@@ -379,18 +380,18 @@ server<-function(input, output, session){
     }
   })
 
-  output$select_notes <- shiny::renderUI({
+  output$select_notes <- renderUI({
     if(length(click_data$main) > 0){
-      shiny::textAreaInput("select_notes",
+      textAreaInput("select_notes",
         label = "Notes:",
         resize = "vertical"
       )
     }
   })
 
-  output$select_save <- shiny::renderUI({
+  output$select_save <- renderUI({
     if(length(click_data$main) > 0){
-      shiny::actionButton("select_saved",
+      actionButton("select_saved",
         label = "Save Selection & Notes",
         width = "80%"
 #        style = "color: #fff; background-color: #428bca;"
@@ -399,25 +400,25 @@ server<-function(input, output, session){
   })
 
   # this content is basically outdated, but hasn't been replace with functional code yet.
-  output$select_yes <- shiny::renderPrint({
+  output$select_yes <- renderPrint({
   	if(length(click_data$main) > 0 & input$plot_type == "x"){
   		shiny::actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
   	}
   })
 
-  output$select_no <- shiny::renderPrint({
+  output$select_no <- renderPrint({
   	if(length(click_data$main) > 0){
   		shiny::actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")
   	}
   })
 
-  output$topic_yes <- shiny::renderPrint({
+  output$topic_yes <- renderPrint({
   	if(length(click_data$topic) > 0 & input$plot_type == "x"){
   		shiny::actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
   	}
   })
 
-  output$topic_no <- shiny::renderPrint({
+  output$topic_no <- renderPrint({
   	if(length(click_data$topic) > 0){
   		shiny::actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
   	}
@@ -425,14 +426,14 @@ server<-function(input, output, session){
 
 
   # ARTICLE/WORD/TOPIC SELECTION
-  shiny::observeEvent(input$return_yes, {
+  observeEvent(input$return_yes, {
     plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#000000"
     selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
     rows <- which(data$raw[, input$response_variable] == selected_response)
     data$raw$selected[rows] <- TRUE
   })
 
-  shiny::observeEvent(input$return_no, {
+  observeEvent(input$return_no, {
     # colour points
     plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#CCCCCC"
     # map to data$raw
@@ -441,7 +442,7 @@ server<-function(input, output, session){
     data$raw$selected[rows] <- FALSE
   })
 
-  shiny::observeEvent(input$topic_yes, {
+  observeEvent(input$topic_yes, {
     # color topic plot
     topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
     plot_features$appearance$topic$color[click_data$topic] <- "#000000"
@@ -454,7 +455,7 @@ server<-function(input, output, session){
     data$raw$selected[rows_raw] <- TRUE
   })
 
-  shiny::observeEvent(input$topic_no, {
+  observeEvent(input$topic_no, {
     # color topic plot
     topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
     plot_features$appearance$topic$color[click_data$topic] <- "#CCCCCC"
@@ -523,6 +524,6 @@ server<-function(input, output, session){
 
 } # end server
 
-shiny::shinyApp(ui, server) # run
+shinyApp(ui, server) # run
 
 }

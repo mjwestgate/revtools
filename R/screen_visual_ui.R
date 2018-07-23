@@ -8,60 +8,60 @@ screen_visual_ui <- function(){
   # dropdownMenuOutput might work to render a plot drawn in server.R
 
   sidebar <- shinydashboard::dashboardSidebar(
-    shinydashboard::sidebarMenu(
+    sidebarMenu(
       id = "tabs",
-      shinydashboard::menuItem("Data",
+      menuItem("Data",
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
-        shiny::fileInput("data_in", label = "Import"),
-        shiny::uiOutput("response_selector"),
-        shinydashboard::sidebarMenuOutput("variable_menu")
+        fileInput("data_in", label = "Import"),
+        uiOutput("response_selector"),
+        sidebarMenuOutput("variable_menu")
       ),
-      shinydashboard::menuItem("Model",
-        icon = shiny::icon("calculator"),
-        shiny::selectInput("model_type",
+      menuItem("Model",
+        icon = icon("calculator"),
+        selectInput("model_type",
           label = "Model Type",
           choices = c("LDA", "CTM")
         ),
-        shiny::sliderInput("n_topics",
+        sliderInput("n_topics",
           label = "# Topics",
           min = 4,
           max = 30,
           step = 1,
           value = 5
         ),
-        shiny::sliderInput("n_iterations",
+        sliderInput("n_iterations",
           label = "# Iterations",
           min = 1000,
           max = 20000,
           step = 1000,
           value = 2000
         ),
-        shiny::actionButton("calc_model",
+        actionButton("calc_model",
           label = "Calculate Model",
           width = "80%"
         ),
-        br()
+        shiny::br()
       ),
-      shinydashboard::menuItem("Plot",
-        icon = shiny::icon("bar-chart-o"),
-        shiny::selectInput("hide_names",
+      menuItem("Plot",
+        icon = icon("bar-chart-o"),
+        selectInput("hide_names",
           label = "Hide authors etc?",
           choices = c("FALSE", "TRUE"),
           multiple = FALSE
         ),
-        shiny::selectInput("plot_type",
+        selectInput("plot_type",
           label = "Display",
           choices = c(articles = "x", words = "y")
         ),
-        shiny::selectInput("plot_dims",
+        selectInput("plot_dims",
           label = "Dimensions",
           choices = c("2D", "3D")
         )
       ),
-      shinydashboard::menuItem("Appearance",
-        icon = shiny::icon("paint-brush"),
-        shiny::selectInput("palette", "Palette",
+      menuItem("Appearance",
+        icon = icon("paint-brush"),
+        selectInput("palette", "Palette",
           choices = c(
             Viridis = "D",
             Magma = "A",
@@ -71,21 +71,21 @@ screen_visual_ui <- function(){
           ),
           multiple = FALSE
         ),
-        shiny::sliderInput("color_alpha",
+        sliderInput("color_alpha",
           label = "Opacity",
           min = 0.2,
           max = 1,
           step = 0.1,
           value = 0.9
         ),
-        shiny::sliderInput("color_hue",
+        sliderInput("color_hue",
           label = "Hue",
           min = 0,
           max = 1,
           step = 0.05,
           value = c(0, 0.9)
         ),
-        shiny::sliderInput("point_size",
+        sliderInput("point_size",
           label = "Point Size",
           min = 0,
           max = 20,
@@ -93,9 +93,9 @@ screen_visual_ui <- function(){
           value = 12
         )
       ),
-      shinydashboard::menuItem("Save", # use modal save in this version
-        icon = shiny::icon("save"),
-        shiny::actionButton("save_data",
+      menuItem("Save", # use modal save in this version
+        icon = icon("save"),
+        actionButton("save_data",
           label = "Save Data",
           width = "80%"
           # style = "color: #fff; background-color: #428bca;"
@@ -114,7 +114,7 @@ screen_visual_ui <- function(){
     )
   )
 
-  body<-shinydashboard::dashboardBody(
+  body <- shinydashboard::dashboardBody(
     shiny::tag("style", shiny::HTML("
       .content-wrapper,
         .right-side {
@@ -165,21 +165,21 @@ screen_visual_ui <- function(){
     # upload button
     # checkbox
     # radiobutton
-    shiny::fluidRow(
-      shiny::column(width = 8,
-        plotly::plotlyOutput("plot_main", height = "600px"),
-        shiny::tableOutput("abstract_text")
+    fluidRow(
+      column(width = 8,
+        plotlyOutput("plot_main", height = "600px"),
+        tableOutput("abstract_text")
       ),
-      shiny::column(width=4,
-        plotly::plotlyOutput("plot_topic", height = "450px"),
-        shiny::tableOutput("selector_text"),
+      column(width=4,
+        plotlyOutput("plot_topic", height = "450px"),
+        tableOutput("selector_text"),
         # shiny::splitLayout(
-          shiny::uiOutput("select_choice"),
+          uiOutput("select_choice"),
           # uiOutput("select_save"),
         #   cellWidths = c("70%", "30%")
         # ),
-        shiny::uiOutput("select_notes"),
-        shiny::uiOutput("select_save")
+        uiOutput("select_notes"),
+        uiOutput("select_save")
         # old form:
         # shiny::splitLayout(
         #   uiOutput("select_yes"),
