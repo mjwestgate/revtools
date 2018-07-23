@@ -28,6 +28,7 @@ screen_visual<-function(x, remove_words){
 # create ui
 ui_data <- screen_visual_ui()
 ui <- shinydashboard::dashboardPage(
+  title = "revtools",
 	ui_data$header,
 	ui_data$sidebar,
 	ui_data$body,
@@ -53,10 +54,25 @@ server<-function(input, output, session){
     palette = NULL,
     appearance = NULL
   )
+  # plots <- reactiveValues(
+  #   scatter = NULL,
+  #   bar = NULL
+  # )
   click_data <- reactiveValues(
     main = c(),
     topic = c()
   )
+
+  # CREATE HEADER IMAGE
+  output$header <- renderPlot({
+    plot(x = 1, y = 1, type = "n",
+      xlim = c(1, 505),
+      ylim = c(1, 215),
+      asp = 1,
+      ann = FALSE, axes = FALSE
+    )
+    rasterImage(revtools::logo, 1, 1, 505, 215)
+  })
 
   # DATA INPUT
   ## when specified, ensure input data is processed correctly
@@ -81,10 +97,6 @@ server<-function(input, output, session){
     data$raw <- x
     data$columns <- colnames(x)[which(colnames(x) != "selected")]
   })
-
-  # observe({
-  #   data$columns <- colnames(data$raw)[which(colnames(data$raw) != "selected")]
-  # })
 
   # select a grouping variable
   output$response_selector <-renderUI({
@@ -357,6 +369,36 @@ server<-function(input, output, session){
   })
 
   # render selector buttons
+  output$select_choice <- renderUI({
+    if(length(click_data$main) > 0 & input$plot_type == "x"){
+      radioButtons("select_point",
+        label = "Selection:",
+        choices = c("Select", "Exclude"),
+        inline = TRUE
+      )
+    }
+  })
+
+  output$select_notes <- renderUI({
+    if(length(click_data$main) > 0){
+      textAreaInput("select_notes",
+        label = "Notes:",
+        resize = "vertical"
+      )
+    }
+  })
+
+  output$select_save <- renderUI({
+    if(length(click_data$main) > 0){
+      actionButton("select_saved",
+        label = "Save Selection & Notes",
+        width = "80%"
+#        style = "color: #fff; background-color: #428bca;"
+      )
+    }
+  })
+
+  # this content is basically outdated, but hasn't been replace with functional code yet.
   output$select_yes <- renderPrint({
   	if(length(click_data$main) > 0 & input$plot_type == "x"){
   		actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
@@ -424,6 +466,59 @@ server<-function(input, output, session){
     rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
     data$raw$selected[rows_raw] <- FALSE
   })
+
+
+  # SAVE PLOTS WHEN REQUESTED
+  # this fails at present because requires external dependencies.
+  # this is also true of the recommended function 'plotly::orca'
+  # observeEvent(input$save_bar, {
+  #   if(is.null(plots$bar)){
+  #     shiny::showModal(
+  #       shiny::modalDialog(
+  #         HTML(
+  #           "Create a plot to begin<br><br>
+  #           <em>Click anywhere to exit</em>"
+  #         ),
+  #         title = "Error: no plot to save",
+  #         footer = NULL,
+  #         easyClose = TRUE
+  #       )
+  #     )
+  #   }else{
+  #     shiny::showModal(
+  #       shiny::modalDialog(
+  #         shiny::textInput("save_bar_filename",
+  #           label = "File Name"
+  #         ),
+  #         shiny::selectInput("save_bar_filetype",
+  #           label = "File Type",
+  #           choices = c("jpeg", "png", "pdf")
+  #         ),
+  #         shiny::actionButton("save_bar_execute", "Save"),
+  #         shiny::modalButton("Cancel"),
+  #         title = "Save Barplot As:",
+  #         footer = NULL,
+  #         easyClose = FALSE
+  #       )
+  #     )
+  #   }
+  # })
+  #
+  # observeEvent(input$save_bar_execute, {
+  #   if(is.null(input$save_bar_filename)){
+  #     file <- "revtools_barplot.jpeg"
+  #   }else{
+  #     file <- paste(
+  #       input$save_bar_filename,
+  #       input$save_bar_filetype,
+  #       sep = "."
+  #     )
+  #   }
+  #   plotly::export(
+  #     p = plots$bar,
+  #     file = file
+  #   )
+  # })
 
 
 } # end server

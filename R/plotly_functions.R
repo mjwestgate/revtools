@@ -16,7 +16,6 @@ plot_2D <- function(input_info, color, pointsize = 10) { #, height = 400){
       font = list(color = "black")
     ),
     text = ~ caption,
-    # height = height,
     source = "main_plot"
     ) %>%
     plotly::add_markers() %>%
@@ -48,7 +47,6 @@ plot_3D <- function(input_info, color, pointsize = 6){ #, height = 400){
       font = list(color="black")
     ),
     text = ~ caption,
-    # height = height,
     source = "main_plot"
     ) %>%
     plotly::add_markers() %>%
