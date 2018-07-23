@@ -66,14 +66,14 @@ server<-function(input, output, session){
   )
 
   # CREATE HEADER IMAGE
-  output$header <- shiny::renderPlot({
+  output$header <- renderPlot({
     plot(x = 1, y = 1, type = "n",
       xlim = c(1, 505),
       ylim = c(1, 215),
       asp = 1,
       ann = FALSE, axes = FALSE
     )
-    rasterImage(revtools::logo, 1, 1, 505, 215)
+    rasterImage(revtools:::logo, 1, 1, 505, 215)
   })
 
   # DATA INPUT
