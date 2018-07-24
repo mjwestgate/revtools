@@ -67,13 +67,24 @@ server<-function(input, output, session){
 
   # CREATE HEADER IMAGE
   output$header <- renderPlot({
-    plot(x = 1, y = 1, type = "n",
-      xlim = c(1, 505),
-      ylim = c(1, 215),
-      asp = 1,
-      ann = FALSE, axes = FALSE
+    par(
+      mar = rep(0, 4),
+      oma = rep(0, 4),
+      bg = "#251256FF")
+    plot(
+      x = 1,
+      y = 1,
+      xlim = c(0, 1),
+      ylim = c(0, 1),
+      type = "n",
+      ann = FALSE,
+      axes = FALSE
     )
-    rasterImage(revtools:::logo, 1, 1, 505, 215)
+    rasterImage(revtools:::logo,
+      xleft = -0.04,
+      ybottom = 0.905,
+      xright = 0.65,
+      ytop = 1.04)
   })
 
   # DATA INPUT

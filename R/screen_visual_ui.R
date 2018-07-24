@@ -121,7 +121,7 @@ screen_visual_ui <- function(){
           background-color: #e2e2e2;
         }
     		.skin-black .main-header .logo {
-    			background-color: #4a3384;
+    			background-color: #251256FF;
           color: #ffffff;
     		}
     		.skin-black .main-header .logo:hover {
