@@ -67,7 +67,8 @@ screen_visual_ui <- function(){
       ),
       menuItem("Appearance",
         icon = icon("paint-brush"),
-        selectInput("palette", "Palette",
+        selectInput("palette",
+          label = "Palette",
           choices = c(
             Viridis = "D",
             Magma = "A",
@@ -104,17 +105,14 @@ screen_visual_ui <- function(){
         actionButton("save_data",
           label = "Save Data",
           width = "80%"
-          # style = "color: #fff; background-color: #428bca;"
         ) # ,
         # shiny::actionButton("save_scatter",
         #   label = "Save Main Plot",
         #   width = "80%",
-        #   style = "color: #fff; background-color: #428bca;"
         # ),
         # shiny::actionButton("save_bar",
         #   label = "Save Barplot",
         #   width = "80%",
-        #   style = "color: #fff; background-color: #428bca;"
         # )
       )
     )
@@ -173,35 +171,19 @@ screen_visual_ui <- function(){
           background: #4a3384;
         }
     ")),
-    # upload button
-    # checkbox
-    # radiobutton
     fluidRow(
-      column(width = 8,
+      column(
+        width = 8,
         plotlyOutput("plot_main", height = "600px"),
         tableOutput("abstract_text")
       ),
-      column(width=4,
+      column(
+        width = 4,
         plotlyOutput("plot_topic", height = "450px"),
         tableOutput("selector_text"),
-        # shiny::splitLayout(
-          uiOutput("select_choice"),
-          # uiOutput("select_save"),
-        #   cellWidths = c("70%", "30%")
-        # ),
+        uiOutput("select_choice"),
         uiOutput("select_notes"),
         uiOutput("select_save")
-        # old form:
-        # shiny::splitLayout(
-        #   uiOutput("select_yes"),
-        #   uiOutput("select_no"),
-        #   cellWidths = c("25%", "25%")
-        # ),
-        # shiny::splitLayout(
-        #   shiny::uiOutput("topic_yes"),
-        #   shiny::uiOutput("topic_no"),
-        #   cellWidths = c("25%", "25%")
-        # )
       )
     )
   )

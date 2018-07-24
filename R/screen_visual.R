@@ -93,26 +93,44 @@ server<-function(input, output, session){
   ## when specified, ensure input data is processed correctly
   observeEvent(input$data_in, {
   	source <- input$data_in
+    is_csv <- grepl(".csv$", source$name)
   	if(is.null(x)){
   	  if(is.null(source)){
   	  	x <- NULL
   	  }else{
-  	  	x <- as.data.frame(read_bibliography(source$datapath))
+        if(is_csv){
+          x <- read.csv(source$datapath, stringsAsFactors = FALSE)
+        }else{
+          x <- as.data.frame(read_bibliography(source$datapath))
+        }
   	  }
   	}else{
   	  if(is.null(source)){
   	  	x <- x
   	  }else{
-  	  	x <- merge_columns(x, as.data.frame(read_bibliography(source$datapath)))
+        if(is_csv){
+          x <- merge_columns(
+            x,
+            read.csv(source$datapath, stringsAsFactors = FALSE)
+          )
+        }else{
+          x <- merge_columns(
+            x,
+            as.data.frame(read_bibliography(source$datapath))
+          )
+        }
   	  }
   	}
     if(any(colnames(x) == "selected") == FALSE){
       x$selected <- NA
     }
+    if(any(colnames(x) == "notes") == FALSE){
+      x$notes <- NA
+    }
     data$raw <- x
     data$columns <- colnames(x)[which(colnames(x) != "selected")]
-    # display$column_menu <- TRUE
   })
+
 
   # select a grouping variable
   output$response_selector <- renderUI({
@@ -308,7 +326,7 @@ server<-function(input, output, session){
   # CAPTURE CLICK DATA
   observe({
   	click_main <- event_data(
-      "plotly_click",
+      event = "plotly_click",
       source = "main_plot"
     )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
     current_data <- plot_features$appearance[[input$plot_type]]
@@ -319,7 +337,7 @@ server<-function(input, output, session){
 
   observe({
   	click_topic <- event_data(
-      "plotly_click",
+      event = "plotly_click",
       source = "topic_plot"
     )$pointNumber + 1
     click_data$topic <- which(data$plot_ready$topic$topic ==
@@ -331,10 +349,14 @@ server<-function(input, output, session){
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
       if(any(c("label", "title") == input$response_variable)){
-        cat(format_citation(
-          data$plot_ready[[input$plot_type]][click_data$main, ],
-          abstract = FALSE,
-          details = (input$hide_names == FALSE)
+        cat(paste0(
+          "<br><b>Entry:</b> ",
+          format_citation(
+            data$plot_ready[[input$plot_type]][click_data$main, ],
+            abstract = FALSE,
+            details = (input$hide_names == FALSE)
+          ),
+          "<br><br>"
         ))
       }else{
         cat(paste(
@@ -344,13 +366,16 @@ server<-function(input, output, session){
       }
     }else{
       if(length(click_data$topic) > 0){
-        cat(paste0(
-          "<b>Topic #", click_data$topic,
-          "</b> | Key terms<br><em>Most likely:</em> ",
-  				data$plot_ready$topic$terms_default[click_data$topic],
-          "<br><em>Heighest weighted:</em> ",
-  				data$plot_ready$topic$terms_weighted[click_data$topic]
-  			))
+        cat(
+          paste0(
+            "<br><b>Topic: ", click_data$topic,
+            "</b><br><em>Most likely terms:</em> ",
+    				data$plot_ready$topic$terms_default[click_data$topic],
+            "<br><em>Heighest weighted terms:</em> ",
+    				data$plot_ready$topic$terms_weighted[click_data$topic],
+            "<br><br>"
+          )
+  			)
       }
     }
   })
@@ -378,7 +403,7 @@ server<-function(input, output, session){
 
   # render selector buttons
   output$select_choice <- renderUI({
-    if(length(click_data$main) > 0 & input$plot_type == "x"){
+    if((length(click_data$main) > 0 | length(click_data$topic) > 0) & input$plot_type == "x"){
       radioButtons("select_point",
         label = "Selection:",
         choices = c("Select", "Exclude"),
@@ -388,7 +413,7 @@ server<-function(input, output, session){
   })
 
   output$select_notes <- renderUI({
-    if(length(click_data$main) > 0){
+    if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
       textAreaInput("select_notes",
         label = "Notes:",
         resize = "vertical",
@@ -398,84 +423,116 @@ server<-function(input, output, session){
   })
 
   output$select_save <- renderUI({
-    if(length(click_data$main) > 0){
+    if(length(click_data$main) > 0 | length(click_data$topic) > 0){
       actionButton("select_saved",
         label = "Save Selection & Notes",
         width = "80%"
-#        style = "color: #fff; background-color: #428bca;"
       )
     }
   })
 
-  # this content is basically outdated, but hasn't been replace with functional code yet.
-  output$select_yes <- renderPrint({
-  	if(length(click_data$main) > 0 & input$plot_type == "x"){
-  		shiny::actionButton("return_yes", "Select", style="color: #fff; background-color: #428bca;")
-  	}
+  # when button is clicked, update plot and data as requested
+  # Note: no note saving yet
+  observeEvent(input$select_saved, {
+    if(length(click_data$main) > 0){ # i.e. point selected on main plot
+      if(input$select_point == "Select"){
+        plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#000000"
+        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+        rows <- which(data$raw[, input$response_variable] == selected_response)
+        data$raw$selected[rows] <- TRUE
+        data$raw$notes[rows] <- input$select_notes
+      }else{
+        # colour points
+        plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#CCCCCC"
+        # map to data$raw
+        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+        rows <- which(data$raw[, input$response_variable] == selected_response)
+        data$raw$selected[rows] <- FALSE
+        data$raw$notes[rows] <- input$select_notes
+      }
+    }else{ # i.e. topic selected on barplot
+      if(input$select_point == "Select"){
+        # color topic plot
+        topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+        plot_features$appearance$topic$color[click_data$topic] <- "#000000"
+        # color main plot
+        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
+        plot_features$appearance[[input$plot_type]]$color[rows] <- "#000000"
+        # map to data$raw
+        selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
+        rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
+        data$raw$selected[rows_raw] <- TRUE
+        data$raw$notes[rows_raw] <- input$select_notes
+      }else{
+        # color topic plot
+        topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+        plot_features$appearance$topic$color[click_data$topic] <- "#CCCCCC"
+        # color main plot
+        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
+        plot_features$appearance[[input$plot_type]]$color[rows] <- "#CCCCCC"
+        # map to data$raw
+        selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
+        rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
+        data$raw$selected[rows_raw] <- FALSE
+        data$raw$notes[rows_raw] <- input$select_notes
+      }
+    }
   })
 
-  output$select_no <- renderPrint({
-  	if(length(click_data$main) > 0){
-  		shiny::actionButton("return_no", "Exclude", style="color: #fff; background-color: #428bca;")
-  	}
+  # save data
+  observeEvent(input$save_data, {
+    if(is.null(data$raw)){
+      showModal(
+        modalDialog(
+          HTML(
+            "Import some data to begin<br><br>
+            <em>Click anywhere to exit</em>"
+          ),
+          title = "Error: no data to save",
+          footer = NULL,
+          easyClose = TRUE
+        )
+      )
+    }else{
+      showModal(
+        modalDialog(
+          textInput("save_filename",
+            label = "File Name"
+          ),
+          selectInput("save_data_filetype",
+            label = "File Type",
+            choices = c("csv", "rds")
+          ),
+          actionButton("save_data_execute", "Save"),
+          modalButton("Cancel"),
+          title = "Save As",
+          footer = NULL,
+          easyClose = FALSE
+        )
+      )
+    }
   })
 
-  output$topic_yes <- renderPrint({
-  	if(length(click_data$topic) > 0 & input$plot_type == "x"){
-  		shiny::actionButton("topic_yes", "Select", style="color: #fff; background-color: #428bca;")
-  	}
+  observeEvent(input$save_data_execute, {
+    if(nchar(input$save_filename) == 0){
+      filename <- "revtools_data"
+    }else{
+      if(grepl("\\.[[:lower:]]{3}$", input$save_filename)){
+        filename <- substr(
+          input$save_filename, 1,
+          nchar(input$save_filename) - 4
+        )
+      }else{
+        filename <- input$save_filename
+      }
+    }
+    filename <- paste(filename, input$save_data_filetype, sep = ".")
+    switch(input$save_data_filetype,
+      "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
+      "rds" = {saveRDS(data$raw, file = filename)}
+    )
+    removeModal()
   })
-
-  output$topic_no <- renderPrint({
-  	if(length(click_data$topic) > 0){
-  		shiny::actionButton("topic_no", "Exclude", style="color: #fff; background-color: #428bca;")
-  	}
-  })
-
-
-  # ARTICLE/WORD/TOPIC SELECTION
-  observeEvent(input$return_yes, {
-    plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#000000"
-    selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-    rows <- which(data$raw[, input$response_variable] == selected_response)
-    data$raw$selected[rows] <- TRUE
-  })
-
-  observeEvent(input$return_no, {
-    # colour points
-    plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#CCCCCC"
-    # map to data$raw
-    selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-    rows <- which(data$raw[, input$response_variable] == selected_response)
-    data$raw$selected[rows] <- FALSE
-  })
-
-  observeEvent(input$topic_yes, {
-    # color topic plot
-    topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-    plot_features$appearance$topic$color[click_data$topic] <- "#000000"
-    # color main plot
-    rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-    plot_features$appearance[[input$plot_type]]$color[rows] <- "#000000"
-    # map to data$raw
-    selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
-    rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
-    data$raw$selected[rows_raw] <- TRUE
-  })
-
-  observeEvent(input$topic_no, {
-    # color topic plot
-    topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-    plot_features$appearance$topic$color[click_data$topic] <- "#CCCCCC"
-    # color main plot
-    rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-    plot_features$appearance[[input$plot_type]]$color[rows] <- "#CCCCCC"
-    # map to data$raw
-    selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
-    rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
-    data$raw$selected[rows_raw] <- FALSE
-  })
-
 
   # SAVE PLOTS WHEN REQUESTED
   # this fails at present because requires external dependencies.

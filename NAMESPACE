@@ -23,7 +23,7 @@ tableOutput, uiOutput, plotOutput,
 reactiveValues, observe, observeEvent, isolate,
 renderPrint, renderPlot, renderUI,
 validate, need,
-showModal, modalDialog, removeModal,
+showModal, modalDialog, removeModal, modalButton,
 shinyApp)
 importFrom(shinydashboard,
 sidebarMenu, menuItem, sidebarMenuOutput, renderMenu)
