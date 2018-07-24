@@ -51,9 +51,6 @@ server<-function(input, output, session){
     model = NULL,
     plot_ready = NULL
   )
-  # display <- reactiveValues(
-  #   column_menu = FALSE
-  # )
   plot_features <- reactiveValues(
     palette = NULL,
     appearance = NULL
@@ -85,7 +82,7 @@ server<-function(input, output, session){
     rasterImage(revtools:::logo,
       xleft = -0.04,
       ybottom = 0.905,
-      xright = 0.65,
+      xright = 1.04,
       ytop = 1.04)
   })
 
@@ -310,7 +307,6 @@ server<-function(input, output, session){
   })
 
   # topic barplot
-  # note: may require an observe({}) to ensure updates
   output$plot_topic <- renderPlotly({
     validate(
       need(data$model, "Choose model parameters")
@@ -359,10 +355,19 @@ server<-function(input, output, session){
           "<br><br>"
         ))
       }else{
-        cat(paste(
-          data$plot_ready[[input$plot_type]][[input$response_variable]][click_data$main],
-          collapse = "<br>"
-        ))
+        cat(
+          paste0(
+            "<br><b>",
+            gsub(
+              "^[[:lower:]]",
+              toupper(substr(input$response_variable, 1, 1)),
+              input$response_variable
+            ),
+            ":</b> ",
+            data$plot_ready[[input$plot_type]][[input$response_variable]][click_data$main],
+            "<br><br>"
+          )
+        )
       }
     }else{
       if(length(click_data$topic) > 0){

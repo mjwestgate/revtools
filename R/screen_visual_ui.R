@@ -2,7 +2,7 @@ screen_visual_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
-    title = shiny::plotOutput("header")
+    title = plotOutput("header")
   )
 
   # dropdownMenuOutput might work to render a plot drawn in server.R
@@ -125,14 +125,14 @@ screen_visual_ui <- function(){
           background-color: #e2e2e2;
         }
     		.skin-black .main-header .logo {
-    			background-color: #251256FF;
+    			background-color: #27114D;
           color: #ffffff;
     		}
     		.skin-black .main-header .logo:hover {
-    			background-color: #4a3384;
+    			background-color: #27114D;
     		}
     		.skin-black .main-header .navbar {
-    			background-color: #4a3384;
+    			background-color: #afafaf;
     		}
         .action-button {
           color: #fff;
@@ -144,7 +144,7 @@ screen_visual_ui <- function(){
           background: black;
           border-width: 0px;
         }
-        .irs-bar {    /* slider info */
+        .irs-bar {
           background: #4a3384;
           border: #4a3384;
         }
