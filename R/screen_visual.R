@@ -6,7 +6,7 @@ start_review_window <- function(x, remove_words){
 screen_visual <- function(x, remove_words){
 
   if(missing(x)){x <- NULL}
-  if(!is.null(x)){ # x<-as.data.frame(x)}
+  if(!is.null(x)){
 
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
@@ -17,7 +17,6 @@ screen_visual <- function(x, remove_words){
       "bibliography" = {x <- as.data.frame(x)},
       "data.frame" = {x <- x}
     )
-      # "review_info" = {x <- x$info})
   }
 
   if(missing(remove_words)){
