@@ -52,6 +52,9 @@ server<-function(input, output, session){
     model = NULL,
     plot_ready = NULL
   )
+  # display <- reactiveValues(
+  #   column_menu = FALSE
+  # )
   plot_features <- reactiveValues(
     palette = NULL,
     appearance = NULL
@@ -109,39 +112,32 @@ server<-function(input, output, session){
     }
     data$raw <- x
     data$columns <- colnames(x)[which(colnames(x) != "selected")]
+    # display$column_menu <- TRUE
   })
 
   # select a grouping variable
   output$response_selector <- renderUI({
     if(!is.null(data$columns)){
-    	choices <- data$columns
-      if(any(choices == "label")){
+      if(any(data$columns == "label")){
         selected <- "label"
       }else{
-        selected <- choices[1]
+        selected <- data$columns[1]
       }
       selectInput(
         "response_variable",
         label = "Show one point per:",
-        choices = choices,
+        choices = data$columns,
         selected = selected
       )
     }
   })
 
-  # add a sidebar menu listing columns available in data$raw
-  output$variable_menu <- renderMenu({
+  # select text to be included in the DTM/topic model
+  output$variable_selector <- renderUI({
     if(!is.null(data$columns)){
-      sidebarMenu(
-        menuItem("Variables",
-          tabName = "variable_tab",
-          icon = icon("pencil"),
-          startExpanded = TRUE,
-          checkboxGroupInput("variable_selector",
-            "Select included variables:",
-            choices = data$columns
-          )
-        )
+      checkboxGroupInput("variable_selector",
+        "Select included variables:",
+        choices = data$columns
       )
     }
   })
@@ -396,7 +392,8 @@ server<-function(input, output, session){
     if(length(click_data$main) > 0){
       textAreaInput("select_notes",
         label = "Notes:",
-        resize = "vertical"
+        resize = "vertical",
+        width = "120%"
       )
     }
   })

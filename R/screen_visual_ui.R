@@ -15,7 +15,13 @@ screen_visual_ui <- function(){
         startExpanded = TRUE,
         fileInput("data_in", label = "Import"),
         uiOutput("response_selector"),
-        sidebarMenuOutput("variable_menu")
+        menuItem("Variables",
+          tabName = "variable_tab",
+          icon = icon("pencil"),
+          startExpanded = TRUE,
+          uiOutput("variable_selector")
+        ),
+        shiny::br()
       ),
       menuItem("Model",
         icon = icon("calculator"),
@@ -133,6 +139,11 @@ screen_visual_ui <- function(){
         .action-button {
           color: #fff;
           background: #4a3384;
+          border-width: 0px;
+        }
+        .action-button:hover {
+          color: #fff;
+          background: black;
           border-width: 0px;
         }
         .irs-bar {    /* slider info */
