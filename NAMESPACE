@@ -1,20 +1,40 @@
 export(as.bibliography, read_bibliography, write_bibliography,
-summary.bibliography, print.bibliography, '[.bibliography', summary.review_info,
+summary.bibliography, print.bibliography, '[.bibliography',
+format_citation,
+format_citation.bibliography, format_citation.data.frame, format_citation.list,
+fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
-make_DTM, run_LDA, start_review_window)
+make_DTM, run_LDA,
+screen_visual, start_review_window)
+S3method(format_citation, bibliography)
+S3method(format_citation, list)
+S3method(format_citation, data.frame)
 S3method(print, bibliography)
 S3method(summary, bibliography)
 S3method(as.data.frame, bibliography)
 S3method('[', bibliography)
-S3method(summary, review_info)
 importFrom(ade4, dudi.coa)
 importFrom(grDevices, grey)
 importFrom(modeltools, posterior)
-importFrom(plotly, renderPlotly, event_data, "%>%")
-importFrom(shiny, sliderInput, selectInput, textInput, actionButton, tableOutput, uiOutput, reactiveValues, observeEvent, observe, renderPrint, isolate, fluidRow, strong, column, icon, p)
-importFrom(shinydashboard, sidebarMenu, menuItem, menuSubItem)
+importFrom(plotly,
+event_data, "%>%", plotlyOutput,
+renderPlotly, plotlyProxy, plotlyProxyInvoke)
+importFrom(shiny,
+fluidRow, column, icon,
+checkboxGroupInput, fileInput, sliderInput, selectInput, textInput, textAreaInput,
+actionButton, radioButtons,
+tableOutput, uiOutput, plotOutput,
+reactiveValues, observe, observeEvent, isolate,
+renderPrint, renderPlot, renderUI,
+validate, need,
+showModal, modalDialog, removeModal, modalButton,
+shinyApp)
+importFrom(shinydashboard,
+sidebarMenu, menuItem, sidebarMenuOutput, renderMenu)
 importFrom(stats, xtabs)
-importFrom(tm, removePunctuation, removeWords, removeNumbers, stemDocument, tm_map, Corpus, VectorSource, DocumentTermMatrix, removeSparseTerms, stopwords, content_transformer, weightTf)
+importFrom(tm, removePunctuation, removeWords, removeNumbers,
+stemDocument, tm_map, Corpus, VectorSource, DocumentTermMatrix,
+removeSparseTerms, stopwords, content_transformer, weightTf)
 importFrom(topicmodels, LDA, CTM, get_terms)
 importFrom(utils, head, tail, write.csv, write.table)
 importFrom(viridisLite, magma, viridis, inferno, plasma)

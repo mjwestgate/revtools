@@ -1,71 +1,155 @@
+format_citation <- function(x, ...){
+  UseMethod("format_citation")
+  }
+
+
 # Function to display bibliographic information on selected articles
-format_citation<-function(
+format_citation.list <- function(
 	x, # list of data from a standard import function
-	abstract=FALSE, # option to return only the citation for an article
-	details=TRUE # whether to allow or suppress bibliographic details - name, year, journal
+  details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
+	abstract = FALSE, # option to return only the citation for an article
+  add_html = FALSE
 	){
-	if(details){
-
-		if(any(names(x)=="author")){
-			# author info
-			# remove any additional characters that display affiliations (i.e. those after last ".")
-			author.data<-unlist(lapply(strsplit(x$author, ""), function(a){
-				dot.lookup<-a %in% "."
-				if(any(dot.lookup)){a<-a[1:max(which(dot.lookup))]}
-				return(paste(a, collapse=""))
-				}))
-			if(any(grepl(",", author.data))){
-				author.data<-unlist(lapply(strsplit(author.data, ", "), function(a){paste(a[2], a[1], sep=" ")}))
-				}
-			n.authors<-length(x$author)
-			if(n.authors>=4){n.authors<-4}
-			author.info<-switch(as.character(n.authors), 
-				"0"="Anon.",
-				"1"=author.data,
-				"2"={paste(author.data, collapse=" & ")},
-				"3"={paste(author.data[1], ", ", author.data[2], " & ", author.data[3], sep="")},
-				"4"={paste(author.data[1], ", ", author.data[2], " et al.", sep="")})
-		} else{author.info<-""}		
-
-
-		# paste info in the correct order
-		lookup.headers<-c("year", "title", "journal", "volume", "pages")
-		lookup.result<-lookup.headers %in% names(x)
-		if(all(lookup.result)){
-			result<-paste(author.info, " (", x$year, ") ", 
-				x$title, ". ", x$journal, " ", x$volume, ": ", x$pages, sep="")
-		}else{
-			result<-paste(author.info, paste(x[lookup.headers[lookup.result]], collapse=" "), sep=" ")}
-			# note - the above line doesn't add brackets around year
-
+  	if(!details){
+      # author.info <- ""
+      result <- as.character(x["title"])
+    }else{
+  		if(any(names(x) == "author")){
+  			# author info
+  			# remove any additional characters that display affiliations (i.e. those after last ".")
+  			author.data<-unlist(lapply(strsplit(x$author, ""), function(a){
+  				dot.lookup<-a %in% "."
+  				if(any(dot.lookup)){a<-a[1:max(which(dot.lookup))]}
+  				return(paste(a, collapse=""))
+  				}))
+  			if(any(grepl(",", author.data))){
+  				author.data <- unlist(lapply(
+            strsplit(author.data, ", "),
+            function(a){paste(a[2], a[1], sep=" ")}
+          ))
+  			}
+  			n.authors<-length(x$author)
+  			if(n.authors>=4){
+          n.authors<-4
+        }
+  			author.info<-switch(as.character(n.authors),
+  				"0" = "Anon.",
+  				"1" = author.data,
+  				"2" = {paste(author.data, collapse=" & ")},
+  				"3" = {paste0(author.data[1], ", ", author.data[2], " & ", author.data[3])},
+  				"4" = {paste0(author.data[1], ", ", author.data[2], " et al.")})
+  		}
+    # }
+  		# paste info in the correct order
+  		lookup.headers <- c("year", "title", "journal", "volume", "pages")
+  		lookup.result <- lookup.headers %in% names(x)
+  		if(all(lookup.result)){
+  			result <- paste0(
+          author.info,
+          " (", x$year, ") ",
+  				x$title, ". ", x$journal, " ", x$volume, ": ", x$pages
+        )
+  		}else{
+  			result <- paste(
+          author.info,
+          paste(x[lookup.headers[lookup.result]], collapse=" "),
+          sep=" "
+        )
+      }
+		  # note - the above doesn't add brackets around year
+    }
 		# add abstract if required
-		if(abstract){
-			result<- paste(result, ".<br><br><strong>Abstract</strong><br>", x$abstract, sep="")}
-	}else{
-		if(abstract){result<-paste("<strong>Title:</strong> ", x$title, 
-			"<br><br><strong>Abstract</strong><br>", x$abstract, sep="")
-		}else{result<-paste("<strong>Title:</strong> ", x$title, sep="")
-		}}
+		if(abstract & any(names(x) == "abstract")){
+			result <- paste0(result, ".<br><br><strong>Abstract</strong><br>", x$abstract)
+  	}
 
 	return(result)
 	}
 
+
+format_citation.bibliography <-  function(
+	x,
+  details = TRUE,
+	abstract = FALSE,
+  add_html = FALSE
+	){
+  lapply(x, function(a, details, abstract, add_html){
+    format_citation.list(a, details, abstract, add_html)
+    },
+    details = details,
+    abstract = abstract,
+    add_html = add_html
+  )
+}
+
 # duplicate version for calling apply on a data.frame
-format_citation_dataframe<-function(df){
-	author_vector<-strsplit(df['author'], " and ")[[1]]
-	if(length(author_vector)==1){author_text<-df['author']
-	}else{author_text<-paste(author_vector[1], " et al.", sep="")}
-	text_vector<-paste(author_text, " (", df['year'], ") ", df['title'], ". <i>", df['journal'], "</i>.", sep="")
-	# now organize so that line breaks are added at word breaks every y characters
-	split_vector<-strsplit(text_vector, " ")[[1]]
-	result_dframe<-data.frame(
-		text=split_vector,
-		nchars=nchar(split_vector),
-		stringsAsFactors=FALSE)
-	result_dframe$sum<-cumsum(result_dframe$nchars)
-	result_dframe$group<-cut(result_dframe$sum, 
-		breaks=seq(0, max(result_dframe$sum)+49, 50),
-		labels=FALSE)
-	result_list<-split(result_dframe$text, result_dframe$group)
-	paste(unlist(lapply(result_list, function(a){paste(a, collapse=" ")})), collapse="\n")
+format_citation.data.frame <- function(
+  x,
+  details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
+  abstract = FALSE,
+  add_html = FALSE
+  ){
+  if(
+    all(c("author", "year", "title", "journal") %in% names(x)) &
+    (details == TRUE) &
+    ((names(x)[1] == "label") == TRUE)
+  ){
+	x_list <- split(x, c(1:nrow(x)))
+  x_out <- unlist(lapply(x_list, function(a){
+		author_vector <- strsplit(a[['author']], " and ")[[1]]
+		if(length(author_vector) == 1){
+      author_text <- a[['author']]
+		}else{
+      author_text <- paste0(author_vector[1], " et al.")
+    }
+    if(add_html){
+      journal_text <- paste0("<i>", a[['journal']], "</i>. ")
+    }else{
+      journal_text <- paste0(a[['journal']], ". ")
+    }
+		text_vector <- paste0(
+      author_text,
+      " (", a[['year']], ") ",
+      a[['title']], ". ",
+      journal_text
+    )
+    return(text_vector)
+  }))
+	}else{
+    if((details == FALSE) & (names(x)[1] == "label")){
+      if(any(names(x) == "title")){
+        x_out <- x[["title"]]
+      }else{
+        x_out <- x[, 1]
+      }
+    }else{
+      x_out <- x[, 1]
+    }
 	}
+  return(x_out)
+}
+
+
+# now organize so that line breaks are added at word breaks every y characters
+add_line_breaks <- function(x){
+	split_text <- strsplit(x, " ")
+  out_list <- lapply(split_text, function(a){
+  	result <- data.frame(
+  		text = a,
+  		nchars = nchar(a),
+  		stringsAsFactors = FALSE
+    )
+  	result$sum <- cumsum(result$nchars)
+  	result$group <- cut(result$sum,
+  		breaks = seq(0, max(result$sum)+49, 50),
+  		labels = FALSE)
+  	result_list <- split(result$text, result$group)
+  	result <- paste(
+      unlist(
+        lapply(result_list, function(a){paste(a, collapse = " ")})
+      ),
+      collapse = "\n")
+    return(result)
+  })
+  return(unlist(out_list))
+}

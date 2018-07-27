@@ -1,6 +1,6 @@
-summary.bibliography<-function(object, ...){
+summary.bibliography <- function(object, ...){
 
-	# are any abstracts completely missing? 
+	# are any abstracts completely missing?
 	null.check<-unlist(lapply(object, function(a){is.null(a$abstract)}))
 	null.count<-length(object)-length(which(null.check))
 	null.percent<-round((100/length(object)) * null.count, 1)
@@ -30,32 +30,36 @@ summary.bibliography<-function(object, ...){
 }
 
 
-print.bibliography<-function(x, n, ...){
-	length.tr<-length(x)
+print.bibliography <- function(x, n, ...){
+	length.tr <- length(x)
 	if(missing(n)){
-		n<-min(c(length.tr, 5))
+		n <- min(c(length.tr, 5))
 	}else{
-		if(n>length.tr){n<-length.tr}
+		if(n > length.tr){
+      n <- length.tr
+    }
 	}
-	text.tr<-lapply(x[1:n], format_citation)
+	text.tr <- format_citation(x[c(1:n)])
 	cat(paste(unlist(text.tr), collapse="\n\n"))
 }
 
 
-'[.bibliography'<-function(x, n){
-class(x)<-"list"
-if(all(n %in% c(1:length(x)))==FALSE){stop("subset out of bounds")}
-z<-x[n]
-class(z)<-"bibliography"
-return(z)
+'[.bibliography' <- function(x, n){
+  class(x) <- "list"
+  if(all(n %in% c(1:length(x))) == FALSE){
+    stop("subset out of bounds")
+  }
+  z <- x[n]
+  class(z) <- "bibliography"
+  return(z)
 }
 
 
 # function to convert an object of class 'bibliography' into a data.frame
-as.data.frame.bibliography<-function(x, ...){
+as.data.frame.bibliography <- function(x, ...){
 
-	cols<-unique(unlist(lapply(x, names)))
-	cols<-cols[which(cols!="further_info")]
+	cols <- unique(unlist(lapply(x, names)))
+	cols <- cols[which(cols!="further_info")]
 
 	x_list<-lapply(x, function(a, cols){
 		result<-lapply(cols, function(b, lookup){
@@ -71,7 +75,7 @@ as.data.frame.bibliography<-function(x, ...){
 
 	x_dframe<-data.frame(
 		label=make.names(names(x_list), unique=TRUE),
-		do.call(rbind, x_list), 
+		do.call(rbind, x_list),
 		stringsAsFactors=FALSE)
 	rownames(x_dframe)<-NULL
 
@@ -79,7 +83,7 @@ as.data.frame.bibliography<-function(x, ...){
 }
 
 
-as.bibliography<-function(x, ...){
+as.bibliography <- function(x, ...){
 
 	if(class(x)!="data.frame"){
 		stop("as.bibliography can only be called for objects of class 'data.frame'")
