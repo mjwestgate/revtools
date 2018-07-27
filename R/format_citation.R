@@ -1,8 +1,15 @@
+format_citation <- function(x, ...){
+  UseMethod("format_citation")
+  }
+
+
+
 # Function to display bibliographic information on selected articles
-format_citation<-function(
+format_citation.list <- function(
 	x, # list of data from a standard import function
+  details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
 	abstract = FALSE, # option to return only the citation for an article
-	details = TRUE # whether to allow or suppress bibliographic details - name, year, journal
+  add_html = FALSE
 	){
   	if(!details){
       # author.info <- ""
@@ -55,57 +62,75 @@ format_citation<-function(
 		# add abstract if required
 		if(abstract & any(names(x) == "abstract")){
 			result <- paste0(result, ".<br><br><strong>Abstract</strong><br>", x$abstract)
-  	}# else{
-  		# if(abstract){
-      #   result <- paste(
-      #     "<strong>Title:</strong> ",
-      #     x$title,
-  		# 	  "<br><br><strong>Abstract</strong><br>",
-      #     x$abstract,
-      #     sep = ""
-      #   )
-  		# }else{
-      #  result <- paste0("<strong>Title:</strong> ", x$title)
-  		# }
-    # }
+  	}
 
 	return(result)
 	}
 
+
+format_citation.bibliography <-  function(
+	x,
+  details = TRUE,
+	abstract = FALSE,
+  add_html = FALSE
+	){
+  lapply(x, function(a, details, abstract, add_html){
+    format_citation.list(a, details, abstract, add_html)
+    },
+    details = details,
+    abstract = abstract,
+    add_html = add_html
+  )
+}
+
 # duplicate version for calling apply on a data.frame
-format_citation_dataframe <- function(
-  df,
-  hide_details = FALSE # whether to allow or suppress bibliographic details - name, year, journal
+format_citation.data.frame <- function(
+  x,
+  details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
+  abstract = FALSE,
+  add_html = FALSE
   ){
   if(
-    all(c("author", "year", "title", "journal") %in% names(df)) &
-    (hide_details == FALSE) &
-    names(df)[1] == "label"
+    all(c("author", "year", "title", "journal") %in% names(x)) &
+    details &
+    names(x)[1] == "label"
   ){
 	# if(all(c("author", "year", "title", "journal") %in% colnames(df)) & !hide_details){
-		author_vector <- strsplit(df['author'], " and ")[[1]]
+		author_vector <- strsplit(x[['author']], " and ")[[1]]
 		if(length(author_vector) == 1){
-      author_text <- df['author']
+      author_text <- x[['author']]
 		}else{
-      author_text <- paste(author_vector[1], " et al.", sep="")
+      author_text <- paste0(author_vector[1], " et al.")
     }
-		text_vector <- paste(
-      author_text, " (", df['year'], ") ",
-      df['title'], ". <i>", df['journal'], "</i>.", sep="")
+    if(add_html){
+      journal_text <- paste0("<i>", x[['journal']], "</i>. ")
+    }else{
+      journal_text <- paste0(x[['journal']], ". ")
+    }
+		text_vector <- paste0(
+      author_text,
+      " (", x[['year']], ") ",
+      x[['title']], ". ",
+      journal_text
+    )
 	}else{
-    if((hide_details == TRUE) & (names(df)[1] == "label")){
-      if(any(names(df) == "title")){
-        text_vector <- df["title"]
+    if((details == FALSE) & (names(x)[1] == "label")){
+      if(any(names(x) == "title")){
+        text_vector <- x[["title"]]
       }else{
-        text_vector <- df[1]
+        text_vector <- x[[1]]
       }
     }else{
-      text_vector <- df[1]
+      text_vector <- x[[1]]
     }
 	}
+  return(text_vector)
+}
 
-	# now organize so that line breaks are added at word breaks every y characters
-	split_vector <- strsplit(text_vector, " ")[[1]]
+
+# now organize so that line breaks are added at word breaks every y characters
+add_line_breaks <- function(x){
+	split_vector <- strsplit(x, " ")[[1]]
 	result_dframe <- data.frame(
 		text = split_vector,
 		nchars = nchar(split_vector),

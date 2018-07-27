@@ -226,7 +226,7 @@ server<-function(input, output, session){
         alpha = 0.9,
         begin = 0,
         end = 0.9,
-        option = "D"
+        option = "A"
       )
 
       # add appearance info
@@ -271,7 +271,9 @@ server<-function(input, output, session){
   observeEvent(input$hide_names, {
     if(!is.null(data$plot_ready)){
       data$plot_ready$x$caption <- apply(data$plot_ready$x, 1,
-        function(a, hide){format_citation_dataframe(a, hide_details = hide)
+        function(a, hide){add_line_breaks(
+          format_citation(a, hide_details = hide)
+        )
         }, hide = input$hide_names
       )
     }

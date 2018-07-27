@@ -70,8 +70,8 @@ screen_visual_ui <- function(){
         selectInput("palette",
           label = "Palette",
           choices = c(
-            Viridis = "D",
             Magma = "A",
+            Viridis = "D",
             Inferno = "B",
             Plasma = "C",
             Cividis = "E"
