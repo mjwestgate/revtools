@@ -224,15 +224,15 @@ server<-function(input, output, session){
       plot_features$palette <- viridis(
         n = data$model@k,
         alpha = 0.9,
-        begin = 0,
+        begin = 0.1,
         end = 0.9,
         option = "A"
       )
 
       # add appearance info
       plot_features$appearance <- build_appearance(
-        data$plot_ready,
-        plot_features$palette
+        plot_data = data$plot_ready,
+        palette = plot_features$palette
       )
 
       # exit modal
@@ -262,8 +262,8 @@ server<-function(input, output, session){
       option = input$palette
     )
     plot_features$appearance <- update_appearance(
-      plot_features$appearance,
-      plot_features$palette
+      plot_data = plot_features$appearance,
+      palette = plot_features$palette
     )
   })
 
@@ -301,9 +301,7 @@ server<-function(input, output, session){
   		plotlyProxyInvoke("restyle", list(
   			marker = list(
   				size = input$point_size,
-  				color = plot_features$appearance[[input$plot_type]]$color[
-            plot_features$appearance[[input$plot_type]]$display
-          ]
+  				color = plot_features$appearance[[input$plot_type]]$color
   			)
   		))
   })
@@ -421,8 +419,23 @@ server<-function(input, output, session){
 
   output$select_notes <- renderUI({
     if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
+      if(length(click_data$main) > 0){
+        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+        row <- which(data$raw[, input$response_variable] == selected_response)
+        start_text <- data$raw$notes[row]
+      }else{
+        topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
+        start_text <- data$raw$notes[rows[1]]
+      }
+      if(is.na(start_text)){
+        initial_text <- ""
+      }else{
+        initial_text <- start_text
+      }
       textAreaInput("select_notes",
         label = "Notes:",
+        value = initial_text,
         resize = "vertical",
         width = "120%"
       )
@@ -449,9 +462,7 @@ server<-function(input, output, session){
         data$raw$selected[rows] <- TRUE
         data$raw$notes[rows] <- input$select_notes
       }else{
-        # colour points
         plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#CCCCCC"
-        # map to data$raw
         selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
         rows <- which(data$raw[, input$response_variable] == selected_response)
         data$raw$selected[rows] <- FALSE

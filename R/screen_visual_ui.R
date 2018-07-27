@@ -90,7 +90,7 @@ screen_visual_ui <- function(){
           min = 0,
           max = 1,
           step = 0.05,
-          value = c(0, 0.9)
+          value = c(0.1, 0.9)
         ),
         sliderInput("point_size",
           label = "Point Size",

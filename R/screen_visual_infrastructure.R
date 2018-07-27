@@ -114,9 +114,6 @@ build_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
     data.frame(
       id = a[, 1],
-      tested = FALSE,
-      selected = FALSE,
-      display = TRUE,
       topic = a$topic,
       color = palette[a$topic],
       stringsAsFactors = FALSE
@@ -125,9 +122,14 @@ build_appearance <- function(plot_data, palette){
 }
 
 
-update_appearance <- function(x, palette){
-  lapply(x, function(a, colours){
-    a$color <- colours[a$topic]
+update_appearance <- function(plot_data, palette){
+  lapply(plot_data, function(a, colours){
+    rows <- which(
+      (a$color %in% c("#000000", "#CCCCCC")) == FALSE
+    )
+    a$color[rows] <- colours[a$topic[rows]]
     return(a)
-  }, colours = palette)
+    },
+    colours = palette
+  )
 }
