@@ -3,7 +3,6 @@ format_citation <- function(x, ...){
   }
 
 
-
 # Function to display bibliographic information on selected articles
 format_citation.list <- function(
 	x, # list of data from a standard import function
@@ -92,59 +91,65 @@ format_citation.data.frame <- function(
   ){
   if(
     all(c("author", "year", "title", "journal") %in% names(x)) &
-    details &
-    names(x)[1] == "label"
+    (details == TRUE) &
+    ((names(x)[1] == "label") == TRUE)
   ){
-	# if(all(c("author", "year", "title", "journal") %in% colnames(df)) & !hide_details){
-		author_vector <- strsplit(x[['author']], " and ")[[1]]
+	x_list <- split(x, c(1:nrow(x)))
+  x_out <- unlist(lapply(x_list, function(a){
+		author_vector <- strsplit(a[['author']], " and ")[[1]]
 		if(length(author_vector) == 1){
-      author_text <- x[['author']]
+      author_text <- a[['author']]
 		}else{
       author_text <- paste0(author_vector[1], " et al.")
     }
     if(add_html){
-      journal_text <- paste0("<i>", x[['journal']], "</i>. ")
+      journal_text <- paste0("<i>", a[['journal']], "</i>. ")
     }else{
-      journal_text <- paste0(x[['journal']], ". ")
+      journal_text <- paste0(a[['journal']], ". ")
     }
 		text_vector <- paste0(
       author_text,
-      " (", x[['year']], ") ",
-      x[['title']], ". ",
+      " (", a[['year']], ") ",
+      a[['title']], ". ",
       journal_text
     )
+    return(text_vector)
+  }))
 	}else{
     if((details == FALSE) & (names(x)[1] == "label")){
       if(any(names(x) == "title")){
-        text_vector <- x[["title"]]
+        x_out <- x[["title"]]
       }else{
-        text_vector <- x[[1]]
+        x_out <- x[, 1]
       }
     }else{
-      text_vector <- x[[1]]
+      x_out <- x[, 1]
     }
 	}
-  return(text_vector)
+  return(x_out)
 }
 
 
 # now organize so that line breaks are added at word breaks every y characters
 add_line_breaks <- function(x){
-	split_vector <- strsplit(x, " ")[[1]]
-	result_dframe <- data.frame(
-		text = split_vector,
-		nchars = nchar(split_vector),
-		stringsAsFactors = FALSE
-  )
-	result_dframe$sum <- cumsum(result_dframe$nchars)
-	result_dframe$group <- cut(result_dframe$sum,
-		breaks = seq(0, max(result_dframe$sum)+49, 50),
-		labels = FALSE)
-	result_list <- split(result_dframe$text, result_dframe$group)
-	result <- paste(
-    unlist(
-      lapply(result_list, function(a){paste(a, collapse = " ")})
-    ),
-    collapse = "\n")
-  return(result)
+	split_text <- strsplit(x, " ")
+  out_list <- lapply(split_text, function(a){
+  	result <- data.frame(
+  		text = a,
+  		nchars = nchar(a),
+  		stringsAsFactors = FALSE
+    )
+  	result$sum <- cumsum(result$nchars)
+  	result$group <- cut(result$sum,
+  		breaks = seq(0, max(result$sum)+49, 50),
+  		labels = FALSE)
+  	result_list <- split(result$text, result$group)
+  	result <- paste(
+      unlist(
+        lapply(result_list, function(a){paste(a, collapse = " ")})
+      ),
+      collapse = "\n")
+    return(result)
+  })
+  return(unlist(out_list))
 }

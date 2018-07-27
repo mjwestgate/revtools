@@ -74,19 +74,18 @@ build_plot_data <- function(info, dtm, model, hide_names){
       info,
       data.frame(
         topic = apply(x_matrix, 1, which.max),
-        ade4::dudi.coa(x_matrix, scannf=FALSE, nf=3)$li
+        ade4::dudi.coa(x_matrix, scannf = FALSE, nf=3)$li
       )
     ),
     y = data.frame(
       caption = rownames(y_matrix),
       topic = apply(y_matrix, 1, which.max),
-      ade4::dudi.coa(y_matrix, scannf=FALSE, nf=3)$li,
+      ade4::dudi.coa(y_matrix, scannf = FALSE, nf=3)$li,
       stringsAsFactors = FALSE
     )
   )
-  plot_list$x$caption <- apply(plot_list$x, 1, function(a, hide){
-    format_citation_dataframe(a, hide_details = hide)
-    }, hide = hide_names
+  plot_list$x$caption <- add_line_breaks(
+    format_citation(plot_list$x, details = (hide_names == FALSE))
   )
 
   # add topic information

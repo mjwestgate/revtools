@@ -270,11 +270,11 @@ server<-function(input, output, session){
   # update caption if required
   observeEvent(input$hide_names, {
     if(!is.null(data$plot_ready)){
-      data$plot_ready$x$caption <- apply(data$plot_ready$x, 1,
-        function(a, hide){add_line_breaks(
-          format_citation(a, hide_details = hide)
+      data$plot_ready$x$caption <- add_line_breaks(
+        format_citation(
+          data$plot_ready$x,
+          details = (input$hide_names == FALSE)
         )
-        }, hide = input$hide_names
       )
     }
   })

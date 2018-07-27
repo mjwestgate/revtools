@@ -52,7 +52,7 @@ screen_visual_ui <- function(){
       menuItem("Plot",
         icon = icon("bar-chart-o"),
         selectInput("hide_names",
-          label = "Hide authors etc?",
+          label = "Hide Identifying Information?",
           choices = c("FALSE", "TRUE"),
           multiple = FALSE
         ),
