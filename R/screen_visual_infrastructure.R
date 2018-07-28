@@ -64,14 +64,18 @@ create_grouped_dataframe <- function(data, response_variable, text_variables){
 }
 
 
+# NOTE: unclear whether y data still required here
 build_plot_data <- function(info, dtm, model, hide_names){
-  x_matrix<-modeltools::posterior(model)$topics # article x topic
-  y_matrix<-t(modeltools::posterior(model)$terms)
+  x_matrix <- modeltools::posterior(model)$topics # article x topic
+  y_matrix <- t(modeltools::posterior(model)$terms)
+
+  # exclude following columns: topic, select, display
+  keep_cols <- which((colnames(info) %in% c("topic", "selected", "display")) == FALSE)
 
   # build x and y plot information
   plot_list<-list(
     x = cbind(
-      info,
+      info[, keep_cols],
       data.frame(
         topic = apply(x_matrix, 1, which.max),
         ade4::dudi.coa(x_matrix, scannf = FALSE, nf=3)$li

@@ -118,14 +118,13 @@ server<-function(input, output, session){
         }
   	  }
   	}
-    if(any(colnames(x) == "selected") == FALSE){
-      x$selected <- NA
-    }
-    if(any(colnames(x) == "notes") == FALSE){
-      x$notes <- NA
-    }
+    if(any(colnames(x) == "selected") == FALSE){x$selected <- NA}
+    if(any(colnames(x) == "display") == FALSE){x$display <- TRUE}
+    if(any(colnames(x) == "topic") == FALSE){x$topic <- NA}
+    if(any(colnames(x) == "notes") == FALSE){x$notes <- NA}
     data$raw <- x
-    data$columns <- colnames(x)[which(colnames(x) != "selected")]
+    data$columns <- colnames(x)[
+      which((colnames(x) %in% c("selected", "topic")) == FALSE)]
   })
 
 
@@ -189,33 +188,44 @@ server<-function(input, output, session){
       data$plot_ready <- NULL
       plot_features$appearance <- NULL
 
+      # choose which rows to use for later calculation
+      if(all(is.na(data$raw$selected)) == FALSE){
+        if(any(is.na(data$raw$selected) == FALSE)){
+          data$raw$display[which(is.na(data$raw$selected) == FALSE)] <- FALSE
+        }
+      }
+
       # create data.frame with only relevant information for topic modelling
-      keep_rows <- sort(c(
-        which(data$raw$selected),
-        which(is.na(data$raw$selected))
-      ))
       data$grouped  <- create_grouped_dataframe(
-        data = data$raw[keep_rows, ],
+        data = data$raw[which(data$raw$display), ],
         response_variable = input$response_variable,
         text_variables = input$variable_selector
       )
-      if(any(colnames(data$grouped) == "text")){
-        data$dtm <- make_DTM(data$grouped$text)
+      data$dtm <- make_DTM(data$grouped$text)
+
+      # check for rows with no words; update to ensure all entries in 'data' match one another
+      dtm_rowsums <- apply(data$dtm, 1, sum)
+      if(any(dtm_rowsums == 0)){
+        data$raw$display[which(data$raw$display)[which(dtm_rowsums == 0)]] <- FALSE
+        keep_rows <- which(dtm_rowsums > 0)
+        data$grouped$x <- data$grouped$x[keep_rows, ]
+        data$dtm <- data$dtm[keep_rows, ]
       }
 
       # calculate topic model
-    	x_keep <- which(apply(data$dtm, 1, sum) > 0)
       data$model <- run_LDA(
-        x = data$dtm[x_keep, ],
+        dtm = data$dtm,
         topic_model = tolower(input$model_type),
         n_topics = input$n_topics,
         iterations = input$n_iterations
       )
 
+      # output$abstract_text <- renderPrint({cat(summary(data$model))})
+
       # create plottable information
       data$plot_ready <- build_plot_data(
-        info = data$grouped[x_keep, ],
-        dtm = data$dtm[x_keep, ],
+        info = data$grouped,
+        dtm = data$dtm,
         model = data$model,
         hide_names = input$hide_names
       )
@@ -228,6 +238,28 @@ server<-function(input, output, session){
         end = 0.9,
         option = "A"
       )
+
+      # add topic to data$raw,
+      # noting that this data have been split in create_grouped_dataframe(),
+      # which affects the order
+      topic_dframe <- data.frame(
+        variable = sort(unique(data$raw[, input$response_variable])),
+        topic = topics(data$model),
+        stringsAsFactors = FALSE
+      )
+      result <- merge(
+        x = data.frame(
+          data$raw[, which(colnames(data$raw) != "topic")],
+          order = c(1:nrow(data$raw)),
+          stringsAsFactors = FALSE
+        ),
+        y = topic_dframe,
+        by.x = input$response_variable,
+        by.y = "variable",
+        all.x = TRUE,
+        all.y = FALSE
+      )
+      data$raw <- result[, which(colnames(result) != "order")]
 
       # add appearance info
       plot_features$appearance <- build_appearance(
@@ -283,7 +315,7 @@ server<-function(input, output, session){
   # PLOTS
   output$plot_main <- renderPlotly({
     validate(
-      need(data$model, "Choose data & model parameters to continue")
+      need(data$plot_ready, "Choose data & model parameters to continue")
     )
     do.call(
       paste0("plot_", input$plot_dims),
@@ -309,7 +341,7 @@ server<-function(input, output, session){
   # topic barplot
   output$plot_topic <- renderPlotly({
     validate(
-      need(data$model, "Choose model parameters")
+      need(data$plot_ready, "")
     )
     plot_article_bar(
       x = data$plot_ready$topic,
@@ -425,8 +457,14 @@ server<-function(input, output, session){
         start_text <- data$raw$notes[row]
       }else{
         topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-        start_text <- data$raw$notes[rows[1]]
+        rows <- which(data$raw$topic[which(data$raw$display)] == topic_selected)
+        unique_text <- unique(data$raw$notes[rows])
+        start_text <- unique_text[which(is.na(unique_text) == FALSE)]
+        if(length(start_text) == 0){
+          start_text <- ""
+        }else{
+          start_text <- paste(start_text, collapse = "; ")
+        }
       }
       if(is.na(start_text)){
         initial_text <- ""
@@ -454,46 +492,31 @@ server<-function(input, output, session){
   # when button is clicked, update plot and data as requested
   # Note: no note saving yet
   observeEvent(input$select_saved, {
+    # set colors and answers
+    if(input$select_point == "Select"){
+      color_tr <- "#000000"
+      result_tr <- TRUE
+    }else{
+      color_tr <- "#CCCCCC"
+      result_tr <- FALSE
+    }
     if(length(click_data$main) > 0){ # i.e. point selected on main plot
-      if(input$select_point == "Select"){
-        plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#000000"
-        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-        rows <- which(data$raw[, input$response_variable] == selected_response)
-        data$raw$selected[rows] <- TRUE
-        data$raw$notes[rows] <- input$select_notes
-      }else{
-        plot_features$appearance[[input$plot_type]]$color[click_data$main] <- "#CCCCCC"
-        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-        rows <- which(data$raw[, input$response_variable] == selected_response)
-        data$raw$selected[rows] <- FALSE
-        data$raw$notes[rows] <- input$select_notes
-      }
+      plot_features$appearance[[input$plot_type]]$color[click_data$main] <- color_tr
+      selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+      rows <- which(data$raw[, input$response_variable] == selected_response)
+      data$raw$selected[rows] <- result_tr
+      data$raw$notes[rows] <- input$select_notes
     }else{ # i.e. topic selected on barplot
-      if(input$select_point == "Select"){
-        # color topic plot
-        topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-        plot_features$appearance$topic$color[click_data$topic] <- "#000000"
-        # color main plot
-        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-        plot_features$appearance[[input$plot_type]]$color[rows] <- "#000000"
-        # map to data$raw
-        selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
-        rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
-        data$raw$selected[rows_raw] <- TRUE
-        data$raw$notes[rows_raw] <- input$select_notes
-      }else{
-        # color topic plot
-        topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-        plot_features$appearance$topic$color[click_data$topic] <- "#CCCCCC"
-        # color main plot
-        rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-        plot_features$appearance[[input$plot_type]]$color[rows] <- "#CCCCCC"
-        # map to data$raw
-        selected_responses <- data$plot_ready[[input$plot_type]][rows, 1]
-        rows_raw <- which(data$raw[, input$response_variable] %in% selected_responses)
-        data$raw$selected[rows_raw] <- FALSE
-        data$raw$notes[rows_raw] <- input$select_notes
-      }
+      # color topic plot
+      topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+      plot_features$appearance$topic$color[click_data$topic] <- color_tr
+      # color main plot
+      rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
+      plot_features$appearance[[input$plot_type]]$color[rows] <- color_tr
+      # map to data$raw
+      rows <- which(data$raw$topic[which(data$raw$display)] == topic_selected)
+      data$raw$selected[rows] <- result_tr
+      data$raw$notes[rows] <- input$select_notes
     }
   })
 
