@@ -91,8 +91,8 @@ format_citation.data.frame <- function(
   ){
   if(
     all(c("author", "year", "title", "journal") %in% names(x)) &
-    (details == TRUE) &
-    ((names(x)[1] == "label") == TRUE)
+    (details == TRUE)
+    # ((names(x)[1] == "label") == TRUE)
   ){
 	x_list <- split(x, c(1:nrow(x)))
   x_out <- unlist(lapply(x_list, function(a){
@@ -116,7 +116,7 @@ format_citation.data.frame <- function(
     return(text_vector)
   }))
 	}else{
-    if((details == FALSE) & (names(x)[1] == "label")){
+    if(details == FALSE){ #} & (names(x)[1] == "label")){
       if(any(names(x) == "title")){
         x_out <- x[["title"]]
       }else{

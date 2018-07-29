@@ -66,67 +66,24 @@ server<-function(input, output, session){
 
   # CREATE HEADER IMAGE
   output$header <- renderPlot({
-    par(
-      mar = rep(0, 4),
-      oma = rep(0, 4),
-      bg = "#251256FF")
-    plot(
-      x = 1,
-      y = 1,
-      xlim = c(0, 1),
-      ylim = c(0, 1),
-      type = "n",
-      ann = FALSE,
-      axes = FALSE
-    )
-    rasterImage(revtools:::logo,
-      xleft = -0.04,
-      ybottom = 0.905,
-      xright = 1.04,
-      ytop = 1.04)
+    revtools_logo(text = "screen_visual")
   })
 
   # DATA INPUT
   ## when specified, ensure input data is processed correctly
   observeEvent(input$data_in, {
-  	source <- input$data_in
-    is_csv <- grepl(".csv$", source$name)
-  	if(is.null(x)){
-  	  if(is.null(source)){
-  	  	x <- NULL
-  	  }else{
-        if(is_csv){
-          x <- read.csv(source$datapath, stringsAsFactors = FALSE)
-        }else{
-          x <- as.data.frame(read_bibliography(source$datapath))
-        }
-  	  }
-  	}else{
-  	  if(is.null(source)){
-  	  	x <- x
-  	  }else{
-        if(is_csv){
-          x <- merge_columns(
-            x,
-            read.csv(source$datapath, stringsAsFactors = FALSE)
-          )
-        }else{
-          x <- merge_columns(
-            x,
-            as.data.frame(read_bibliography(source$datapath))
-          )
-        }
-  	  }
-  	}
-    if(any(colnames(x) == "selected") == FALSE){x$selected <- NA}
-    if(any(colnames(x) == "display") == FALSE){x$display <- TRUE}
-    if(any(colnames(x) == "topic") == FALSE){x$topic <- NA}
-    if(any(colnames(x) == "notes") == FALSE){x$notes <- NA}
-    data$raw <- x
-    data$columns <- colnames(x)[
-      which((colnames(x) %in% c("selected", "topic")) == FALSE)]
+    if(is.null(data$raw)){
+      data_in <- x
+    }else{
+      data_in <- data$raw
+    }
+    import_result <- import_shiny(
+      source = input$data_in,
+      current_data = data_in
+    )
+    data$raw <- import_result$raw
+    data$columns <- import_result$columns
   })
-
 
   # select a grouping variable
   output$response_selector <- renderUI({
@@ -190,9 +147,7 @@ server<-function(input, output, session){
 
       # choose which rows to use for later calculation
       if(all(is.na(data$raw$selected)) == FALSE){
-        if(any(is.na(data$raw$selected) == FALSE)){
-          data$raw$display[which(is.na(data$raw$selected) == FALSE)] <- FALSE
-        }
+        data$raw$display[which(is.na(data$raw$selected) == FALSE)] <- FALSE
       }
 
       # create data.frame with only relevant information for topic modelling
@@ -202,6 +157,8 @@ server<-function(input, output, session){
         text_variables = input$variable_selector
       )
       data$dtm <- make_DTM(data$grouped$text)
+
+      # output$abstract_text <- renderPrint({cat(str(data$grouped))})
 
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
@@ -219,8 +176,6 @@ server<-function(input, output, session){
         n_topics = input$n_topics,
         iterations = input$n_iterations
       )
-
-      # output$abstract_text <- renderPrint({cat(summary(data$model))})
 
       # create plottable information
       data$plot_ready <- build_plot_data(
@@ -243,11 +198,13 @@ server<-function(input, output, session){
       # noting that this data have been split in create_grouped_dataframe(),
       # which affects the order
       topic_dframe <- data.frame(
-        variable = sort(unique(data$raw[, input$response_variable])),
+        variable = sort(unique(
+          data$raw[which(data$raw$display), input$response_variable]
+        )),
         topic = topics(data$model),
         stringsAsFactors = FALSE
       )
-      result <- merge(
+      result <- base::merge(
         x = data.frame(
           data$raw[, which(colnames(data$raw) != "topic")],
           order = c(1:nrow(data$raw)),
@@ -257,9 +214,13 @@ server<-function(input, output, session){
         by.x = input$response_variable,
         by.y = "variable",
         all.x = TRUE,
-        all.y = FALSE
+        all.y = FALSE,
+        sort = FALSE
       )
       data$raw <- result[, which(colnames(result) != "order")]
+      # issue with this approach is that it causes columns to be reordered;
+      # input$response variable is now first.
+      # might be worth using lapply() or similar instead of merge()
 
       # add appearance info
       plot_features$appearance <- build_appearance(
@@ -453,7 +414,7 @@ server<-function(input, output, session){
     if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
       if(length(click_data$main) > 0){
         selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-        row <- which(data$raw[, input$response_variable] == selected_response)
+        row <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
         start_text <- data$raw$notes[row]
       }else{
         topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -503,7 +464,7 @@ server<-function(input, output, session){
     if(length(click_data$main) > 0){ # i.e. point selected on main plot
       plot_features$appearance[[input$plot_type]]$color[click_data$main] <- color_tr
       selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
-      rows <- which(data$raw[, input$response_variable] == selected_response)
+      rows <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
       data$raw$selected[rows] <- result_tr
       data$raw$notes[rows] <- input$select_notes
     }else{ # i.e. topic selected on barplot

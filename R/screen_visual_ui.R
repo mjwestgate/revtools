@@ -5,8 +5,6 @@ screen_visual_ui <- function(){
     title = plotOutput("header")
   )
 
-  # dropdownMenuOutput might work to render a plot drawn in server.R
-
   sidebar <- shinydashboard::dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -119,58 +117,7 @@ screen_visual_ui <- function(){
   )
 
   body <- shinydashboard::dashboardBody(
-    shiny::tag("style", shiny::HTML("
-      .content-wrapper,
-        .right-side {
-          background-color: #e2e2e2;
-        }
-    		.skin-black .main-header .logo {
-    			background-color: #27114D;
-          color: #ffffff;
-    		}
-    		.skin-black .main-header .logo:hover {
-    			background-color: #27114D;
-    		}
-    		.skin-black .main-header .navbar {
-    			background-color: #afafaf;
-    		}
-        .action-button {
-          color: #fff;
-          background: #4a3384;
-          border-width: 0px;
-        }
-        .action-button:hover {
-          color: #fff;
-          background: black;
-          border-width: 0px;
-        }
-        .irs-bar {
-          background: #4a3384;
-          border: #4a3384;
-        }
-        .irs-bar-edge {
-          background: #4a3384;
-          border: #4a3384;
-        }
-        .irs-grid-text {
-          color: white;
-        }
-        .irs-grid-pol{
-          background: white;
-        }
-        .irs-single {
-          color: white;
-          background: #4a3384;
-        }
-        .irs-from {
-          color: white;
-          background: #4a3384;
-        }
-        .irs-to {
-          color: white;
-          background: #4a3384;
-        }
-    ")),
+    revtools_css(),
     fluidRow(
       column(
         width = 8,

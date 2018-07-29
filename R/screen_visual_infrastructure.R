@@ -1,12 +1,3 @@
-# function to rbind two data.frames with different column names/orders
-merge_columns<-function(x, y){
-  rbind(
-    data.frame(c(x, sapply(setdiff(names(y), names(x)), function(a) NA)), stringsAsFactors=FALSE),
-    data.frame(c(y, sapply(setdiff(names(x), names(y)), function(a) NA)), stringsAsFactors=FALSE)
-  )
-}
-
-
 # function to create merged datasets
 create_grouped_dataframe <- function(data, response_variable, text_variables){
   if(is.null(text_variables)){text_variables <- response_variable}
