@@ -44,16 +44,6 @@ import_shiny <- function(
       }
     }
   }
-  if(any(colnames(result) == "selected") == FALSE){result$selected <- NA}
-  if(any(colnames(result) == "display") == FALSE){result$display <- TRUE}
-  if(any(colnames(result) == "topic") == FALSE){result$topic <- NA}
-  if(any(colnames(result) == "notes") == FALSE){result$notes <- NA}
 
-  output <- list(
-    raw = result,
-    columns = colnames(result)[
-      which((colnames(result) %in% c("selected", "topic")) == FALSE)]
-  )
-
-  return(output)
+  return(result)
 }

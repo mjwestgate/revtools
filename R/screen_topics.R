@@ -81,8 +81,22 @@ server<-function(input, output, session){
       source = input$data_in,
       current_data = data_in
     )
-    data$raw <- import_result$raw
-    data$columns <- import_result$columns
+    if(any(colnames(import_result) == "selected") == FALSE){
+      import_result$selected <- NA
+    }
+    if(any(colnames(import_result) == "display") == FALSE){
+      import_result$display <- TRUE
+    }
+    if(any(colnames(import_result) == "topic") == FALSE){
+      import_result$topic <- NA
+    }
+    if(any(colnames(import_result) == "notes") == FALSE){
+      import_result$notes <- NA
+    }
+    data$raw <- import_result
+    data$columns <- colnames(import_result)[
+      which((colnames(result) %in% c("selected", "topic")) == FALSE)
+    ]
   })
 
   # select a grouping variable
