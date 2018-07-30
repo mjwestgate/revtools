@@ -1,9 +1,9 @@
 # function to launch a shiny app for topic model visualisation & article/word (de)selection
 start_review_window <- function(x, remove_words){
-  screen_visual(x, remove_words)
+  screen_topics(x, remove_words)
 }
 
-screen_visual <- function(x, remove_words){
+screen_topics <- function(x, remove_words){
 
   if(missing(x)){x <- NULL}
   if(!is.null(x)){
@@ -27,7 +27,7 @@ screen_visual <- function(x, remove_words){
 
 
 # create ui
-ui_data <- screen_visual_ui()
+ui_data <- screen_topics_ui()
 ui <- shinydashboard::dashboardPage(
   title = "revtools",
 	ui_data$header,
@@ -66,7 +66,7 @@ server<-function(input, output, session){
 
   # CREATE HEADER IMAGE
   output$header <- renderPlot({
-    revtools_logo(text = "screen_visual")
+    revtools_logo(text = "screen_topics")
   })
 
   # DATA INPUT

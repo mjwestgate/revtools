@@ -1,4 +1,4 @@
-screen_visual_ui <- function(){
+screen_topics_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
