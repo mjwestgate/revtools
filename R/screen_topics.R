@@ -29,7 +29,7 @@ screen_topics <- function(x, remove_words){
 # create ui
 ui_data <- screen_topics_ui()
 ui <- shinydashboard::dashboardPage(
-  title = "revtools",
+  title = "revtools | screen_topics",
 	ui_data$header,
 	ui_data$sidebar,
 	ui_data$body,

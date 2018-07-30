@@ -5,7 +5,7 @@ format_citation.bibliography, format_citation.data.frame, format_citation.list,
 fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
 make_DTM, run_LDA,
-screen_visual, start_review_window)
+screen_topics, screen_abstracts, start_review_window)
 S3method(format_citation, bibliography)
 S3method(format_citation, list)
 S3method(format_citation, data.frame)
