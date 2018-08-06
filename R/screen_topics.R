@@ -102,6 +102,37 @@ server<-function(input, output, session){
     ]
   })
 
+  observeEvent(input$clear_data, {
+    shiny::showModal(
+      shiny::modalDialog(
+        HTML("If you proceed, all data will be removed from this window,
+        including any progress you have made screening your data.
+        If you have not saved your data,
+        you might want to consider doing that first.<br><br>
+        Are you sure you want to continue?<br><br>"
+        ),
+        shiny::actionButton(
+          inputId = "clear_data_confirmed",
+          label = "Confirm"),
+        HTML("  "),
+        shiny::modalButton("Cancel"),
+        title = "Clear all data",
+        footer = NULL,
+        easyClose = FALSE
+      )
+    )
+  })
+
+  observeEvent(input$clear_data_confirmed, {
+    data$raw <- NULL
+    data$columns <- NULL
+    data$grouped <- NULL
+    data$dtm <- NULL
+    data$model <- NULL
+    data$plot_ready <- NULL
+    removeModal()
+  })
+
   # select a grouping variable
   output$response_selector <- renderUI({
     if(!is.null(data$columns)){

@@ -2,70 +2,96 @@ screen_topics_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
-    title = plotOutput("header")
+    title = plotOutput(outputId = "header")
   )
 
   sidebar <- shinydashboard::dashboardSidebar(
     sidebarMenu(
       id = "tabs",
-      menuItem("Data",
+      menuItem(
+        text = "Data",
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label = "Import"),
-        uiOutput("response_selector"),
-        menuItem("Variables",
+        fileInput(
+          inputId = "data_in",
+          label = "Import"
+        ),
+        uiOutput(
+          outputId = "response_selector"
+        ),
+        menuItem(
+          text = "Variables",
           tabName = "variable_tab",
           icon = icon("pencil"),
           startExpanded = TRUE,
-          uiOutput("variable_selector")
+          uiOutput(
+            outputId = "variable_selector"
+          )
+        ),
+        shiny::br(),
+        actionButton(
+          inputId = "clear_data",
+          label = "Clear All Data",
+          width = "80%"
         ),
         shiny::br()
       ),
-      menuItem("Model",
+      menuItem(
+        text = "Model",
         icon = icon("calculator"),
-        selectInput("model_type",
+        selectInput(
+          inputId = "model_type",
           label = "Model Type",
           choices = c("LDA", "CTM")
         ),
-        sliderInput("n_topics",
+        sliderInput(
+          inputId = "n_topics",
           label = "# Topics",
           min = 4,
           max = 30,
           step = 1,
           value = 5
         ),
-        sliderInput("n_iterations",
+        sliderInput(
+          inputId = "n_iterations",
           label = "# Iterations",
           min = 1000,
           max = 20000,
           step = 1000,
           value = 2000
         ),
-        actionButton("calc_model",
+        actionButton(
+          inputId = "calc_model",
           label = "Calculate Model",
           width = "80%"
         ),
         shiny::br()
       ),
-      menuItem("Plot",
+      menuItem(
+        text = "Plot",
         icon = icon("bar-chart-o"),
-        selectInput("hide_names",
+        selectInput(
+          inputId = "hide_names",
           label = "Hide Identifying Information?",
           choices = c("FALSE", "TRUE"),
           multiple = FALSE
         ),
-        selectInput("plot_type",
+        selectInput(
+          inputId = "plot_type",
           label = "Display",
           choices = c(articles = "x", words = "y")
         ),
-        selectInput("plot_dims",
+        selectInput(
+          inputId = "plot_dims",
           label = "Dimensions",
           choices = c("2D", "3D")
         )
       ),
-      menuItem("Appearance",
+      menuItem(
+        text = "Appearance",
         icon = icon("paint-brush"),
-        selectInput("palette",
+        selectInput(
+          inputId = "palette",
           label = "Palette",
           choices = c(
             Magma = "A",
@@ -76,21 +102,24 @@ screen_topics_ui <- function(){
           ),
           multiple = FALSE
         ),
-        sliderInput("color_alpha",
+        sliderInput(
+          inputId = "color_alpha",
           label = "Opacity",
           min = 0.2,
           max = 1,
           step = 0.1,
           value = 0.9
         ),
-        sliderInput("color_hue",
+        sliderInput(
+          inputId = "color_hue",
           label = "Hue",
           min = 0,
           max = 1,
           step = 0.05,
           value = c(0.1, 0.9)
         ),
-        sliderInput("point_size",
+        sliderInput(
+          inputId = "point_size",
           label = "Point Size",
           min = 0,
           max = 20,
@@ -98,9 +127,11 @@ screen_topics_ui <- function(){
           value = 12
         )
       ),
-      menuItem("Save", # use modal save in this version
+      menuItem(
+        text = "Save", # use modal save in this version
         icon = icon("save"),
-        actionButton("save_data",
+        actionButton(
+          inputId = "save_data",
           label = "Save Data",
           width = "80%"
         ) # ,
@@ -121,16 +152,32 @@ screen_topics_ui <- function(){
     fluidRow(
       column(
         width = 8,
-        plotlyOutput("plot_main", height = "600px"),
-        tableOutput("abstract_text")
+        plotlyOutput(
+          outputId = "plot_main",
+          height = "600px"
+        ),
+        tableOutput(
+          outputId = "abstract_text"
+        )
       ),
       column(
         width = 4,
-        plotlyOutput("plot_topic", height = "450px"),
-        tableOutput("selector_text"),
-        uiOutput("select_choice"),
-        uiOutput("select_notes"),
-        uiOutput("select_save")
+        plotlyOutput(
+          outputId = "plot_topic",
+          height = "450px"
+        ),
+        tableOutput(
+          outputId = "selector_text"
+        ),
+        uiOutput(
+          outputId = "select_choice"
+        ),
+        uiOutput(
+          outputId = "select_notes"
+        ),
+        uiOutput(
+          outputId = "select_save"
+        )
       )
     )
   )
