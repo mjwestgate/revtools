@@ -175,8 +175,6 @@ server<-function(input, output, session){
       )
       data$dtm <- make_DTM(data$grouped$text)
 
-      # output$abstract_text <- renderPrint({cat(str(data$grouped))})
-
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
       if(any(dtm_rowsums == 0)){
@@ -218,13 +216,13 @@ server<-function(input, output, session){
         variable = sort(unique(
           data$raw[which(data$raw$display), input$response_variable]
         )),
-        topic = topics(data$model),
+        topic = topicmodels::topics(data$model),
         stringsAsFactors = FALSE
       )
       result <- base::merge(
         x = data.frame(
           data$raw[, which(colnames(data$raw) != "topic")],
-          order = c(1:nrow(data$raw)),
+          order = seq_len(nrow(data$raw)),
           stringsAsFactors = FALSE
         ),
         y = topic_dframe,

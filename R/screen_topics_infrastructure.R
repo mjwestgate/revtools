@@ -34,7 +34,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     topic = c(1:ncol(y_matrix)),
     count_x = as.data.frame(xtabs(~ apply(x_matrix, 1, which.max)))$Freq,
     count_y = as.data.frame(xtabs(~ apply(y_matrix, 1, which.max)))$Freq,
-    terms_default = apply(topicmodels::get_terms(model, 5), 2,
+    terms_default = apply(topicmodels::terms(model, 5), 2,
       function(a){paste(a, collapse = ", ")}
     ),
     terms_weighted = apply(y_matrix / apply(y_matrix, 1, sum), 2,
