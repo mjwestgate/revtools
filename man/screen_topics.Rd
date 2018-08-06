@@ -8,7 +8,7 @@
 screen_topics(x, remove_words)
 }
 \arguments{
-  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.
+  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
   \item{remove_words}{Optional vector of words to be removed from consideration by the Topic Model. If none are given, \code{start_review_window} will use \code{tm::stopwords()}. Note that this vector will be converted to lower case before processing, so the algorithm is not case sensitive.}
 }
 \value{

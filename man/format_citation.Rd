@@ -4,9 +4,9 @@
 \alias{format_citation.list}
 \alias{format_citation.data.frame}
 \title{Format a citation}
-\description{takes an object of class \code{data.frame} or \code{bibliography} and returns a formatted citation.
+\description{takes an object of class \code{data.frame} or \code{bibliography} and returns a formatted citation.}
 \usage{
-format_citation(x, details = TRUE, abstract = FALSE, add_html = FALSE)
+format_citation(data, details = TRUE, abstract = FALSE, add_html = FALSE)
 }
 \arguments{
   \item{x}{An object of class \code{data.frame} or \code{bibliography}.}

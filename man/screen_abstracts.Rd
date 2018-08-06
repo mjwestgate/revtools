@@ -7,7 +7,7 @@
 screen_abstracts(x)
 }
 \arguments{
-  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.
+  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
 }
 \value{
 This function launches a Shiny app in the users' default browser, allowing the user to select or exlcude individual articles in order.
