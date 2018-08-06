@@ -9,7 +9,7 @@ merge_columns<-function(x, y){
 # import data within a shiny app
 import_shiny <- function(
   source, # input$data_in
-  current_data # existing data
+  current_data = NULL # existing data
   ){
   is_csv <- grepl(".csv$", source$name)
   if(is.null(current_data)){

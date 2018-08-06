@@ -23,7 +23,10 @@ build_plot_data <- function(info, dtm, model, hide_names){
     )
   )
   plot_list$x$caption <- add_line_breaks(
-    format_citation(plot_list$x, details = (hide_names == FALSE))
+    format_citation(
+      data = plot_list$x,
+      details = (hide_names == FALSE)
+    )
   )
 
   # add topic information

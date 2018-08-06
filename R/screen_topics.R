@@ -95,7 +95,10 @@ server<-function(input, output, session){
     }
     data$raw <- import_result
     data$columns <- colnames(import_result)[
-      which((colnames(import_result) %in% c("selected", "topic")) == FALSE)
+      which(
+        (colnames(import_result) %in%
+        c("selected", "topic", "display", "notes")) == FALSE
+      )
     ]
   })
 
