@@ -20,6 +20,7 @@ importFrom(plotly,
 event_data, "%>%", plotlyOutput,
 renderPlotly, plotlyProxy, plotlyProxyInvoke)
 importFrom(shiny,
+br, div, HTML,
 fluidRow, column, icon,
 checkboxGroupInput, fileInput, sliderInput, selectInput, textInput, textAreaInput,
 actionButton, radioButtons,
