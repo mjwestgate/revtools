@@ -151,8 +151,8 @@ screen_topics_ui <- function(){
 
   body <- shinydashboard::dashboardBody(
     revtools_css(),
-    tabItems(
-      tabItem(
+    shinydashboard::tabItems(
+      shinydashboard::tabItem(
         tabName = "entries",
         fluidRow(
           column(
@@ -186,7 +186,7 @@ screen_topics_ui <- function(){
           )
         )
       ),
-      tabItem(
+      shinydashboard::tabItem(
         tabName = "words",
         fluidRow(
           column(
