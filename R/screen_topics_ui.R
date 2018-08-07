@@ -2,7 +2,9 @@ screen_topics_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
-    title = plotOutput(outputId = "header")
+    title = plotOutput(
+      outputId = "header"
+    )
   )
 
   sidebar <- shinydashboard::dashboardSidebar(
@@ -68,18 +70,22 @@ screen_topics_ui <- function(){
         shiny::br()
       ),
       menuItem(
-        text = "Plot",
+        text = "Display",
         icon = icon("bar-chart-o"),
+        menuItem(
+          text = "Show Entries",
+          tabName = "entries",
+          selected = TRUE
+        ),
+        menuItem(
+          text = "Show Words",
+          tabName = "words"
+        ),
         selectInput(
           inputId = "hide_names",
           label = "Hide Identifying Information?",
           choices = c("FALSE", "TRUE"),
           multiple = FALSE
-        ),
-        selectInput(
-          inputId = "plot_type",
-          label = "Display",
-          choices = c(articles = "x", words = "y")
         ),
         selectInput(
           inputId = "plot_dims",
@@ -149,34 +155,69 @@ screen_topics_ui <- function(){
 
   body <- shinydashboard::dashboardBody(
     revtools_css(),
-    fluidRow(
-      column(
-        width = 8,
-        plotlyOutput(
-          outputId = "plot_main",
-          height = "600px"
-        ),
-        tableOutput(
-          outputId = "abstract_text"
+    tabItems(
+      tabItem(
+        tabName = "entries",
+        fluidRow(
+          column(
+            width = 8,
+            plotlyOutput(
+              outputId = "plot_main",
+              height = "600px"
+            ),
+            tableOutput(
+              outputId = "abstract_text"
+            )
+          ),
+          column(
+            width = 4,
+            plotlyOutput(
+              outputId = "plot_topics",
+              height = "450px"
+            ),
+            tableOutput(
+              outputId = "selector_text"
+            ),
+            uiOutput(
+              outputId = "select_choice"
+            ),
+            uiOutput(
+              outputId = "select_notes"
+            ),
+            uiOutput(
+              outputId = "select_save"
+            )
+          )
         )
       ),
-      column(
-        width = 4,
-        plotlyOutput(
-          outputId = "plot_topic",
-          height = "450px"
-        ),
-        tableOutput(
-          outputId = "selector_text"
-        ),
-        uiOutput(
-          outputId = "select_choice"
-        ),
-        uiOutput(
-          outputId = "select_notes"
-        ),
-        uiOutput(
-          outputId = "select_save"
+      tabItem(
+        tabName = "words",
+        fluidRow(
+          column(
+            width = 8,
+            plotlyOutput(
+              outputId = "plot_words",
+              height = "450px"
+            ),
+            br(),
+            uiOutput(
+              outputId = "search_box"
+            ),
+            tableOutput(
+              outputId = "search_results"
+            )
+          ),
+          column(
+            width = 4,
+            plotlyOutput(
+              outputId = "plot_topics_2",
+              height = "450px"
+            ),
+            br(),
+            uiOutput(
+              outputId = "word_selector"
+            )
+          )
         )
       )
     )

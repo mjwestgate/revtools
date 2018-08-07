@@ -62,8 +62,8 @@ plot_3D <- function(input_info, color, pointsize = 6){ #, height = 400){
 }
 
 
-plot_article_bar<-function(x, n, color){
-  p<-plotly::plot_ly(x,
+plot_topics <- function(x, n, color, source){
+  p <- plotly::plot_ly(x,
     x = n,
     y = ~ topic,
     marker = list(color = color),
@@ -75,7 +75,7 @@ plot_article_bar<-function(x, n, color){
       font = list(color = "black")
     ),
     text = ~ caption,
-    source = "topic_plot",
+    source = source,
     type = "bar",
     orientation = "h"
     ) %>%
@@ -85,6 +85,50 @@ plot_article_bar<-function(x, n, color){
         title = "Topic",
         tick0 = 1,
         dtick = 1
+      )
+    )
+  p
+}
+
+
+plot_words <- function(
+  input_info,
+  color
+){
+  p <- plotly::plot_ly(
+    data = input_info,
+    x = ~ topic_weight,
+    y = ~ term,
+    marker = list(
+      color = color
+    ),
+    hoverinfo = "text",
+    hoverlabel = list(
+      bgcolor = grey(0.9),
+      bordercolor = grey(0.9),
+      namelength = 200,
+      font = list(color = "black")
+    ),
+    text = ~ caption,
+    source = "word_plot",
+    type = "bar",
+    orientation = "h"
+    ) %>%
+    plotly::layout(
+      xaxis = list(
+        title = "Weight"
+      ),
+      yaxis = list(
+        title = "",
+        tick0 = 1,
+        dtick = 1
+      ),
+      margin = list(
+        l = 100,
+        r = 10,
+        b = 50,
+        t = 10,
+        pad = 4
       )
     )
   p

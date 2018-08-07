@@ -61,8 +61,17 @@ server<-function(input, output, session){
   # )
   click_data <- reactiveValues(
     main = c(),
-    topic = c()
+    topic = c(),
+    topic_2 = c(1),
+    word = c()
   )
+  words <- reactiveValues(
+    stop = tm::stopwords(),
+    current = NULL,
+    rows = NULL,
+    search_results = NULL
+  )
+
 
   # CREATE HEADER IMAGE
   output$header <- renderPlot({
@@ -102,6 +111,7 @@ server<-function(input, output, session){
     ]
   })
 
+  # add option to remove data
   observeEvent(input$clear_data, {
     shiny::showModal(
       shiny::modalDialog(
@@ -114,7 +124,6 @@ server<-function(input, output, session){
         shiny::actionButton(
           inputId = "clear_data_confirmed",
           label = "Confirm"),
-        HTML("  "),
         shiny::modalButton("Cancel"),
         title = "Clear all data",
         footer = NULL,
@@ -133,6 +142,8 @@ server<-function(input, output, session){
     removeModal()
   })
 
+
+  # data selection
   # select a grouping variable
   output$response_selector <- renderUI({
     if(!is.null(data$columns)){
@@ -161,7 +172,7 @@ server<-function(input, output, session){
   })
 
 
-  # TOPIC MODELS
+  # calculate topic models
   observeEvent(input$calc_model, {
 
     # if no variables are selected, do not run a topic model
@@ -280,7 +291,6 @@ server<-function(input, output, session){
 
   }) # end topic model calculation
 
-
   # update color palette when inputs change
   observeEvent({
     input$palette
@@ -327,8 +337,8 @@ server<-function(input, output, session){
     do.call(
       paste0("plot_", input$plot_dims),
       list(
-        input_info = data$plot_ready[[input$plot_type]],
-        color = isolate(plot_features$appearance[[input$plot_type]]$color),
+        input_info = data$plot_ready$x,
+        color = isolate(plot_features$appearance$x$color),
         pointsize = 12
       )
     )
@@ -340,21 +350,48 @@ server<-function(input, output, session){
   		plotlyProxyInvoke("restyle", list(
   			marker = list(
   				size = input$point_size,
-  				color = plot_features$appearance[[input$plot_type]]$color
+  				color = plot_features$appearance$x$color
   			)
   		))
   })
 
-  # topic barplot
-  output$plot_topic <- renderPlotly({
+  # topic barplot (article tab)
+  output$plot_topics <- renderPlotly({
     validate(
       need(data$plot_ready, "")
     )
-    plot_article_bar(
+    plot_topics(
       x = data$plot_ready$topic,
-      n = data$plot_ready$topic[[paste0("count_", input$plot_type)]],
-      color = plot_features$appearance$topic$color
+      n = data$plot_ready$topic$n,
+      color = plot_features$appearance$topic$color,
+      source = "topic_plot"
     )
+  })
+
+  # topic barplot (word tab)
+  output$plot_topics_2 <- renderPlotly({
+    validate(
+      need(data$plot_ready, "")
+    )
+    plot_topics(
+      x = data$plot_ready$topic,
+      n = data$plot_ready$topic$n,
+      color = plot_features$appearance$topic$color,
+      source = "topic_plot_2"
+    )
+  })
+
+  # word barplot
+  output$plot_words <- renderPlotly({
+    validate(
+      need(data$plot_ready, "Choose data & model parameters to continue"),
+      need(words$current, "Select a topic to continue")
+    )
+    plot_words(
+      input_info = words$current,
+      color = plot_features$appearance$y$color[words$rows]
+    )
+
   })
 
 
@@ -364,9 +401,9 @@ server<-function(input, output, session){
       event = "plotly_click",
       source = "main_plot"
     )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
-    current_data <- plot_features$appearance[[input$plot_type]]
-    click_data$main <- which(data$plot_ready[[input$plot_type]][, 1] ==
-      plot_features$appearance[[input$plot_type]]$id[click_main])
+    current_data <- plot_features$appearance$x
+    click_data$main <- which(data$plot_ready$x[, 1] ==
+      plot_features$appearance$x$id[click_main])
   	click_data$topic <- c()
   })
 
@@ -380,14 +417,63 @@ server<-function(input, output, session){
   	click_data$main <- c()
   })
 
-  # render 'selection' text
+  observe({
+  	click_topic_2 <- event_data(
+      event = "plotly_click",
+      source = "topic_plot_2"
+    )$pointNumber + 1
+    click_data$topic_2 <- which(data$plot_ready$topic$topic ==
+      plot_features$appearance$topic$topic[click_topic_2])
+    click_data$word <- c() # should clear currently selected word, but doesn't
+    if(length(click_topic_2) > 0){
+      word_rows <- which(data$plot_ready$y$topic == click_data$topic_2)[1:30]
+      word_data <- data$plot_ready$y[word_rows, ]
+      word_data$term <- factor(
+        x = rev(seq_len(30)),
+        levels = seq_len(30),
+        labels = rev(word_data$term)
+      )
+      words$current <- word_data
+      words$rows <- word_rows
+    }else{
+      words$current <- NULL
+      words$rows <- NULL
+    }
+  })
+
+  observe({
+  	click_word <- event_data(
+      event = "plotly_click",
+      source = "word_plot"
+    )$pointNumber + 1
+    click_data$word <- which(
+      (data$plot_ready$y$topic == click_data$topic_2) &
+      (data$plot_ready$y$term == words$current$term[click_word])
+    )
+  })
+
+  # give option to exclude selected word
+  output$word_selector <- renderUI({
+    if(length(click_data$word) > 0){
+      actionButton("remove_word",
+        label = paste0(
+          "Remove '",
+          data$plot_ready$y$term[click_data$word],
+          "' from dataset"
+        ),
+        style = "width:300px"
+      )
+    }
+  })
+
+  # show selected entry
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
       if(any(c("label", "title") == input$response_variable)){
         cat(paste0(
           "<br><b>Entry:</b> ",
           format_citation(
-            data$plot_ready[[input$plot_type]][click_data$main, ],
+            data$plot_ready$x[click_data$main, ],
             abstract = FALSE,
             details = (input$hide_names == FALSE)
           ),
@@ -403,7 +489,7 @@ server<-function(input, output, session){
               input$response_variable
             ),
             ":</b> ",
-            data$plot_ready[[input$plot_type]][[input$response_variable]][click_data$main],
+            data$plot_ready$x[[input$response_variable]][click_data$main],
             "<br><br>"
           )
         )
@@ -429,10 +515,10 @@ server<-function(input, output, session){
   	if(length(click_data$main) == 0){
   		cat("")
   	}else{
-  	  if(any(colnames(data$plot_ready[[input$plot_type]]) == "abstract")){
+  	  if(any(colnames(data$plot_ready$x) == "abstract")){
         abstract_info <- paste0(
           "<br><b>Abstract:</b> ",
-          data$plot_ready[[input$plot_type]]$abstract[click_data$main]
+          data$plot_ready$x$abstract[click_data$main]
         )
   	    if(is.na(abstract_info)){
           cat("No abstract available")
@@ -447,7 +533,7 @@ server<-function(input, output, session){
 
   # render selector buttons
   output$select_choice <- renderUI({
-    if((length(click_data$main) > 0 | length(click_data$topic) > 0) & input$plot_type == "x"){
+    if((length(click_data$main) > 0 | length(click_data$topic) > 0)){
       radioButtons("select_point",
         label = "Selection:",
         choices = c("Select", "Exclude"),
@@ -459,7 +545,7 @@ server<-function(input, output, session){
   output$select_notes <- renderUI({
     if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
       if(length(click_data$main) > 0){
-        selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+        selected_response <- data$plot_ready$x[click_data$main, 1]
         row <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
         start_text <- data$raw$notes[row]
       }else{
@@ -508,8 +594,8 @@ server<-function(input, output, session){
       result_tr <- FALSE
     }
     if(length(click_data$main) > 0){ # i.e. point selected on main plot
-      plot_features$appearance[[input$plot_type]]$color[click_data$main] <- color_tr
-      selected_response <- data$plot_ready[[input$plot_type]][click_data$main, 1]
+      plot_features$appearance$x$color[click_data$main] <- color_tr
+      selected_response <- data$plot_ready$x[click_data$main, 1]
       rows <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
       data$raw$selected[rows] <- result_tr
       data$raw$notes[rows] <- input$select_notes
@@ -518,8 +604,8 @@ server<-function(input, output, session){
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
       plot_features$appearance$topic$color[click_data$topic] <- color_tr
       # color main plot
-      rows <- which(data$plot_ready[[input$plot_type]]$topic == topic_selected)
-      plot_features$appearance[[input$plot_type]]$color[rows] <- color_tr
+      rows <- which(data$plot_ready$x$topic == topic_selected)
+      plot_features$appearance$x$color[rows] <- color_tr
       # map to data$raw
       rows <- which(data$raw$topic[which(data$raw$display)] == topic_selected)
       data$raw$selected[rows] <- result_tr
@@ -527,7 +613,46 @@ server<-function(input, output, session){
     }
   })
 
-  # save data
+  # WORD SEARCH
+  output$search_box <- renderUI({
+    textInput(
+      inputId = "search_text",
+      label = "Search"
+    )
+  })
+
+  observeEvent(input$search_text, {
+    if(nchar(input$search_text) < 1){
+      words$search_results <- NULL
+    }else{
+      result <- grep(
+        pattern = input$search_text,
+        x = colnames(data$dtm)
+      )
+      if(length(result) > 0){
+        result_rows <- result[seq_len(min(c(5, length(result))))]
+        words$search_results <- colnames(data$dtm)[result_rows]
+      }else{
+        words$search_results <- FALSE
+      }
+    }
+  })
+
+  output$search_results <- renderPrint({
+    if(is.null(words$search_results)){
+      cat("<em>Enter a word to search for</em>")
+    }else{
+      if(is.logical(words$search_results)){
+        cat("No results found")
+      }else{
+        cat(paste(words$search_results, sep = "; "))
+      }
+    }
+  })
+  # Next - find some way to render these with 'remove' buttons next to each entry
+  # should be possible using code from old PredicTER app
+
+  # SAVE OPTIONS
   observeEvent(input$save_data, {
     if(is.null(data$raw)){
       showModal(
