@@ -72,6 +72,10 @@ screen_topics_ui <- function(){
       menuItem(
         text = "Display",
         icon = icon("bar-chart-o"),
+        shiny::br(),
+        HTML(
+          "<b>&nbsp&nbspSelect Display Type:</b>"
+        ),
         menuItem(
           text = "Show Entries",
           tabName = "entries",
@@ -84,7 +88,7 @@ screen_topics_ui <- function(){
         selectInput(
           inputId = "hide_names",
           label = "Hide Identifying Information?",
-          choices = c("FALSE", "TRUE"),
+          choices = c(TRUE, FALSE),
           multiple = FALSE
         ),
         selectInput(
@@ -140,15 +144,7 @@ screen_topics_ui <- function(){
           inputId = "save_data",
           label = "Save Data",
           width = "80%"
-        ) # ,
-        # shiny::actionButton("save_scatter",
-        #   label = "Save Main Plot",
-        #   width = "80%",
-        # ),
-        # shiny::actionButton("save_bar",
-        #   label = "Save Barplot",
-        #   width = "80%",
-        # )
+        )
       )
     )
   )
@@ -199,12 +195,20 @@ screen_topics_ui <- function(){
               outputId = "plot_words",
               height = "450px"
             ),
-            br(),
-            uiOutput(
-              outputId = "search_box"
+            shiny::br(),
+            splitLayout(
+              HTML("Search: "),
+              textInput(
+                inputId = "search_text",
+                label = NULL
+              ),
+              cellWidths = c("10%", "90%")
             ),
             tableOutput(
               outputId = "search_results"
+            ),
+            shiny::div(
+              id = "search_placeholder"
             )
           ),
           column(
@@ -213,7 +217,7 @@ screen_topics_ui <- function(){
               outputId = "plot_topics_2",
               height = "450px"
             ),
-            br(),
+            shiny::br(),
             uiOutput(
               outputId = "word_selector"
             )

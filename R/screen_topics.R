@@ -44,7 +44,8 @@ server<-function(input, output, session){
 
   # establish reactiveValues objects
   data <- reactiveValues(
-    raw = NULL,
+    raw = x,
+    stopwords = remove_words,
     columns = NULL,
     grouped = NULL,
     dtm = NULL,
@@ -69,7 +70,9 @@ server<-function(input, output, session){
     stop = tm::stopwords(),
     current = NULL,
     rows = NULL,
-    search_results = NULL
+    search_results = NULL,
+    search_clicks = NULL,
+    selected = NULL
   )
 
 
@@ -215,7 +218,10 @@ server<-function(input, output, session){
         response_variable = input$response_variable,
         text_variables = input$variable_selector
       )
-      data$dtm <- make_DTM(data$grouped$text)
+      data$dtm <- make_DTM(
+        x = data$grouped$text,
+        stop_words = data$stopwords
+      )
 
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
@@ -329,6 +335,7 @@ server<-function(input, output, session){
   })
 
 
+  # ENTRIES TAB
   # PLOTS
   output$plot_main <- renderPlotly({
     validate(
@@ -368,104 +375,29 @@ server<-function(input, output, session){
     )
   })
 
-  # topic barplot (word tab)
-  output$plot_topics_2 <- renderPlotly({
-    validate(
-      need(data$plot_ready, "")
-    )
-    plot_topics(
-      x = data$plot_ready$topic,
-      n = data$plot_ready$topic$n,
-      color = plot_features$appearance$topic$color,
-      source = "topic_plot_2"
-    )
-  })
-
-  # word barplot
-  output$plot_words <- renderPlotly({
-    validate(
-      need(data$plot_ready, "Choose data & model parameters to continue"),
-      need(words$current, "Select a topic to continue")
-    )
-    plot_words(
-      input_info = words$current,
-      color = plot_features$appearance$y$color[words$rows]
-    )
-
-  })
-
-
-  # CAPTURE CLICK DATA
+  # CLICK DATA
   observe({
-  	click_main <- event_data(
+    click_main <- event_data(
       event = "plotly_click",
       source = "main_plot"
     )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
     current_data <- plot_features$appearance$x
     click_data$main <- which(data$plot_ready$x[, 1] ==
       plot_features$appearance$x$id[click_main])
-  	click_data$topic <- c()
+    click_data$topic <- c()
   })
 
   observe({
-  	click_topic <- event_data(
+    click_topic <- event_data(
       event = "plotly_click",
       source = "topic_plot"
     )$pointNumber + 1
     click_data$topic <- which(data$plot_ready$topic$topic ==
       plot_features$appearance$topic$topic[click_topic])
-  	click_data$main <- c()
+    click_data$main <- c()
   })
 
-  observe({
-  	click_topic_2 <- event_data(
-      event = "plotly_click",
-      source = "topic_plot_2"
-    )$pointNumber + 1
-    click_data$topic_2 <- which(data$plot_ready$topic$topic ==
-      plot_features$appearance$topic$topic[click_topic_2])
-    click_data$word <- c() # should clear currently selected word, but doesn't
-    if(length(click_topic_2) > 0){
-      word_rows <- which(data$plot_ready$y$topic == click_data$topic_2)[1:30]
-      word_data <- data$plot_ready$y[word_rows, ]
-      word_data$term <- factor(
-        x = rev(seq_len(30)),
-        levels = seq_len(30),
-        labels = rev(word_data$term)
-      )
-      words$current <- word_data
-      words$rows <- word_rows
-    }else{
-      words$current <- NULL
-      words$rows <- NULL
-    }
-  })
-
-  observe({
-  	click_word <- event_data(
-      event = "plotly_click",
-      source = "word_plot"
-    )$pointNumber + 1
-    click_data$word <- which(
-      (data$plot_ready$y$topic == click_data$topic_2) &
-      (data$plot_ready$y$term == words$current$term[click_word])
-    )
-  })
-
-  # give option to exclude selected word
-  output$word_selector <- renderUI({
-    if(length(click_data$word) > 0){
-      actionButton("remove_word",
-        label = paste0(
-          "Remove '",
-          data$plot_ready$y$term[click_data$word],
-          "' from dataset"
-        ),
-        style = "width:300px"
-      )
-    }
-  })
-
+  # SHOW INFO ON CLICKED POINTS
   # show selected entry
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
@@ -531,6 +463,7 @@ server<-function(input, output, session){
   	}
   })
 
+  # SELECTION/DESELECTION
   # render selector buttons
   output$select_choice <- renderUI({
     if((length(click_data$main) > 0 | length(click_data$topic) > 0)){
@@ -542,6 +475,7 @@ server<-function(input, output, session){
     }
   })
 
+  # add notes
   output$select_notes <- renderUI({
     if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
       if(length(click_data$main) > 0){
@@ -573,6 +507,7 @@ server<-function(input, output, session){
     }
   })
 
+  # save selection choices & notes
   output$select_save <- renderUI({
     if(length(click_data$main) > 0 | length(click_data$topic) > 0){
       actionButton("select_saved",
@@ -582,8 +517,8 @@ server<-function(input, output, session){
     }
   })
 
+  # UPDATE PLOT COLOURS
   # when button is clicked, update plot and data as requested
-  # Note: no note saving yet
   observeEvent(input$select_saved, {
     # set colors and answers
     if(input$select_point == "Select"){
@@ -613,44 +548,181 @@ server<-function(input, output, session){
     }
   })
 
-  # WORD SEARCH
-  output$search_box <- renderUI({
-    textInput(
-      inputId = "search_text",
-      label = "Search"
-    )
+
+
+    # WORD TAB
+
+    # PLOTS
+    # topic barplot (word tab)
+    output$plot_topics_2 <- renderPlotly({
+      validate(
+        need(data$plot_ready, "")
+      )
+      plot_topics(
+        x = data$plot_ready$topic,
+        n = data$plot_ready$topic$n,
+        color = plot_features$appearance$topic$color,
+        source = "topic_plot_2"
+      )
+    })
+
+    # word barplot
+    output$plot_words <- renderPlotly({
+      validate(
+        need(data$plot_ready, "Choose data & model parameters to continue"),
+        need(words$current, "Select a topic to continue")
+      )
+      plot_words(
+        input_info = words$current,
+        color = plot_features$appearance$y$color[words$rows]
+      )
+
+    })
+
+  # get clicks from topic plot
+  observe({
+  	click_topic_2 <- event_data(
+      event = "plotly_click",
+      source = "topic_plot_2"
+    )$pointNumber + 1
+    click_data$topic_2 <- which(data$plot_ready$topic$topic ==
+      plot_features$appearance$topic$topic[click_topic_2])
+    click_data$word <- c() # should clear currently selected word, but doesn't
+    if(length(click_topic_2) > 0){
+      word_rows <- which(data$plot_ready$y$topic == click_data$topic_2)[1:30]
+      word_data <- data$plot_ready$y[word_rows, ]
+      word_data$term <- factor(
+        x = rev(seq_len(30)),
+        levels = seq_len(30),
+        labels = rev(word_data$term)
+      )
+      words$current <- word_data
+      words$rows <- word_rows
+    }else{
+      words$current <- NULL
+      words$rows <- NULL
+    }
   })
 
+  # click data from word plot
+  observe({
+  	click_word <- event_data(
+      event = "plotly_click",
+      source = "word_plot"
+    )$pointNumber + 1
+    click_data$word <- which(
+      (data$plot_ready$y$topic == click_data$topic_2) &
+      (data$plot_ready$y$term == words$current$term[click_word])
+    )
+    if(length(click_data$word) > 0){
+      words$selected <- data$plot_ready$y$term[click_data$word]
+    }else{
+      words$selected <- NULL
+    }
+
+  })
+
+  # WORD SEARCH
   observeEvent(input$search_text, {
+    removeUI(selector = "#search_buttons")
     if(nchar(input$search_text) < 1){
       words$search_results <- NULL
+      words$search_clicks <- NULL
     }else{
       result <- grep(
         pattern = input$search_text,
         x = colnames(data$dtm)
       )
       if(length(result) > 0){
-        result_rows <- result[seq_len(min(c(5, length(result))))]
+        result_rows <- result[seq_len(min(c(9, length(result))))]
         words$search_results <- colnames(data$dtm)[result_rows]
+        words$search_clicks <- rep(0, length(result_rows))
+        insertUI(
+          selector = "#search_placeholder",
+          ui = shiny::div(
+            lapply(
+              seq_len(length(words$search_results)),
+              function(a, term){
+                actionButton(
+                  inputId = paste0("search_", a),
+                  label = term[a]
+                )
+              },
+              term = words$search_results
+            ),
+            id = "search_buttons"
+          )
+        )
       }else{
         words$search_results <- FALSE
+        words$search_clicks <- NULL
       }
     }
   })
 
+  # write some text that explains current search results
   output$search_results <- renderPrint({
     if(is.null(words$search_results)){
-      cat("<em>Enter a word to search for</em>")
+      cat("<em>Enter a word to begin searching</em>")
     }else{
       if(is.logical(words$search_results)){
-        cat("No results found")
+        cat("<em>No results found</em>")
       }else{
-        cat(paste(words$search_results, sep = "; "))
+        cat("Results:<br>")
       }
     }
   })
-  # Next - find some way to render these with 'remove' buttons next to each entry
-  # should be possible using code from old PredicTER app
+
+  # search for hits to search result buttons, and select any that are hit
+  observe({
+    if(!is.null(words$search_results)){
+      if(!is.logical(words$search_results)){
+        lookup_check <- grepl(
+          "^search_[0-9]",
+          names(input),
+          perl = TRUE
+        )
+        lookup_names <- names(input)[which(lookup_check)]
+        lookup_values <- unlist(lapply(
+          lookup_names,
+          function(a){input[[a]]}
+        ))
+        if(any(words$search_clicks != lookup_values)){
+          words$selected <- words$search_results[
+            which(words$search_clicks != lookup_values)
+          ]
+          words$search_clicks <- lookup_values
+        }
+      }
+    }
+  })
+
+  # SELECTION/DESELECTION
+  # give option to exclude selected word
+  output$word_selector <- renderUI({
+    if(!is.null(words$selected)){
+      actionButton("remove_word",
+        label = paste0(
+          "Remove '",
+          words$selected,
+          "' from dataset"
+        ),
+        style = "width:300px"
+      )
+    }
+  })
+
+  observeEvent(input$remove_word, {
+    if(any(data$stopwords == words$selected) == FALSE){
+      data$stopwords <- c(data$stopwords, words$selected)
+    }
+    if(any(words$current$term == words$selected)){
+      row_color <- which(words$current$term == words$selected)
+      plot_features$appearance$y$color[words$rows[row_color]] <- "#CCCCCC"
+    }
+    # Note: this doesn't grey out terms in the plots of other topics,
+    # but will do for now
+  })
 
   # SAVE OPTIONS
   observeEvent(input$save_data, {
@@ -706,58 +778,6 @@ server<-function(input, output, session){
     )
     removeModal()
   })
-
-  # SAVE PLOTS WHEN REQUESTED
-  # this fails at present because requires external dependencies.
-  # this is also true of the recommended function 'plotly::orca'
-  # observeEvent(input$save_bar, {
-  #   if(is.null(plots$bar)){
-  #     shiny::showModal(
-  #       shiny::modalDialog(
-  #         HTML(
-  #           "Create a plot to begin<br><br>
-  #           <em>Click anywhere to exit</em>"
-  #         ),
-  #         title = "Error: no plot to save",
-  #         footer = NULL,
-  #         easyClose = TRUE
-  #       )
-  #     )
-  #   }else{
-  #     shiny::showModal(
-  #       shiny::modalDialog(
-  #         shiny::textInput("save_bar_filename",
-  #           label = "File Name"
-  #         ),
-  #         shiny::selectInput("save_bar_filetype",
-  #           label = "File Type",
-  #           choices = c("jpeg", "png", "pdf")
-  #         ),
-  #         shiny::actionButton("save_bar_execute", "Save"),
-  #         shiny::modalButton("Cancel"),
-  #         title = "Save Barplot As:",
-  #         footer = NULL,
-  #         easyClose = FALSE
-  #       )
-  #     )
-  #   }
-  # })
-  #
-  # observeEvent(input$save_bar_execute, {
-  #   if(is.null(input$save_bar_filename)){
-  #     file <- "revtools_barplot.jpeg"
-  #   }else{
-  #     file <- paste(
-  #       input$save_bar_filename,
-  #       input$save_bar_filetype,
-  #       sep = "."
-  #     )
-  #   }
-  #   plotly::export(
-  #     p = plots$bar,
-  #     file = file
-  #   )
-  # })
 
 
 } # end server
