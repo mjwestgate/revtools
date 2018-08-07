@@ -26,7 +26,7 @@ checkboxGroupInput, fileInput, sliderInput, selectInput, textInput, textAreaInpu
 actionButton, radioButtons,
 tableOutput, uiOutput, plotOutput,
 reactiveValues, observe, observeEvent, isolate,
-renderPrint, renderPlot, renderUI,
+renderPrint, renderPlot, renderUI, splitLayout,
 validate, need,
 showModal, modalDialog, removeModal, modalButton,
 shinyApp)
