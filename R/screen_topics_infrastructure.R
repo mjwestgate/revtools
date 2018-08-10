@@ -1,4 +1,3 @@
-# NOTE: unclear whether y data still required here
 build_plot_data <- function(info, dtm, model, hide_names){
   x_matrix <- modeltools::posterior(model)$topics # article x topic
   y_matrix <- t(modeltools::posterior(model)$terms)
@@ -94,6 +93,27 @@ build_plot_data <- function(info, dtm, model, hide_names){
   )
 
   return(plot_list)
+}
+
+
+add_required_columns <- function(data){
+  added_cols <- data.frame(
+    selected = NA,
+    display = TRUE,
+    topic = NA,
+    notes = NA
+  )
+  col_check <- colnames(added_cols) %in% colnames(data)
+  if(any(!col_check)){
+    data <- as.data.frame(
+      cbind(
+        data,
+        added_cols[, which(!col_check)]
+      ),
+      stringsAsFactors = FALSE
+    )
+  }
+  return(data)
 }
 
 

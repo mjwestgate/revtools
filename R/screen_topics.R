@@ -13,10 +13,24 @@ screen_topics <- function(x, remove_words){
     if(any(accepted_inputs == class(x)) == FALSE){
       stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
 
-    switch(class(x),
-      "bibliography" = {x <- as.data.frame(x)},
-      "data.frame" = {x <- x}
-    )
+    if(class(x) == "bibliography"){
+      x <- as.data.frame(x)
+    }
+
+    x <- add_required_columns(data = x)
+  }
+
+  # add colnames
+  if(is.null(x)){
+    input_colnames <- NULL
+  }else{
+    input_colnames <- colnames(x)[
+      which(
+        (colnames(x) %in%
+        c("selected", "topic", "display", "notes")
+        ) == FALSE
+      )
+    ]
   }
 
   if(missing(remove_words)){
@@ -46,7 +60,7 @@ server<-function(input, output, session){
   data <- reactiveValues(
     raw = x,
     stopwords = remove_words,
-    columns = NULL,
+    columns = input_colnames,
     grouped = NULL,
     dtm = NULL,
     model = NULL,
@@ -56,10 +70,6 @@ server<-function(input, output, session){
     palette = NULL,
     appearance = NULL
   )
-  # plots <- reactiveValues(
-  #   scatter = NULL,
-  #   bar = NULL
-  # )
   click_data <- reactiveValues(
     main = c(),
     topic = c(),
@@ -93,22 +103,12 @@ server<-function(input, output, session){
       source = input$data_in,
       current_data = data_in
     )
-    if(any(colnames(import_result) == "selected") == FALSE){
-      import_result$selected <- NA
-    }
-    if(any(colnames(import_result) == "display") == FALSE){
-      import_result$display <- TRUE
-    }
-    if(any(colnames(import_result) == "topic") == FALSE){
-      import_result$topic <- NA
-    }
-    if(any(colnames(import_result) == "notes") == FALSE){
-      import_result$notes <- NA
-    }
-    data$raw <- import_result
-    data$columns <- colnames(import_result)[
+    data$raw <- add_required_columns(
+      data = import_result
+    )
+    data$columns <- colnames(data$raw)[
       which(
-        (colnames(import_result) %in%
+        (colnames(data$raw) %in%
         c("selected", "topic", "display", "notes")) == FALSE
       )
     ]

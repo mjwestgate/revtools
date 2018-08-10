@@ -12,7 +12,7 @@ screen_topics_ui <- function(){
       id = "tabs",
       menuItem(
         text = "Data",
-        icon = shiny::icon("bar-chart-o"),
+        icon = shiny::icon("table"),
         startExpanded = TRUE,
         fileInput(
           inputId = "data_in",
@@ -30,13 +30,18 @@ screen_topics_ui <- function(){
             outputId = "variable_selector"
           )
         ),
-        shiny::br(),
+        br(),
         actionButton(
-          inputId = "clear_data",
-          label = "Clear All Data",
+          inputId = "save_data",
+          label = "Save Data",
           width = "80%"
         ),
-        shiny::br()
+        actionButton(
+          inputId = "clear_data",
+          label = "Clear Data",
+          width = "80%"
+        ),
+        br()
       ),
       menuItem(
         text = "Model",
@@ -57,10 +62,10 @@ screen_topics_ui <- function(){
         sliderInput(
           inputId = "n_iterations",
           label = "# Iterations",
-          min = 1000,
-          max = 20000,
-          step = 1000,
-          value = 2000
+          min = 2000,
+          max = 30000,
+          step = 2000,
+          value = 10000
         ),
         actionButton(
           inputId = "calc_model",
@@ -135,15 +140,6 @@ screen_topics_ui <- function(){
           max = 20,
           step = 2,
           value = 12
-        )
-      ),
-      menuItem(
-        text = "Save", # use modal save in this version
-        icon = icon("save"),
-        actionButton(
-          inputId = "save_data",
-          label = "Save Data",
-          width = "80%"
         )
       )
     )
