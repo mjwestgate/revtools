@@ -33,7 +33,7 @@ screen_abstracts_ui <- function(){
     )
   )
 
-  body <- dashboardBody(
+  body <- shinydashboard::dashboardBody(
     revtools_css(),
     fluidRow(
       column(

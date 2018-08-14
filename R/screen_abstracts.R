@@ -21,7 +21,7 @@ screen_abstracts <- function(x){
   # create ui
   ui_data <- screen_abstracts_ui()
   ui <- shinydashboard::dashboardPage(
-    title = "revtools",
+    title = "revtools | screen_abstracts",
   	ui_data$header,
   	ui_data$sidebar,
   	ui_data$body,

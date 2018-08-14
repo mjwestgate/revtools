@@ -16,7 +16,7 @@ screen_titles <- function(x){
   # create ui
   ui_data <- screen_titles_ui()
   ui <- shinydashboard::dashboardPage(
-    title = "revtools",
+    title = "revtools | screen_titles",
   	ui_data$header,
   	ui_data$sidebar,
   	ui_data$body,
