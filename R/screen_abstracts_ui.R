@@ -38,7 +38,7 @@ screen_abstracts_ui <- function(){
     fluidRow(
       column(
         width = 5,
-        h4("Abstract Screening"),
+        shiny::h4("Abstract Screening"),
         br(),
         strong("Citation"),
         br(),
