@@ -189,7 +189,7 @@ screen_topics_ui <- function(){
             width = 8,
             plotlyOutput(
               outputId = "plot_words",
-              height = "450px"
+              height = "600px"
             ),
             shiny::br(),
             splitLayout(

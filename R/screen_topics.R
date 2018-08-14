@@ -327,7 +327,7 @@ server<-function(input, output, session){
     if(!is.null(data$plot_ready)){
       data$plot_ready$x$caption <- add_line_breaks(
         format_citation(
-          data$plot_ready$x,
+          data = data$plot_ready$x,
           details = (input$hide_names == FALSE)
         )
       )
@@ -707,7 +707,7 @@ server<-function(input, output, session){
           words$selected,
           "' from dataset"
         ),
-        style = "width:300px"
+        style = "width: 300px"
       )
     }
   })
