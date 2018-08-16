@@ -14,11 +14,16 @@ build_plot_data <- function(info, dtm, model, hide_names){
     )
   )
 
-  x_df$caption <- add_line_breaks(
-    format_citation(
-      data = x_df,
-      details = (hide_names == FALSE)
-    )
+  x_df$caption <- paste0(
+    add_line_breaks(
+      format_citation(
+        data = x_df,
+        details = (hide_names == FALSE)
+      )
+    ),
+    "<br>[Topic #",
+    x_df$topic,
+    "]"
   )
 
   # build word plot information (y)

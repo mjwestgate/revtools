@@ -325,11 +325,16 @@ server<-function(input, output, session){
   # update caption if required
   observeEvent(input$hide_names, {
     if(!is.null(data$plot_ready)){
-      data$plot_ready$x$caption <- add_line_breaks(
-        format_citation(
-          data = data$plot_ready$x,
-          details = (input$hide_names == FALSE)
-        )
+      data$plot_ready$x$caption <- paste0(
+        add_line_breaks(
+          format_citation(
+            data = data$plot_ready$x,
+            details = (input$hide_names == FALSE)
+          )
+        ),
+        "<br>[Topic #",
+        data$plot_ready$x$topic,
+        "]"
       )
     }
   })
