@@ -3,72 +3,62 @@ start_review_window <- function(x, remove_words){
   screen_topics(x, remove_words)
 }
 
-screen_topics <- function(x, remove_words){
+screen_topics <- function(
+  x = NULL,
+  remove_words = NULL
+){
 
-  if(missing(x)){x <- NULL}
-  if(!is.null(x)){
-
-    # throw a warning if a known file type isn't given
-    accepted_inputs <- c("bibliography", "data.frame")
-    if(any(accepted_inputs == class(x)) == FALSE){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
-
-    if(class(x) == "bibliography"){
-      x <- as.data.frame(x)
-    }
-
-    x <- add_required_columns(data = x)
-  }
-
-  # add colnames
-  if(is.null(x)){
-    input_colnames <- NULL
-  }else{
-    input_colnames <- colnames(x)[
-      which(
-        (colnames(x) %in%
-        c("selected", "topic", "display", "notes")
-        ) == FALSE
-      )
-    ]
-  }
-
-  if(missing(remove_words)){
-    remove_words <- stopwords()
-  }else{
-    remove_words <- as.character(remove_words)
-  }
-
+data_in <- load_topic_data(x, remove_words)
 
 # create ui
 ui_data <- screen_topics_ui()
 ui <- shinydashboard::dashboardPage(
   title = "revtools | screen_topics",
-	ui_data$header,
-	ui_data$sidebar,
-	ui_data$body,
+	header = ui_data$header,
+	sidebar = ui_data$sidebar,
+	body = ui_data$body,
 	skin = "black"
 )
 
 # start server
-server<-function(input, output, session){
+server <- function(input, output, session){
 
   options(warn = -1) # hide incompatibility between shiny and plotly
   # https://github.com/hrbrmstr/metricsgraphics/issues/49
 
-  # establish reactiveValues objects
+  # establish a reactiveValue object to store data
   data <- reactiveValues(
-    raw = x,
-    stopwords = remove_words,
-    columns = input_colnames,
-    grouped = NULL,
-    dtm = NULL,
-    model = NULL,
-    plot_ready = NULL
+    raw = data_in$raw,
+    stopwords = data_in$stopwords,
+    columns = data_in$columns,
+    grouped = data_in$grouped,
+    dtm = data_in$dtm,
+    model = data_in$model,
+    plot_ready = data_in$plot_ready
   )
+
+  # need to run some extra code here if class screen_topics_progress is used
+  if(!is.null(data_in$model)){
+    palette_initial <- viridis(
+      n = data_in$model@k,
+      alpha = 0.9,
+      begin = 0.1,
+      end = 0.9,
+      option = "A"
+    )
+    appearance_initial <- build_appearance(
+      plot_data = data_in$plot_ready,
+      palette = palette_initial
+    )
+  }else{
+    palette_initial <- NULL
+    appearance_initial <- NULL
+  }
+
+  # add remaining reactiveValue objects
   plot_features <- reactiveValues(
-    palette = NULL,
-    appearance = NULL
+    palette = palette_initial,
+    appearance = appearance_initial
   )
   click_data <- reactiveValues(
     main = c(),
@@ -77,7 +67,6 @@ server<-function(input, output, session){
     word = c()
   )
   words <- reactiveValues(
-    stop = tm::stopwords(),
     current = NULL,
     rows = NULL,
     search_results = NULL,
@@ -86,7 +75,7 @@ server<-function(input, output, session){
   )
 
 
-  # CREATE HEADER IMAGE
+  # create header image
   output$header <- renderPlot({
     revtools_logo(text = "screen_topics")
   })
@@ -94,24 +83,36 @@ server<-function(input, output, session){
   # DATA INPUT
   ## when specified, ensure input data is processed correctly
   observeEvent(input$data_in, {
-    if(is.null(data$raw)){
-      data_in <- x
-    }else{
-      data_in <- data$raw
-    }
-    import_result <- import_shiny(
+    data_loaded <- import_shiny_topic_data(
       source = input$data_in,
-      current_data = data_in
+      current_data = data
     )
-    data$raw <- add_required_columns(
-      data = import_result
-    )
-    data$columns <- colnames(data$raw)[
-      which(
-        (colnames(data$raw) %in%
-        c("selected", "topic", "display", "notes")) == FALSE
+    data$raw <- data_loaded$raw
+    data$columns <- data_loaded$columns
+    data$grouped <- data_loaded$grouped
+    data$dtm <- data_loaded$dtm
+    data$model <- data_loaded$model
+    data$plot_ready <- data_loaded$plot_ready
+
+    # need to run some extra code here if class screen_topics_progress is used
+    if(!is.null(data$model)){
+
+      # create color palette
+      plot_features$palette <- viridis(
+        n = data$model@k,
+        alpha = 0.9,
+        begin = 0.1,
+        end = 0.9,
+        option = "A"
       )
-    ]
+
+      # add appearance info
+      plot_features$appearance <- build_appearance(
+        plot_data = data$plot_ready,
+        palette = plot_features$palette
+      )
+
+    }
   })
 
   # add option to remove data
@@ -746,14 +747,28 @@ server<-function(input, output, session){
     }else{
       showModal(
         modalDialog(
-          textInput("save_filename",
+          selectInput(
+            inputId = "save_what",
+            label = "Choose an item to save",
+            choices = list(
+              "Save Progress (.rds)" = "progress",
+              "Save Choices (.csv)" = "choices"
+            ),
+            multiple = FALSE
+          ),
+          textInput(
+            inputId = "save_filename",
             label = "File Name"
           ),
-          selectInput("save_data_filetype",
-            label = "File Type",
-            choices = c("csv", "rds")
+          # selectInput(
+          #   inputId = "save_data_filetype",
+          #   label = "File Type",
+          #   choices = c("csv", "rds")
+          # ),
+          actionButton(
+            inputId = "save_data_execute",
+            label = "Save"
           ),
-          actionButton("save_data_execute", "Save"),
           modalButton("Cancel"),
           title = "Save As",
           footer = NULL,
@@ -776,10 +791,39 @@ server<-function(input, output, session){
         filename <- input$save_filename
       }
     }
-    filename <- paste(filename, input$save_data_filetype, sep = ".")
-    switch(input$save_data_filetype,
-      "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
-      "rds" = {saveRDS(data$raw, file = filename)}
+    if(input$save_what == "progress"){
+      file_extension <- "rds"
+    }else{
+      file_extension <- "csv"
+    }
+    filename <- paste(filename, file_extension, sep = ".")
+    # switch(input$save_data_filetype,
+    #   "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
+    #   "rds" = {saveRDS(data$raw, file = filename)}
+    # )
+    switch(input$save_what,
+      "choices" = {
+        write.csv(data$raw,
+          file = filename,
+          row.names = FALSE
+        )
+      },
+      "progress" = {
+        output <- list(
+          raw = data$raw,
+          stopwords = data$stopwords,
+          columns = data$columns,
+          grouped = data$grouped,
+          dtm = data$dtm,
+          model = data$model,
+          plot_ready = data$plot_ready
+        )
+        class(output) <- "screen_topics_progress"
+        saveRDS(
+          output,
+          file = filename
+        )
+      }
     )
     removeModal()
   })
