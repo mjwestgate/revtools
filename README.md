@@ -1,4 +1,4 @@
-[<img src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png" height="120"/>](https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png) ## revtools v0.3.0 (in development)
+[<img src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png" height="120"/>](https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png) <h2>revtools v0.3.0 (in development)</h2>
 
 Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
 
