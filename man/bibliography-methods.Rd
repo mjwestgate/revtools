@@ -1,6 +1,7 @@
 \name{bibliography-methods}
 \title{Methods for class 'bibliography'}
 \alias{as.bibliography}
+\alias{c.bibliography}
 \alias{as.data.frame.bibliography}
 \alias{print.bibliography}
 \alias{summary.bibliography}
@@ -11,6 +12,7 @@
 	as.bibliography(x, ...)
 	\method{as.data.frame}{bibliography}(x, ...)
 	\method{[}{bibliography}(x, n)
+	\method{c}{bibliography}(...)
 	\method{print}{bibliography}(x, n, ...)
 	\method{summary}{bibliography}(object, ...)
 }

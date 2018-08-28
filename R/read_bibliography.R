@@ -2,50 +2,47 @@
 
 # New function to import a file, regardless of format
 # This is based on auto-detection of key parameters
-read_bibliography<-function(
+read_bibliography <- function(
 	x
 	){
 
 	# import x
 	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-	z<-scan(x,
-    sep="\t",
-    what="character",
-    quote="",
-    quiet=TRUE,
-    blank.lines.skip=FALSE
+	z <- scan(x,
+    sep = "\t",
+    what = "character",
+    quote = "",
+    quiet = TRUE,
+    blank.lines.skip = FALSE
   )
-	Encoding(z)<-"latin1"
-	z<-gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
+	Encoding(z) <- "latin1"
+	z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
 
 	# detect whether file is bib-like or ris-like via the most common single characters
-	nrows<-min(c(200, length(z)))
-	zsub<-z[c(1: nrows)]
-	prop_brackets<-length(grep("\\{", zsub))/length(zsub)
-	if(prop_brackets>0.3){
-    data_type<-"bib"
-  }else{
-    data_type<-"ris"
-  }
+	nrows <- min(c(200, length(z)))
+	zsub <- z[c(1: nrows)]
+  n_brackets <- length(grep("\\{", zsub))
+  n_dashes <- length(grep(" - ", zsub))
 
-	if(data_type=="bib"){
-    result<-read_bib(z)  # simple case - no further work needed
+	if(n_brackets >  n_dashes){
+    result <- read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
 
 		# detect delimiters between references, starting with strings that start with "ER"
 		if(any(grepl("^ER", zsub))){delimiter<-"endrow"
 		}else{
 			# special break: same character repeated >6 times, no other characters
-			char_list<-strsplit(zsub, "")
-			char_break_test<-unlist(
+			char_list <- strsplit(zsub, "")
+			char_break_test <- unlist(
         lapply(char_list,
           function(a){length(unique(a)) == 1 & length(a > 6)}
         )
       )
-			if(any(char_break_test)){delimiter<-"character"
+			if(any(char_break_test)){
+        delimiter <- "character"
 			}else{
 				# use space as a ref break (last choice)
-				space_break_check<-unlist(lapply(char_list, function(a){all(a == "" | a == " ")}))
+				space_break_check <- unlist(lapply(char_list, function(a){all(a == "" | a == " ")}))
 				if(any(space_break_check)){
           delimiter<-"space"
 				}else{
@@ -386,34 +383,73 @@ read_ris<-function(x){
 
 
 # BIB
-read_bib<-function(x){
+read_bib <- function(x){
 
   # which lines start with @article?
-  group_vec<-rep(0, length(x))
-  row_id<-which(regexpr("^@", x)==1)
-  group_vec[row_id]<-1
-  group_vec<-cumsum(group_vec)
+  group_vec <- rep(0, length(x))
+  row_id <- which(regexpr("^@", x) == 1)
+  group_vec[row_id] <- 1
+  group_vec <- cumsum(group_vec)
 
   # work out row names
   ref_names <- gsub(".*\\{|,$", "", x[row_id])
   ref_type <- gsub(".*@|\\{.*", "", x[row_id])
 
   # split by reference
-  x_split<-split(x[-row_id], group_vec[-row_id])
-  length_vals<-unlist(lapply(x_split, length))
-  x_split<-x_split[which(length_vals>3)]
+  x_split <- split(x[-row_id], group_vec[-row_id])
+  length_vals <- unlist(lapply(x_split, length))
+  x_split <- x_split[which(length_vals > 3)]
 
-  x_final<-lapply(x_split, function(z){
-  	delimiter_lookup<-regexpr("=[[:blank:]]*\\{+", z)
-  	single_entry_matrix<-apply(cbind(z, delimiter_lookup), 1, function(a){c(
-  		tag=substr(a[1], 1, as.numeric(a[2])-1),
-  		value=substr(a[1], as.numeric(a[2])+1, nchar(a[1]))
-  		)
-  	})
-  	entry_dframe<-as.data.frame(t(single_entry_matrix), stringsAsFactors = FALSE)
-  	colnames(entry_dframe)<-c("tag", "value")
-  	if(any(entry_dframe$value=="}")){
-  		entry_dframe<-entry_dframe[c(1:which(entry_dframe$value=="}")[1]-1), ]
+  x_final <- lapply(x_split, function(z){
+
+    # first use a stringent lookup term to locate only tagged rows
+  	delimiter_lookup <- regexpr(
+      "^([[:alnum:]]|[[:punct:]])+[[:blank:]]*=[[:blank:]]*\\{+",
+      z
+    )
+    delimiter_rows <- which(delimiter_lookup != -1)
+    other_rows <- which(delimiter_lookup == -1)
+    delimiters <- data.frame(
+      row = delimiter_rows,
+      location = regexpr("=", z[delimiter_rows])
+    )
+    split_tags <- apply(delimiters, 1, function(a, lookup){
+      c(
+        row = as.numeric(a[1]),
+        tag = substr(
+          x = lookup[a[1]],
+          start = 1,
+          stop = a[2] - 1
+        ),
+        value = substr(
+          x = lookup[a[1]],
+          start = a[2] + 1,
+          stop = nchar(lookup[a[1]])
+        )
+      )
+      },
+      lookup = z
+    )
+    entry_dframe <- rbind(
+      as.data.frame(
+        t(split_tags),
+        stringsAsFactors = FALSE
+      ),
+      data.frame(
+        row = other_rows,
+        tag = NA,
+        value = z[other_rows],
+        stringsAsFactors = FALSE
+      )
+    )
+    entry_dframe$row <- as.numeric(entry_dframe$row)
+    entry_dframe <- entry_dframe[order(entry_dframe$row), c("tag", "value")]
+
+  	if(any(entry_dframe$value == "}")){
+  		entry_dframe <- entry_dframe[c(1:which(entry_dframe$value == "}")[1]-1), ]
+  	}
+    if(any(entry_dframe$value == "")){
+  		entry_dframe <- entry_dframe[-which(entry_dframe$value == ""), ]
   	}
 
     # remove whitespace
@@ -422,33 +458,45 @@ read_bib<-function(x){
       stringsAsFactors = FALSE
     )
     # remove 1 or more opening brackets
-    entry_dframe$value<-gsub("^\\{+", "", entry_dframe$value)
+    entry_dframe$value <- gsub("^\\{+", "", entry_dframe$value)
     # remove 1 or more closing brackets followed by zero or more punctuation marks
-    entry_dframe$value<-gsub("\\}+[[:punct:]]*$", "", entry_dframe$value)
+    entry_dframe$value <- gsub("\\}+[[:punct:]]*$", "", entry_dframe$value)
 
     # convert each entry to a list
-    label_group<-rep(0, nrow(entry_dframe))
-    tag_rows<-which(entry_dframe$tag!="")
-    label_group[tag_rows]<-1
-    tag_names<-entry_dframe$tag[tag_rows]
-    entry_list<-split(entry_dframe$value, cumsum(label_group)+1)
-    names(entry_list)<-tolower(gsub("^\\s+|\\s+$",  "", tag_names))
-    entry_list<-lapply(entry_list, function(a){paste(a, collapse=" ")})
-    if(any(names(entry_list)=="author")){
-      if(length(entry_list$author)==1){
-    		entry_list$author<-strsplit(entry_list$author, " and ")[[1]]
+    label_group <- rep(0, nrow(entry_dframe))
+    tag_rows <- which(entry_dframe$tag != "")
+    label_group[tag_rows] <- 1
+    tag_names <- entry_dframe$tag[tag_rows]
+    entry_list <- split(
+      entry_dframe$value,
+      cumsum(label_group)+1
+    )
+    names(entry_list) <- tolower(
+      gsub("^\\s+|\\s+$",  "", tag_names)
+    )
+    entry_list <- lapply(entry_list,
+      function(a){paste(a, collapse = " ")}
+    )
+    if(any(names(entry_list) == "author")){
+      if(length(entry_list$author) == 1){
+    		entry_list$author <- strsplit(entry_list$author, " and ")[[1]]
       }
     }
     return(entry_list)
   })
 
   # add type
-  x_final <- lapply(c(1:length(x_final)), function(a, type, data){
-    c(type=type[a], data[[a]])
-  }, type=ref_type, data= x_final)
+  x_final <- lapply(
+    c(1:length(x_final)),
+    function(a, type, data){
+      c(type = type[a], data[[a]])
+    },
+    type = ref_type,
+    data = x_final
+  )
 
-  names(x_final)<-ref_names # generate_bibliographic_names(x.final)
-  class(x_final)<-"bibliography"
+  names(x_final) <- ref_names
+  class(x_final) <- "bibliography"
   return(x_final)
 
 }

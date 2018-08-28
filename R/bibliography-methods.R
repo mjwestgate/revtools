@@ -55,6 +55,17 @@ print.bibliography <- function(x, n, ...){
 }
 
 
+c.bibliography <- function(..., recursive = FALSE){
+  result <- lapply(list(...), function(a){
+    class(a) <- "list"
+    return(a)
+  })
+  result <- do.call(c, result)
+  class(result) <- "bibliography"
+  return(result)
+}
+
+
 # function to convert an object of class 'bibliography' into a data.frame
 as.data.frame.bibliography <- function(x, ...){
 
