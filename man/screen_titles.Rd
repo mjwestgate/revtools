@@ -10,7 +10,7 @@ screen_titles(x)
   \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
 }
 \value{
-This function launches a Shiny app in the users' default browser, allowing the user to select or exlcude individual articles in order.
+This function launches a Shiny app in the users' default browser, allowing the user to select or exclude individual articles in order.
 }
 \examples{
 # to run the app and upload data interactively

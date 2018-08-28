@@ -6,7 +6,10 @@
 \format{A list of length 20, containing lists of named attributes for each article.}
 \source{Originally downloaded from Scopus.}
 \examples{
-file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
-x<-read_bibliography(file_location)
+file_location <- system.file(
+  "extdata",
+  "avian_ecology_bibliography.ris",
+  package = "revtools")
+x <- read_bibliography(file_location)
 summary(x)
 }

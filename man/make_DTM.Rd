@@ -19,11 +19,14 @@ This function uses some standard tools like stemming, converting words to lower 
 }
 \examples{
 # import some data
-file_location<-system.file("extdata", "avian_ecology_bibliography.ris", package="revtools")
-x<-read_bibliography(file_location)
+file_location <- system.file(
+  "extdata",
+  "avian_ecology_bibliography.ris",
+  package = "revtools")
+x <- read_bibliography(file_location)
 
 # construct a document-term matrix
 # note: this can take a long time to run for large datasets
-x_DTM<-make_DTM(x)
+x_DTM <- make_DTM(x)
 dim(x_DTM) # 20 articles, 1069 words
 }

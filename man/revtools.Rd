@@ -10,6 +10,7 @@
     \item \code{\link{screen_abstracts}} Screen articles by abstract
 		\item \code{\link{screen_duplicates}} Screen for duplicates
 		\item \code{\link{screen_topics}} Screen data by topic
+  }
 	\strong{Import & export}
 	\itemize{
 		\item \code{\link{read_bibliography}} Import bibliographic data

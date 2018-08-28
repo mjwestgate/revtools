@@ -18,7 +18,10 @@ format_citation(data, details = TRUE, abstract = FALSE, add_html = FALSE)
 a string of length == length(x), containing formatted citations.
 }
 \examples{
-file_location <- system.file("extdata", "avian_ecology_bibliography.ris", package = "revtools")
+file_location <- system.file(
+  "extdata",
+  "avian_ecology_bibliography.ris",
+  package = "revtools")
 x <- read_bibliography(file_location)
 format_citation(x[[1]])
 }
