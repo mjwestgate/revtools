@@ -1,19 +1,35 @@
 \name{find_duplicates}
 \alias{find_duplicates}
-\title{Locate duplicated references within a data.frame}
-\description{Identify potential duplicates within a \code{data.frame} containing title, journal and year data for each reference. Such a \code{data.frame} can be created by calling \code{as.data.frame} on an object of class bibliography (e.g. as returned by \code{read_bibliography()}).}
+\title{Locate duplicated information within a data.frame}
+\description{Identify potential duplicates within a \code{data.frame}.}
 \usage{
-find_duplicates(x)
+find_duplicates(data, match_variable, group_variables = NULL, match_function = c("fuzzdist", "stringdist", "exact"), method = "fuzz_m_ratio", threshold = 0.1, to_lower = TRUE, remove_punctuation = FALSE)
 }
 \arguments{
-  \item{x}{a \code{data.frame} containing title, journal and year data for each reference}
+  \item{data}{a \code{data.frame} containing data to be matched}
+  \item{match_variable}{a length-1 vector listing the column in which duplicates should be sought}
+  \item{group_variables}{an optional vector listing the columns to use as grouping variables; that is, categories withing which duplicates should be sought (see 'note'). Optionally NULL to compare all entries against one another.}
+  \item{match_function}{a function to calculate dissimilarity between strings. Defaults to \code{fuzzdist}.}
+  \item{method}{the required 'method' option that corresponds with match_function. Defaults to \code{fuzz_m_ratio}.}
+  \item{threshold}{an upper limit above which similar articles are not recognized as duplicates. Defaults to 0.1.}
+  \item{to_lower}{logical: should text be made lower case prior to searching? Defaults to TRUE.}
+  \item{remove_punctuation}{logical: should punctuation be removed prior to searching? Defaults to FALSE.}
 }
 \value{
-a  \code{data.frame} with the same columns as the initial data, with a numeric variable named 'group'; rows with the same value are probable duplicates.}
+an integer vector, in which entries with the same integer have been selected as duplicates by the selected algorithm.}
 \note{
-This function has a few odd features. It uses  \code{stringdist} to locate article titles that are similar to one another, rather than exact matching. This is done within a  \code{while} loop; in each run of the loop, rows that have similar journal titles or publication years are checked for potential duplication, while rows with missing values of these variables are tested in every run. This makes the code fairly comprehensive at the cost of speed.
+\code{find_duplicates} runs a \code{while} loop. It starts by checking the first entry of \code{data} against every other entry for potential duplicates. If any matches are found, those entries are excluded from consideration. The loop then continues until all entries have been checked. In order to work, this function requires the \code{data} and \code{match_variable} arguments be specified. The remaining arguments affects how duplicates are identified, and can also strongly influence the speed of the outcome.
 
-A method that tests string distances between all pairs would locate more duplicates, but would be substantially slower. Conversely, a method that split the dataset into mutually exclusive groups could be vectorized and would be correspondingly faster, but as the identity of these groups is inherently ambigious, it would probably reduce the hit rate.
+The argument \code{group_variables} specifies variables that contain supplementary information that can reduce the number of entries that need to be searched. For example, you might want to only match article titles if they occur within the same journal, or in the same year. The more variables you specify, the fewer pairs of matches that have to be tested to locate duplicates, greatly increasing the speed of the algorithm. Conversely, if no variables are specified, then each entry is checked against every other entry that has yet to be excluded from the dataset. This is fine for small datasets, but massively increases computation time for large datasets.
+
+Missing values are handled differently. Entries that are \code{NA} for \code{match_variable} are always labelled as uique values, and are not checked for duplicates against the rest of the dataset. However, entries of \code{group_variables} that are \code{NA} are included in every comparison.
+
+\code{find_duplicates} contains three 'built-in' methods for string matching. "stringdist" calls the function of the same name from the package \code{stringdist}; ditto for "fuzzdist" which is in \code{revtools}, but based on the Python library \code{fuzzywuzzy}. "exact" simply searches for exact matches. In principle you could call any function for string matching, so long as it accepts the arguments \code{a}, \code{b} and \code{method} (see documentation on stringdist for details), and returns a measure of distance (i.e. not similarity).
+
+Finally, \code{to_lower} and \code{remove_punctuation} specify whether to transform the text prior to searching for duplicates.
+}
+\seealso{
+	\code{\link{extract_unique_references}}
 }
 \examples{
 # import data

@@ -5,7 +5,7 @@
 \alias{fuzz_token_sort_ratio}
 \alias{fuzz_token_set_ratio}
 \title{Functions for fuzzy string matching}
-\description{Duplicate of functions from the Python library fuzzywuzzy (\url{https://github.com/seatgeek/fuzzywuzzy}). These functions have been recoded from scratch based on the description given \href{http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python}{here}. For consistency with \code{stringdist}, however, these functions are now computed as distances rather than similarities; i.e. low values signify similar strings.}
+\description{Duplicate of functions from the Python library 'fuzzywuzzy' (\url{https://github.com/seatgeek/fuzzywuzzy}). These functions have been recoded from scratch based on the description given \href{http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python}{here}. For consistency with \code{stringdist}, however, these functions are computed as distances rather than similarities; i.e. low values signify similar strings.}
 \usage{
 fuzz_m_ratio(x, y)
 fuzz_partial_ratio(x, y)
@@ -18,6 +18,16 @@ fuzz_token_set_ratio(x, y)
 }
 \value{
 A score of same length as y, giving the proportional dissimilarity between x and y.
+}
+\note{
+\code{fuzz_m_ratio} is a measure of the number of letters that match between two strings. It is calculated as one minus two times the number of matched characters, divided by the number of characters in both strings.
+
+\code{fuzz_partial_ratio} calculates the extent to which one string is a subset of the other. If one string is a perfect subset, then this will be zero.
+
+\code{fuzz_token_sort_ratio} sorts the words in both strings into alphabetical order, and checks their similarity using \code{fuzz_m_ratio}.
+
+\code{fuzz_token_set_ratio} is similar to \code{fuzz_token_sort_ratio}, but compares both sorted strings to
+each other, and to a third group made of words common to both strings. It then returns the maximum value of \code{fuzz_m_ratio} from these comparisons.
 }
 \examples{
 fuzz_m_ratio("NEW YORK METS", "NEW YORK MEATS")

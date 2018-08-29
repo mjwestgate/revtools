@@ -30,7 +30,10 @@ Note that \code{"start_review_window()"} is the earlier form of this function; t
 # to run the app and upload data interactively
 \dontrun{screen_topics()}
 # or to specify data from the workspace
-file_location <- system.file("extdata", "avian_ecology_bibliography.ris", package = "revtools")
+file_location <- system.file(
+  "extdata",
+  "avian_ecology_bibliography.ris",
+  package = "revtools")
 x <- read_bibliography(file_location)
 \dontrun{screen_topics(x)}
 }
