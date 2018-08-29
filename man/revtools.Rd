@@ -6,9 +6,9 @@
 \section{Functions}{
 	\strong{Shiny apps}
   \itemize{
+		\item \code{\link{screen_duplicates}} Screen for duplicates
   	\item \code{\link{screen_titles}} Screen articles by title
     \item \code{\link{screen_abstracts}} Screen articles by abstract
-		\item \code{\link{screen_duplicates}} Screen for duplicates
 		\item \code{\link{screen_topics}} Screen data by topic
   }
 	\strong{Import & export}

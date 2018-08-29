@@ -28,19 +28,30 @@ screen_duplicates_ui <- function(){
           label = "Select function",
           choices = c(
             "stringdist" = "stringdist::stringdist",
-            "fuzzdist" = "fuzzdist"
+            "fuzzdist" = "fuzzdist",
+            "exact" = "exact"
           ),
           selected = "fuzzdist"
         ),
         uiOutput("algorithm_selector"),
-        uiOutput("threshold_selector")
-      ),
-      shiny::br(),
-      actionButton(
-        inputId = "calculate_duplicates",
-        label = "Calculate Duplicates"
-      ),
-      shiny::br()
+        uiOutput("threshold_selector"),
+        selectInput(
+          inputId = "match_lower",
+          label = "Make lower case?",
+          choices = c(FALSE, TRUE)
+        ),
+        selectInput(
+          inputId = "match_punctuation",
+          label = "Remove punctuation?",
+          choices = c(FALSE, TRUE)
+        ),
+        shiny::br(),
+        actionButton(
+          inputId = "calculate_duplicates",
+          label = "Calculate Duplicates"
+        ),
+        shiny::br()
+      )
     )
   )
 
@@ -49,13 +60,36 @@ screen_duplicates_ui <- function(){
     fluidRow(
       column(
         width = 6,
-        h4("Returned Text"),
+        tableOutput("match_summary")
+      ),
+      column(
+        width = 2,
+        uiOutput("selector_previous"),
+        br()
+      ),
+      column(
+        width = 2,
+        uiOutput("selector_none"),
+        br()
+      ),
+      column(
+        width = 2,
+        uiOutput("selector_next"),
+        br()
+      )
+    ),
+    fluidRow(
+      column(
+        width = 6,
+        uiOutput("selector_1"),
         br(),
-        tableOutput("test_text")
+        tableOutput("text_1")
       ),
       column(
         width = 6,
-        strong("Other text")
+        uiOutput("selector_2"),
+        br(),
+        tableOutput("text_2")
       )
     )
   )

@@ -1,5 +1,5 @@
-\name{fuzzywuzzy_functions}
-\alias{fuzzywuzzy_functions}
+\name{fuzz_functions}
+\alias{fuzz_functions}
 \alias{fuzz_m_ratio}
 \alias{fuzz_partial_ratio}
 \alias{fuzz_token_sort_ratio}

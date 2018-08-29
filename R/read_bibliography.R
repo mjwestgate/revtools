@@ -191,25 +191,32 @@ read_medline<-function(x){
 
 
 # generate unique label for entries, using as much author & year data as possible
-generate_bibliographic_names<-function(x){
-	nonunique_names<-unlist(lapply(x, function(a){
-		name_vector<-rep("", 3)
-		if(any(names(a)=="author")){
-			name_vector[1]<-strsplit(a$author[1], ",")[[1]][1]}
+generate_bibliographic_names <- function(x){
+	nonunique_names <- unlist(lapply(x, function(a){
+		name_vector <- rep("", 3)
+		if(any(names(a) == "author")){
+			name_vector[1] <- strsplit(a$author[1], ",")[[1]][1]
+    }
 		if(any(names(a)=="year")){name_vector[2]<-a$year}
 		if(any(names(a)=="journal")){
 			journal_info<-strsplit(a$journal, " ")[[1]]
 			name_vector[3]<-paste(substr(journal_info, 1, min(nchar(journal_info), 4)), collapse="")
 			}
 		name_vector<-name_vector[which(name_vector!="")]
-		if(length(name_vector)==0){return("ref")
-		}else{return(paste(name_vector, collapse="_"))}
-		}))
+		if(length(name_vector)==0){
+      return("ref")
+		}else{
+      return(paste(name_vector, collapse="_"))
+    }
+	}))
 
 	# where this is not possible, give a 'ref1' style result only as a last resort.
-	if(any(nonunique_names=="ref")){
-		rows.tr<-which(nonunique_names=="ref")
-		nonunique_names[rows.tr]<-paste("ref", c(1:length(rows.tr)), sep="_")
+	if(any(nonunique_names == "ref")){
+		rows.tr<-which(nonunique_names == "ref")
+		nonunique_names[rows.tr] <- paste(
+      "ref",
+      c(1:length(rows.tr)),
+      sep = "_")
 		}
 
 	# ensure names are unique
