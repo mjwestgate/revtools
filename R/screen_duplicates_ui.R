@@ -55,7 +55,7 @@ screen_duplicates_ui <- function(){
     )
   )
 
-  body <- dashboardBody(
+  body <- shinydashboard::dashboardBody(
     revtools_css(),
     fluidRow(
       column(
