@@ -1,18 +1,30 @@
 screen_duplicates <- function(x){
 
-  if(missing(x)){x <- NULL}
+  input_data <- list(
+    raw = NULL,
+    columns = NULL,
+    grouped = NULL
+  )
+
+  if(missing(x)){
+    x <- NULL
+  }
+
   if(!is.null(x)){
 
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
     if(any(accepted_inputs == class(x)) == FALSE){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_duplicates")}
 
     switch(class(x),
       "bibliography" = {x <- as.data.frame(x)},
       "data.frame" = {x <- x}
     )
+    input_data$columns <- colnames(x)
+
   }
+  input_data$raw <- x
 
   # create ui
   ui_data <- screen_duplicates_ui()
@@ -29,15 +41,18 @@ screen_duplicates <- function(x){
 
     # BUILD REACTIVE VALUES
     data <- reactiveValues(
-      raw = NULL,
-      columns = NULL,
-      match = NULL,
+      raw = input_data$raw,
+      columns = input_data$columns,
       grouped = NULL
     )
 
+    display <- reactiveValues(
+      data_present = FALSE,
+      columns = input_data$columns
+    )
+
     progress <- reactiveValues(
-      entry = NULL,
-      rows = NULL
+      entry = NULL
     )
 
     # CREATE HEADER IMAGE
@@ -68,37 +83,75 @@ screen_duplicates <- function(x){
           seq_len(nrow(import_result))
         )
       }
-      # find a way to track progress
-      import_result$display <- TRUE
       # save in reactiveValues
       data$raw <- import_result
-      data$columns <- colnames(import_result)[
-        which(colnames(import_result) != "display")
-      ]
+      data$columns <- colnames(import_result)
+      display$columns <- data$columns
+
+    })
+
+    output$data_selector <- renderUI({
+      if(!is.null(data$raw)){
+        selectInput(
+          inputId = "duplicates_present",
+          label = "Is there a variable describing duplicates in this dataset?",
+          choices = c("No", "Yes")
+        )
+      }
+    })
+
+    # update ui
+    observeEvent(input$duplicates_present, {
+      if(input$duplicates_present == "Yes"){
+        display$data_present <- TRUE
+      }else{
+        display$data_present <- FALSE
+      }
     })
 
     # select matching variable(s)
     # i.e. matches are searched for in these columns
     output$response_selector <- renderUI({
       if(!is.null(data$columns)){
-        if(any(data$columns == "title")){
-          selected <- "title"
+        if(display$data_present){
+          if(any(data$columns == "matches")){
+            selected <- "matches"
+          }else{
+            selected <- data$columns[1]
+          }
+          shiny::tagList(
+            selectInput(
+              inputId = "match_columns",
+              label = "Select column containing duplicate data",
+              choices = data$columns,
+              selected = selected
+            ),
+            actionButton(
+              inputId = "go_duplicates",
+              label = "Select",
+              width = "85%"
+            )
+          )
         }else{
-          selected <- data$columns[1]
+          if(any(data$columns == "title")){
+            selected <- "title"
+          }else{
+            selected <- data$columns[1]
+          }
+          selectInput(
+            inputId = "response_selector_result",
+            label = "Select column to search for duplicates",
+            choices = data$columns,
+            selected = selected
+          )
         }
-        selectInput(
-          inputId = "response_selector_result",
-          label = "Select variable to match",
-          choices = data$columns,
-          selected = selected
-        )
       }
     })
 
     # select grouping variable(s)
-    # i.e. possible matches can only be found in matching values of these columns
+    # i.e. possible matches can only be found in subsets defined by these columns
     output$group_selector <- renderUI({
-      if(!is.null(data$columns)){
+      if(!is.null(data$columns) & !display$data_present){
         lookup <- data$columns %in% c("journal", "year")
         if(any(lookup)){
           selected <- data$columns[which(lookup)]
@@ -114,8 +167,25 @@ screen_duplicates <- function(x){
       }
     })
 
-    observe({
+    # select display variables
+    output$display_selector <- renderUI({
+      if(!is.null(data$columns)){
+        checkboxGroupInput(
+          inputId = "display_result",
+          label = "Select variables to display",
+          choices = data$columns,
+          selected = data$columns
+        )
+      }
+    })
 
+    observeEvent(input$display_result, {
+      display$columns <- input$display_result
+    })
+
+
+    # decide which method to use to calculate string distances
+    observe({
       output$algorithm_selector <- renderUI({
         if(input$match_function == "fuzzdist"){
           algorithm_list <- list(
@@ -142,16 +212,17 @@ screen_duplicates <- function(x){
       })
     })
 
+    # set a string distance as appropriate for each method
     observe({
       output$threshold_selector <- renderUI({
-        if(input$match_function == "stringdist"){
-          max_val <- 20
-          initial_val <- 5
-          step_val <- 1
-        }else{
+        if(input$match_function == "fuzzdist"){
           max_val <- 1
           initial_val <- 0.1
           step_val <- 0.05
+        }else{
+          max_val <- 20
+          initial_val <- 5
+          step_val <- 1
         }
         if(input$match_function != "exact"){
           sliderInput(
@@ -166,34 +237,40 @@ screen_duplicates <- function(x){
       })
     })
 
+    # If duplicates have already been calculated, load them
+    observeEvent(input$go_duplicates, {
+      data$raw$matches <- data$raw[, input$match_columns]
+
+      # work out which duplicates to show
+      group_result <- split(data$raw, data$raw$matches)
+      group_result <- group_result[
+        which(unlist(lapply(group_result, nrow)) > 1)
+      ]
+      if(length(group_result) > 0){
+        progress$entry <- 1
+        data$grouped <- group_result
+      }else{
+        progress$entry <- NULL
+      }
+
+    })
 
     # Calculate duplicates
     observeEvent(input$calculate_duplicates, {
 
       if(length(input$response_selector_result) < 1 & length(input$group_selector_result) < 1){
         if(length(input$response_selector_result) < 1){
-          showModal(
-            modalDialog(
-              HTML("Please select a variable to match records by<br><br>
-              <em>Click anywhere to exit</em>"),
-              title = "Error: insufficient data",
-              footer = NULL,
-              easyClose = TRUE
-            )
+          error_modal("Please select a variable to match records by<br><br>
+            <em>Click anywhere to exit</em>"
           )
         }else{
-          showModal(
-            modalDialog(
-              HTML("Please select 1 or more variables to group records by<br><br>
-              <em>Click anywhere to exit</em>"),
-              title = "Error: insufficient data",
-              footer = NULL,
-              easyClose = TRUE
-            )
+          error_modal("Please select 1 or more variables to group records by<br><br>
+            <em>Click anywhere to exit</em>"
           )
         }
       }else{
-        data$match <- find_duplicates(
+        calculating_modal()
+        data$raw$matches <- find_duplicates(
           data = data$raw,
           match_variable = input$response_selector_result,
           group_variables = input$group_selector_result,
@@ -205,18 +282,42 @@ screen_duplicates <- function(x){
         )
 
         # work out which duplicates to show
-        group_result <- split(data$raw, data$match)
-        group_result <- group_result[
-          which(unlist(lapply(group_result, nrow)) > 1)
-        ]
+        group_result <- split(data$raw, data$raw$matches)
+        row_counts <- unlist(lapply(group_result, nrow))
+
+        # ensure that every pair of duplicates is shown, even if there are >2 copies
+        # i.e. convert groups >2 to many subsets with n = 2
+        if(any(row_counts > 2)){
+          large_list <- group_result[which(row_counts > 2)]
+          cleaned_list <- lapply(large_list, function(a){
+            apply(
+              combn(nrow(a), 2),
+              2,
+              function(b, lookup){lookup[as.numeric(b), ]},
+              lookup = a
+            )
+          })
+          extracted_list <- do.call(c, cleaned_list)
+          if(any(row_counts == 2)){
+            group_result <- c(
+              group_result[which(row_counts == 2)],
+              extracted_list
+            )
+          }else{
+            group_result <- extracted_list
+          }
+        }else{
+          group_result <- group_result[which(row_counts > 1)]
+        }
+
+        # if the above finds any duplicates, then proceed
         if(length(group_result) > 0){
           progress$entry <- 1
-          progress$rows <- c(1, 2)
           data$grouped <- group_result
         }else{
           progress$entry <- NULL
-          progress$rows <- NULL
         }
+        removeModal()
       }
     })
 
@@ -227,17 +328,34 @@ screen_duplicates <- function(x){
       )
       if(is.null(data$grouped)){
         cat(
-          paste0("<h4>Dataset with ", nrow(data$raw), " entries</h4>")
-        )
-      }else{
-        cat(
-          paste0("<h4>Dataset with ",
+          paste0(
+            "<font size='4'>Dataset with ",
             nrow(data$raw),
-            " entries  |  ",
-            length(data$grouped),
-            " duplicates remaining</h4>"
+            " entries</font>"
           )
         )
+      }else{
+        if(is.null(progress$entry)){
+          cat(
+            paste0("<font size='4'>Dataset with ",
+              nrow(data$raw),
+              " entries  |  ",
+              length(data$grouped),
+              " duplicates remaining</font>"
+            )
+          )
+        }else{
+          cat(
+            paste0("<font size='4'>Dataset with ",
+              nrow(data$raw),
+              " entries  |  ",
+              length(data$grouped),
+              " duplicates remaining</font><br><font size='3'>Showing duplicate #",
+              progress$entry,
+              "</font>"
+            )
+          )
+        }
       }
     })
 
@@ -294,36 +412,74 @@ screen_duplicates <- function(x){
     # text blocks
     output$text_1 <- renderPrint({
       validate(
-        need(progress$entry, "")
+        need(data$grouped, "")
       )
-      format_duplicates(x = data$grouped[[progress$entry]][progress$rows[1], ])
+      format_duplicates(
+        x = data$grouped[[progress$entry]][1, ],
+        columns = display$columns,
+        breaks = input$author_line_breaks
+      )
     })
     output$text_2 <- renderPrint({
       validate(
-        need(progress$entry, "")
+        need(data$grouped, "")
       )
-      format_duplicates(x = data$grouped[[progress$entry]][progress$rows[2], ])
+      format_duplicates(
+        x = data$grouped[[progress$entry]][2, ],
+        columns = display$columns,
+        breaks = input$author_line_breaks
+      )
     })
 
     # respond when actionButtons are triggered
     observeEvent(input$selected_1, {
-      # label_keep <- data$grouped[[progress$entry]]$label[progress$row[1]]
-      label_exclude <- data$grouped[[progress$entry]]$label[progress$rows[2]]
-      data$raw$display[which(data$raw$label == label_exclude)] <- FALSE
-      if(nrow(data$grouped[[progress$entry]]) > 2){
-        data$grouped[[progress$entry]] <- data$grouped[[progress$entry]][-progress$rows[2]]
-      }else{
-        data$grouped <- data$grouped[-progress$entry]
+      label_exclude <- data$grouped[[progress$entry]]$label[2]
+      data$raw <- data$raw[which(data$raw$label != label_exclude), ]
+      data$grouped <- data$grouped[-progress$entry]
+      if(progress$entry > length(data$grouped)){
+        if(length(data$grouped) == 0){
+          progress$entry <- NULL
+          save_modal(
+            x = data$raw,
+            title = "Screening Complete: Save results?"
+          )
+        }else{
+          progress$entry <- length(data$grouped)
+        }
       }
     })
 
     observeEvent(input$selected_2, {
-      label_exclude <- data$grouped[[progress$entry]]$label[progress$rows[1]]
-      data$raw$display[which(data$raw$label == label_exclude)] <- FALSE
-      if(nrow(data$grouped[[progress$entry]]) > 2){
-        data$grouped[[progress$entry]] <- data$grouped[[progress$entry]][-progress$rows[2]]
-      }else{
-        data$grouped <- data$grouped[-progress$entry]
+      label_exclude <- data$grouped[[progress$entry]]$label[1]
+      data$raw <- data$raw[which(data$raw$label != label_exclude), ]
+      data$grouped <- data$grouped[-progress$entry]
+      if(progress$entry > length(data$grouped)){
+        if(length(data$grouped) == 0){
+          progress$entry <- NULL
+          save_modal(
+            x = data$raw,
+            title = "Screening Complete: Save results?"
+          )
+        }else{
+          progress$entry <- length(data$grouped)
+        }
+      }
+    })
+
+    observeEvent(input$selected_none, {
+      label_exclude <- data$grouped[[progress$entry]]$label[2]
+      data$raw$matches[which(data$raw$label == label_exclude)] <- max(data$raw$matches)+1
+      data$grouped <- data$grouped[-progress$entry]
+      if(progress$entry > length(data$grouped)){
+        if(length(data$grouped) == 0){
+          progress$entry <- NULL
+          save_modal(
+            x = data$raw,
+            title = "Screening Complete: Save results?"
+          )
+        }else{
+          progress$entry <- length(data$grouped)
+        }
       }
     })
 
@@ -338,6 +494,75 @@ screen_duplicates <- function(x){
         progress$entry <- progress$entry + 1
       }
     })
+
+
+
+    # add option to remove data
+    observeEvent(input$clear_data, {
+      shiny::showModal(
+        shiny::modalDialog(
+          HTML("If you proceed, all data will be removed from this window,
+          including any progress you have made screening your data.
+          If you have not saved your data,
+          you might want to consider doing that first.<br><br>
+          Are you sure you want to continue?<br><br>"
+          ),
+          shiny::actionButton(
+            inputId = "clear_data_confirmed",
+            label = "Confirm"),
+          shiny::modalButton("Cancel"),
+          title = "Clear all data",
+          footer = NULL,
+          easyClose = FALSE
+        )
+      )
+    })
+
+    observeEvent(input$clear_data_confirmed, {
+      data$raw <- NULL
+      data$columns <- NULL
+      data$grouped <- NULL
+      progress$entry <- NULL
+      removeModal()
+    })
+
+    # SAVE OPTIONS
+    observeEvent(input$save_data, {
+      save_modal(data$raw)
+    })
+
+    observeEvent(input$save_data_execute, {
+      if(nchar(input$save_filename) == 0){
+        filename <- "revtools_data"
+      }else{
+        if(grepl("\\.[[:lower:]]{3}$", input$save_filename)){
+          filename <- substr(
+            input$save_filename, 1,
+            nchar(input$save_filename) - 4
+          )
+        }else{
+          filename <- input$save_filename
+        }
+      }
+      filename <- paste(filename, input$save_type , sep = ".")
+      switch(input$save_type,
+        "csv" = {
+          write.csv(data$raw,
+            file = filename,
+            row.names = FALSE
+          )
+        },
+        "rds" = {
+          saveRDS(
+            data$raw,
+            file = filename
+          )
+        }
+      )
+      removeModal()
+    })
+
+
 
   } # end server
 

@@ -1,6 +1,6 @@
 find_duplicates <- function(
   data,
-  match_variable,
+  match_variable = "title",
   group_variables = NULL,
   match_function = c("fuzzdist", "stringdist", "exact"),
   method = "fuzz_m_ratio",
@@ -13,9 +13,13 @@ find_duplicates <- function(
     stop("'data' is missing: Please provide a data.frame")
   }
 
-  if(missing(match_variable)){
-    stop("'match_variable' is missing:
-    Please specify which column should be searched for duplicates")
+  if(!any(colnames(data) == match_variable)){
+    stop(
+      match_variable,
+      " is not a valid column name in ",
+      data,
+      ": Please specify which column should be searched for duplicates"
+    )
   }
 
   # error catching

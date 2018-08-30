@@ -3,7 +3,7 @@
 \title{Locate duplicated information within a data.frame}
 \description{Identify potential duplicates within a \code{data.frame}.}
 \usage{
-find_duplicates(data, match_variable, group_variables = NULL,
+find_duplicates(data, match_variable = "title", group_variables = NULL,
   match_function = c("fuzzdist", "stringdist", "exact"),
   method = "fuzz_m_ratio", threshold = 0.1,
   to_lower = TRUE, remove_punctuation = FALSE)

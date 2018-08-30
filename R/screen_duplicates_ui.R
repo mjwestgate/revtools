@@ -12,13 +12,26 @@ screen_duplicates_ui <- function(){
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
         fileInput("data_in", label = "Import"),
+        uiOutput("data_selector"),
         uiOutput("response_selector"),
         menuItem("Grouping Variable(s)",
           tabName = "variable_tab",
           icon = icon("pencil"),
           startExpanded = FALSE,
           uiOutput("group_selector")
-        )
+        ),
+        br(),
+        actionButton(
+          inputId = "save_data",
+          label = "Save Data",
+          width = "85%"
+        ),
+        actionButton(
+          inputId = "clear_data",
+          label = "Clear Data",
+          width = "85%"
+        ),
+        br()
       ),
       menuItem("Matching",
         icon = shiny::icon("clone"),
@@ -35,22 +48,33 @@ screen_duplicates_ui <- function(){
         ),
         uiOutput("algorithm_selector"),
         uiOutput("threshold_selector"),
-        selectInput(
+        checkboxInput(
           inputId = "match_lower",
           label = "Make lower case?",
-          choices = c(FALSE, TRUE)
+          value = FALSE
         ),
-        selectInput(
+        checkboxInput(
           inputId = "match_punctuation",
           label = "Remove punctuation?",
-          choices = c(FALSE, TRUE)
+          value = FALSE
         ),
-        shiny::br(),
         actionButton(
           inputId = "calculate_duplicates",
-          label = "Calculate Duplicates"
+          label = "Calculate Duplicates",
+          width = "85%"
         ),
-        shiny::br()
+        br()
+      ),
+      menuItem(
+        text = "Display",
+        icon = icon("bar-chart-o"),
+        checkboxInput(
+          inputId = "author_line_breaks",
+          label = "Add line breaks to author data?",
+          value = FALSE
+        ),
+        uiOutput("display_selector"),
+        br()
       )
     )
   )
