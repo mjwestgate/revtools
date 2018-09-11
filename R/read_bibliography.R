@@ -27,106 +27,171 @@ read_bibliography <- function(
 	if(n_brackets >  n_dashes){
     result <- read_bib(z)  # simple case - no further work needed
 	}else{  #  ris format can be inconsistent; custom code needed
-
-		# detect delimiters between references, starting with strings that start with "ER"
-		if(any(grepl("^ER", zsub))){delimiter<-"endrow"
-		}else{
-			# special break: same character repeated >6 times, no other characters
-			char_list <- strsplit(zsub, "")
-			char_break_test <- unlist(
-        lapply(char_list,
-          function(a){length(unique(a)) == 1 & length(a > 6)}
-        )
-      )
-			if(any(char_break_test)){
-        delimiter <- "character"
-			}else{
-				# use space as a ref break (last choice)
-				space_break_check <- unlist(lapply(char_list, function(a){all(a == "" | a == " ")}))
-				if(any(space_break_check)){
-          delimiter<-"space"
-				}else{
-          stop("import failed: unknown reference delimiter")
-        }
-			}
-		}
-
-		# detect tags
-		zlist<-as.list(z)
-		zlist<-lapply(zlist, function(a){
-			if(a==""){
-        return(a)
-			}else{
-				caps_present<-gregexpr("^[[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1}", a)[[1]]
-				if(any(caps_present==1)){
-					end_caps<-attr(caps_present, "match.length")[1]
-					tag<-substr(a, 1, end_caps)
-					content<- gsub("^\\s+|\\s+$", "", substr(a, (end_caps+1), nchar(a)))
-					content<-gsub("^-|:", "", content)
-					content<-gsub("^\\s+|\\s+$", "", content)
-					return(c(tag, content))
-				}else{return(c("", gsub("^\\s+|\\s+$", "", a)))}
-			}
-			})
-		z.dframe<-as.data.frame(do.call(rbind, zlist), stringsAsFactors=FALSE)
-		colnames(z.dframe)<-c("ris", "text")
-		z.dframe$row.order<-c(1:nrow(z.dframe))
-
-		# replace tag information for delimiter == character | space
-		if(delimiter=="character"){
-			z.dframe$ris[which(
-				unlist(lapply(strsplit(z, ""), function(a){length(unique(a))==1 & length(a>6)}))
-				)]<-"ER"}
-		if(delimiter=="space"){
-			z.dframe$ris[which(
-				unlist(
-          lapply(strsplit(z, ""), function(a){all(a=="" | a==" ")}))
-        )]<-"ER"
-			# ensure multiple consecutive empty rows are removed
-			rollingsum<-function(a, n=2L){
-        tail(cumsum(a) - cumsum(c(rep(0, n), head(a, -n))), -n + 1)
-      }
-			z_rollsum<-rollingsum(z.dframe$ris == "ER")
-			if(any(z_rollsum>1)){z.dframe<-z.dframe[which(z_rollsum <=1), ]}
-			}
-		if(delimiter=="endrow"){
-			row_df<-data.frame(
-				start=which(z.dframe$ris=="TY"),
-				end=which(z.dframe$ris=="ER")
-				)
-			z.list<-apply(row_df, 1, function(a){c(a[1]:a[2])})
-			z.list<-lapply(z.list, function(a, lookup){lookup[a, ]}, lookup=z.dframe)
-			z.dframe<-as.data.frame(do.call(rbind, z.list))
-		}
-
-		# cleaning
-		z.dframe$ref<-c(0, cumsum(z.dframe$ris=="ER")[c(1:(nrow(z.dframe)-1))]) # split by reference
-		z.dframe<-z.dframe[which(z.dframe$text!=""), ] # remove empty rows
-		z.dframe<-z.dframe[which(z.dframe$ris!="ER"), ] # remove end rows
-
-		# fill missing tags
-		z.split<-split(z.dframe, z.dframe$ref)
-		z.split<-lapply(z.split, function(a){
-			if(a$ris[1]==""){a$ris[1]<-"ZZ"}
-			accum_ris<-Reduce(c, a$ris, accumulate=TRUE)
-			a$ris<-unlist(lapply(accum_ris, function(b){
-				good_vals<-which(b!="")
-				b[good_vals[length(good_vals)]]
-				}))
-			return(a)})
-		z.dframe<-as.data.frame(do.call(rbind, z.split))
-
+    z_dframe <- prep_ris(z, detect_delimiter(zsub))
 		# import appropriate format
-		if(any(z.dframe$ris=="PMID")){result<-read_medline(z.dframe)
-		}else{result<-read_ris(z.dframe)}
-
+		if(any(z_dframe$ris == "PMID")){
+      result <- read_medline(z_dframe)
+		}else{
+      result <- read_ris(z_dframe)
+    }
 	}
 	return(result)
 }
 
 
+rollingsum <- function(a, n=2L){
+  tail(cumsum(a) - cumsum(c(rep(0, n), head(a, -n))), -n + 1)
+}
 
-read_medline<-function(x){
+# detect delimiters between references, starting with strings that start with "ER"
+detect_delimiter <- function(x){
+  if(any(grepl("^ER", x))){
+    delimiter<-"endrow"
+  }else{
+    # special break: same character repeated >6 times, no other characters
+    char_list <- strsplit(x, "")
+    char_break_test <- unlist(
+      lapply(char_list,
+        function(a){length(unique(a)) == 1 & length(a > 6)}
+      )
+    )
+    if(any(char_break_test)){
+      delimiter <- "character"
+    }else{
+      # use space as a ref break (last choice)
+      space_break_check <- unlist(lapply(
+        char_list,
+        function(a){all(a == "" | a == " ")}
+      ))
+      if(any(space_break_check)){
+        delimiter <- "space"
+      }else{
+        stop("import failed: unknown reference delimiter")
+      }
+    }
+  }
+  return(delimiter)
+}
+
+
+prep_ris <- function(
+  z,
+  delimiter
+){
+	# detect tags
+	zlist <- as.list(z)
+	zlist <- lapply(zlist, function(a){
+		if(a == ""){
+      return(a)
+		}else{
+			caps_present <- gregexpr(
+        "^[[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1}",
+        a
+      )[[1]]
+			if(any(caps_present == 1)){
+				end_caps <- attr(caps_present, "match.length")[1]
+				tag <- substr(a, 1, end_caps)
+				content <- gsub(
+          "^\\s+|\\s+$", "",
+          substr(a, (end_caps+1), nchar(a))
+        )
+				content <- gsub("^-|:", "", content)
+				content <- gsub("^\\s+|\\s+$", "", content)
+				return(
+          c(tag, content)
+        )
+			}else{
+        return(
+          c("", gsub("^\\s+|\\s+$", "", a))
+        )
+      }
+		}
+		})
+	z_dframe <- as.data.frame(
+    do.call(rbind, zlist),
+    stringsAsFactors = FALSE
+  )
+	colnames(z_dframe) <- c("ris", "text")
+	z_dframe$row_order <- seq_len(nrow(z_dframe))
+
+	# replace tag information for delimiter == character | space
+	if(delimiter == "character"){
+		z_dframe$ris[which(
+			unlist(lapply(
+        strsplit(z, ""),
+        function(a){
+          length(unique(a))==1 & length(a>6)
+        }
+      ))
+		)]<-"ER"
+  }
+	if(delimiter == "space"){
+		z_dframe$ris[which(
+			unlist(lapply(
+        strsplit(z, ""),
+        function(a){
+          all(a == "" | a == " ")
+        }
+      ))
+    )]<-"ER"
+		# ensure multiple consecutive empty rows are removed
+		z_rollsum <- rollingsum(z_dframe$ris == "ER")
+		if(any(z_rollsum > 1)){
+      z_dframe <- z_dframe[which(z_rollsum <=1), ]
+    }
+	}
+	if(delimiter == "endrow"){
+		row_df <- data.frame(
+			start = which(z_dframe$ris == "TY"),
+			end = which(z_dframe$ris == "ER")
+			)
+		z_list <- apply(
+      row_df,
+      1,
+      function(a){c(a[1]:a[2])}
+    )
+		z_list <- lapply(
+      z_list,
+      function(a, lookup){lookup[a, ]},
+      lookup = z_dframe
+    )
+		z_dframe <- as.data.frame(
+      do.call(rbind, z_list)
+    )
+	}
+
+	# cleaning
+	z_dframe$ref <- c(0, cumsum(z_dframe$ris == "ER")[
+    c(1:(nrow(z_dframe)-1))]
+  ) # split by reference
+	z_dframe <- z_dframe[which(z_dframe$text != ""), ] # remove empty rows
+	z_dframe <- z_dframe[which(z_dframe$ris != "ER"), ] # remove end rows
+
+	# fill missing tags
+	z_split <- split(z_dframe, z_dframe$ref)
+	z_split <- lapply(z_split, function(a){
+		if(a$ris[1] == ""){
+      a$ris[1]<-"ZZ"
+    }
+		accum_ris <- Reduce(c, a$ris, accumulate = TRUE)
+		a$ris <- unlist(lapply(
+      accum_ris,
+      function(b){
+  			good_vals <- which(b != "")
+  			b[good_vals[length(good_vals)]]
+			}))
+		return(a)
+  })
+
+	z_dframe <- as.data.frame(
+    do.call(rbind, z_split)
+  )
+  return(z_dframe)
+}
+
+
+
+read_medline <- function(x){
 
 	names(x)[3]<-"order"
 	# data from https://www.nlm.nih.gov/bsd/mms/medlineelements.html
@@ -260,7 +325,7 @@ read_ris<-function(x){
 		order=c(1, rep(2, 6), 3, 3, 4, 4, rep(5, 7), 6, 7, 8, 8, 8, 9, 9, 10, 10, 11:22),
 		stringsAsFactors=FALSE)
 	x.merge<-merge(x, lookup, by="ris", all.x=TRUE, all.y=FALSE)
-	x.merge<-x.merge[order(x.merge$row.order), ]
+	x.merge<-x.merge[order(x.merge$row_order), ]
 
 	# find a way to store missing .bib data rather than discard
 	if(any(is.na(x.merge$bib))){

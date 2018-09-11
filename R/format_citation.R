@@ -93,10 +93,25 @@ format_citation.data.frame <- function(
   abstract = FALSE,
   add_html = FALSE
   ){
+  names(data) <- sub(
+    pattern = "s$",
+    replacement = "",
+    x = tolower(names(data))
+  )
+  if(any(names(data) == "journal")){
+    source <- "journal"
+  }else{
+    source_check <- grepl("source", names(data))
+    if(any(source_check)){
+      source <- names(data)[which(source_check)[1]]
+    }else{
+      source <- "NA"
+    }
+  }
+
   if(
-    all(c("author", "year", "title", "journal") %in% names(data)) &
+    all(c("author", "year", source, "title") %in% names(data)) &
     (details == TRUE)
-    # ((names(x)[1] == "label") == TRUE)
   ){
 	data_list <- split(data, c(1:nrow(data)))
   data_out <- unlist(lapply(data_list, function(a){
@@ -107,9 +122,9 @@ format_citation.data.frame <- function(
       author_text <- paste0(author_vector[1], " et al.")
     }
     if(add_html){
-      journal_text <- paste0("<i>", a[['journal']], "</i>. ")
+      journal_text <- paste0("<i>", a[[source]], "</i>. ")
     }else{
-      journal_text <- paste0(a[['journal']], ". ")
+      journal_text <- paste0(a[[source]], ". ")
     }
 		text_vector <- paste0(
       author_text,
