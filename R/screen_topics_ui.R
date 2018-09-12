@@ -72,12 +72,12 @@ screen_topics_ui <- function(){
           label = "Calculate Model",
           width = "80%"
         ),
-        shiny::br()
+        br()
       ),
       menuItem(
         text = "Display",
         icon = icon("bar-chart-o"),
-        shiny::br(),
+        br(),
         HTML(
           "<b>&nbsp&nbspSelect Display Type:</b>"
         ),
@@ -174,10 +174,7 @@ screen_topics_ui <- function(){
               outputId = "select_choice"
             ),
             uiOutput(
-              outputId = "select_notes"
-            ),
-            uiOutput(
-              outputId = "select_save"
+              outputId = "render_notes"
             )
           )
         )
@@ -191,7 +188,7 @@ screen_topics_ui <- function(){
               outputId = "plot_words",
               height = "600px"
             ),
-            shiny::br(),
+            br(),
             splitLayout(
               HTML("Search: "),
               textInput(
@@ -203,7 +200,7 @@ screen_topics_ui <- function(){
             tableOutput(
               outputId = "search_results"
             ),
-            shiny::div(
+            div(
               id = "search_placeholder"
             )
           ),
@@ -213,7 +210,7 @@ screen_topics_ui <- function(){
               outputId = "plot_topics_2",
               height = "450px"
             ),
-            shiny::br(),
+            br(),
             uiOutput(
               outputId = "word_selector"
             )

@@ -25,6 +25,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     x_df$topic,
     "]"
   )
+  x_df$text_color <- "#000000"
 
   # build word plot information (y)
   y_df <- data.frame(
@@ -58,6 +59,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     stringsAsFactors = FALSE
   )
   y_df$selected <- TRUE
+  y_df$text_color <- "#000000"
 
   # add topic information
   topic_df <- data.frame(
@@ -89,6 +91,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     "\nHighest weighted: ",
     topic_df$terms_weighted
   )
+  topic_df$text_color <- "#000000" 
 
   # return
   plot_list <- list(

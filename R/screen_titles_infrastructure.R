@@ -7,7 +7,7 @@ add_reference_ui <- function(
     selector = paste0(  # formerly '#placeholder',
       "#", ui_selector
     ),
-    ui = shiny::div(
+    ui = div(
       list(
         br(),
         div(

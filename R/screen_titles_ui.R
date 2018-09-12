@@ -55,7 +55,7 @@ screen_titles_ui <- function(){
   body <- shinydashboard::dashboardBody(
     revtools_css(),
     fluidRow(
-      shiny::div(id = "placeholder"),
+      div(id = "placeholder"),
       br(),
       div(
         style = "

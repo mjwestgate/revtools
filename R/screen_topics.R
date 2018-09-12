@@ -58,7 +58,8 @@ server <- function(input, output, session){
   # add remaining reactiveValue objects
   plot_features <- reactiveValues(
     palette = palette_initial,
-    appearance = appearance_initial
+    appearance = appearance_initial,
+    notes = FALSE
   )
   click_data <- reactiveValues(
     main = c(),
@@ -409,13 +410,15 @@ server <- function(input, output, session){
     if(length(click_data$main) > 0){
       if(any(c("label", "title") == input$response_variable)){
         cat(paste0(
-          "<br><b>Entry:</b> ",
+          "<br><font color =",
+          data$plot_ready$x$text_color[click_data$main],
+          "><b>Entry:</b> ",
           format_citation(
             data$plot_ready$x[click_data$main, ],
             abstract = FALSE,
             details = (input$hide_names == FALSE)
           ),
-          "<br><br>"
+          "</font><br><br>"
         ))
       }else{
         cat(
@@ -436,12 +439,14 @@ server <- function(input, output, session){
       if(length(click_data$topic) > 0){
         cat(
           paste0(
-            "<br><b>Topic: ", click_data$topic,
+            "<br><font color =",
+            data$plot_ready$topic$text_color[click_data$topic],
+            "><b>Topic: ", click_data$topic,
             "</b><br><em>Most likely terms:</em> ",
     				data$plot_ready$topic$terms_default[click_data$topic],
             "<br><em>Heighest weighted terms:</em> ",
     				data$plot_ready$topic$terms_weighted[click_data$topic],
-            "<br><br>"
+            "</font><br><br>"
           )
   			)
       }
@@ -470,20 +475,69 @@ server <- function(input, output, session){
   })
 
   # SELECTION/DESELECTION
-  # render selector buttons
+  # show selection options for selected point
   output$select_choice <- renderUI({
     if((length(click_data$main) > 0 | length(click_data$topic) > 0)){
-      radioButtons("select_point",
-        label = "Selection:",
-        choices = c("Select", "Exclude"),
-        inline = TRUE
+      div(
+        list(
+          div(
+            style = "
+              display: inline-block;
+              vertical-align: top;
+              width: 80px",
+            actionButton(
+              inputId = "select_yes",
+              label = "Select",
+              style = "
+                background-color: #7c93c1;
+                color: #fff;
+                width: 80px"
+            )
+          ),
+          div(
+            style = "
+              display: inline-block;
+              vertical-align: top;
+              width: 80px",
+            actionButton(
+              inputId = "select_no",
+              label = "Exclude",
+              style = "
+                background-color: #c17c7c;
+                color: #fff;
+                width: 80px"
+            )
+          ),
+          div(
+            style = "
+              display: inline-block;
+              vertical-align: top;
+              width: 150px",
+            actionButton(
+              inputId = "notes_toggle",
+              label = "Show/Hide Notes",
+              style = "
+                background-color: #adadad;
+                color: #fff;
+                width: 150px"
+            )
+          )
+        )
       )
     }
   })
 
-  # add notes
-  output$select_notes <- renderUI({
-    if(length(click_data$main) > 0 | length(click_data$topic) > 0 ){
+  # when toggle is triggered, invert display status of notes
+  observeEvent(input$notes_toggle, {
+    plot_features$notes <- !plot_features$notes
+  })
+
+  # when requested, show notes
+  output$render_notes <- renderUI({
+    if(
+      plot_features$notes &
+      (sum(c(click_data$main, click_data$topic)) > 0)
+    ){
       if(length(click_data$main) > 0){
         selected_response <- data$plot_ready$x[click_data$main, 1]
         row <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
@@ -504,56 +558,102 @@ server <- function(input, output, session){
       }else{
         initial_text <- start_text
       }
-      textAreaInput("select_notes",
-        label = "Notes:",
-        value = initial_text,
-        resize = "vertical",
-        width = "120%"
+      # add content to screen
+      div(
+        list(
+          br(),
+          div(
+            textAreaInput("notes_text",
+              label = NULL,
+              value = initial_text,
+              resize = "vertical",
+              width = "100%"
+            )
+          ),
+          div(
+            actionButton(
+              inputId = "notes_save",
+              label = "Save Notes",
+              width = "80%"
+            )
+          )
+        )
       )
     }
   })
 
-  # save selection choices & notes
-  output$select_save <- renderUI({
-    if(length(click_data$main) > 0 | length(click_data$topic) > 0){
-      actionButton("select_saved",
-        label = "Save Selection & Notes",
-        width = "80%"
-      )
-    }
-  })
 
-  # UPDATE PLOT COLOURS
+  # SAVE STATUS OF EACH ARTICLE/TOPIC
   # when button is clicked, update plot and data as requested
-  observeEvent(input$select_saved, {
-    # set colors and answers
-    if(input$select_point == "Select"){
-      color_tr <- "#000000"
-      result_tr <- TRUE
-    }else{
-      color_tr <- "#CCCCCC"
-      result_tr <- FALSE
-    }
+  observeEvent(input$select_yes, {
     if(length(click_data$main) > 0){ # i.e. point selected on main plot
-      plot_features$appearance$x$color[click_data$main] <- color_tr
+      plot_features$appearance$x$color[click_data$main] <- "#000000"
+      data$plot_ready$x$text_color[click_data$main] <- "#405d99"
       selected_response <- data$plot_ready$x[click_data$main, 1]
-      rows <- which(data$raw[which(data$raw$display), input$response_variable] == selected_response)
-      data$raw$selected[rows] <- result_tr
-      data$raw$notes[rows] <- input$select_notes
+      display_rows <- which(data$raw$display)
+      selected_rows <- display_rows[
+        which(data$raw[display_rows, input$response_variable] == selected_response)
+      ]
+      data$raw$selected[selected_rows] <- TRUE
+      # data$raw$notes[rows] <- input$select_notes
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
-      plot_features$appearance$topic$color[click_data$topic] <- color_tr
+      data$plot_ready$topic$text_color[click_data$topic] <- "#405d99"
+      plot_features$appearance$topic$color[click_data$topic] <- "#000000"
       # color main plot
       rows <- which(data$plot_ready$x$topic == topic_selected)
-      plot_features$appearance$x$color[rows] <- color_tr
+      data$plot_ready$x$text_color[rows] <- "#405d99"
+      plot_features$appearance$x$color[rows] <- "#000000"
       # map to data$raw
-      rows <- which(data$raw$topic[which(data$raw$display)] == topic_selected)
-      data$raw$selected[rows] <- result_tr
-      data$raw$notes[rows] <- input$select_notes
+      display_rows <- which(data$raw$display)
+      rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
+      data$raw$selected[rows] <- TRUE
     }
   })
 
+  observeEvent(input$select_no, {
+    if(length(click_data$main) > 0){ # i.e. point selected on main plot
+      plot_features$appearance$x$color[click_data$main] <- "#CCCCCC"
+      data$plot_ready$x$text_color[click_data$main] <- "#993f3f"
+      selected_response <- data$plot_ready$x[click_data$main, 1]
+      display_rows <- which(data$raw$display)
+      selected_rows <- display_rows[
+        which(data$raw[display_rows, input$response_variable] == selected_response)
+      ]
+      data$raw$selected[selected_rows] <- FALSE
+      # data$raw$notes[selected_rows] <- input$select_notes
+    }else{ # i.e. topic selected on barplot
+      # color topic plot
+      topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+      data$plot_ready$topic$text_color[click_data$topic] <- "#993f3f"
+      plot_features$appearance$topic$color[click_data$topic] <- "#CCCCCC"
+      # color main plot
+      rows <- which(data$plot_ready$x$topic == topic_selected)
+      data$plot_ready$x$text_color[rows] <- "#993f3f"
+      plot_features$appearance$x$color[rows] <- "#CCCCCC"
+      # map to data$raw
+      display_rows <- which(data$raw$display)
+      rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
+      data$raw$selected[rows] <- FALSE
+    }
+  })
+
+  observeEvent(input$notes_save, {
+    if(length(click_data$main) > 0){
+      selected_response <- data$plot_ready$x[click_data$main, 1]
+      display_rows <- which(data$raw$display)
+      selected_rows <- display_rows[
+        which(data$raw[display_rows, input$response_variable] == selected_response)
+      ]
+      data$raw$notes[selected_rows] <- input$notes_text
+    }else{ # i.e. topic selected on barplot
+      topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
+      display_rows <- which(data$raw$display)
+      rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
+      data$raw$notes[rows] <- input$notes_text
+    }
+  })
 
 
     # WORD TAB
@@ -627,6 +727,7 @@ server <- function(input, output, session){
     }
 
   })
+
 
   # WORD SEARCH
   observeEvent(input$search_text, {
