@@ -149,22 +149,26 @@ format_citation.data.frame <- function(
 add_line_breaks <- function(data){
 	split_text <- strsplit(as.character(data), " ")
   out_list <- lapply(split_text, function(a){
-  	result <- data.frame(
-  		text = a,
-  		nchars = nchar(a),
-  		stringsAsFactors = FALSE
-    )
-  	result$sum <- cumsum(result$nchars)
-  	result$group <- cut(result$sum,
-  		breaks = seq(0, max(result$sum)+49, 50),
-  		labels = FALSE)
-  	result_list <- split(result$text, result$group)
-  	result <- paste(
-      unlist(
-        lapply(result_list, function(a){paste(a, collapse = " ")})
-      ),
-      collapse = "\n")
-    return(result)
+    if(length(a) == 0){
+      return("")
+    }else{
+    	result <- data.frame(
+    		text = a,
+    		nchars = nchar(a),
+    		stringsAsFactors = FALSE
+      )
+    	result$sum <- cumsum(result$nchars)
+    	result$group <- cut(result$sum,
+    		breaks = seq(0, max(result$sum)+49, 50),
+    		labels = FALSE)
+    	result_list <- split(result$text, result$group)
+    	result <- paste(
+        unlist(
+          lapply(result_list, function(a){paste(a, collapse = " ")})
+        ),
+        collapse = "\n")
+      return(result)
+    }
   })
   return(unlist(out_list))
 }

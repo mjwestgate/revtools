@@ -230,7 +230,7 @@ server <- function(input, output, session){
       if(any(dtm_rowsums == 0)){
         data$raw$display[which(data$raw$display)[which(dtm_rowsums == 0)]] <- FALSE
         keep_rows <- which(dtm_rowsums > 0)
-        data$grouped$x <- data$grouped$x[keep_rows, ]
+        data$grouped <- data$grouped[keep_rows, ]
         data$dtm <- data$dtm[keep_rows, ]
       }
 
