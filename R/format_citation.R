@@ -89,15 +89,11 @@ format_citation.bibliography <-  function(
 # duplicate version for calling apply on a data.frame
 format_citation.data.frame <- function(
   data,
-  details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
+  details = TRUE, # whether to allow (TRUE) or suppress (FALSE) bibliographic details
   abstract = FALSE,
   add_html = FALSE
   ){
-  names(data) <- sub(
-    pattern = "s$",
-    replacement = "",
-    x = tolower(names(data))
-  )
+  data <- clean_names(data)
   if(any(names(data) == "journal")){
     source <- "journal"
   }else{

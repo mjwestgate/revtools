@@ -8,6 +8,22 @@ get_topic_colnames <- function(data){
   ]
 }
 
+# csv files without messy column names
+clean_names <- function(
+  data # data.frame
+){
+  x <- colnames(data)
+  x <- sub("^(X|Y|Z)\\.+", "", x) # remove leading X
+  x <- sub("^[[:punct:]]*", "", x) # leading punctuation
+  x <- sub("[[:punct:]]*$", "", x) # trailing punctuation
+  x <- sub("s$", "", x) # remove trailing s's
+  x <- gsub("\\.+", "_", x) # replace 1 or more dots with underscore
+  x <- tolower(x)
+  x <- make.unique(x, sep = "_")
+  colnames(data) <- x
+  return(data)
+}
+
 
 # import data within a shiny app
 import_shiny <- function(
@@ -48,7 +64,7 @@ import_shiny <- function(
     }
   }
 
-  return(result)
+  return(clean_names(result))
 }
 
 
@@ -61,7 +77,7 @@ import_shiny_topic_data <- function(
 
   x <- list(
     raw = NULL,
-    stopwords = stopwords(),
+    stopwords = revtools_stopwords(),
     columns = NULL,
     grouped = NULL,
     dtm = NULL,
@@ -93,9 +109,11 @@ import_shiny_topic_data <- function(
     },
     "csv" = {
       data_in <- add_required_columns(
-        read.csv(
-          source$datapath,
-          stringsAsFactors = FALSE
+        clean_names(
+          read.csv(
+            source$datapath,
+            stringsAsFactors = FALSE
+          )
         )
       )
       if(is.null(current_data$raw)){
@@ -135,7 +153,7 @@ load_topic_data <- function(
 
   x <- list(
     raw = NULL,
-    stopwords = stopwords(),
+    stopwords = revtools_stopwords(),
     columns = NULL,
     grouped = NULL,
     dtm = NULL,
@@ -159,10 +177,16 @@ load_topic_data <- function(
     # add data as necessary for that file type
     switch(class(data),
       "bibliography" = {
-        x$raw <- add_required_columns(as.data.frame(data))
+        x$raw <- add_required_columns(
+          clean_names(
+            as.data.frame(data)
+          )
+        )
       },
       "data.frame" = {
-        x$raw <- add_required_columns(data)
+        x$raw <- add_required_columns(
+          clean_names(data)
+        )
       },
       "screen_topics_progress" = {
         x$raw <- data$raw

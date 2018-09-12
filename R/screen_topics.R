@@ -408,33 +408,17 @@ server <- function(input, output, session){
   # show selected entry
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
-      if(any(c("label", "title") == input$response_variable)){
-        cat(paste0(
-          "<br><font color =",
-          data$plot_ready$x$text_color[click_data$main],
-          "><b>Entry:</b> ",
-          format_citation(
-            data$plot_ready$x[click_data$main, ],
-            abstract = FALSE,
-            details = (input$hide_names == FALSE)
-          ),
-          "</font><br><br>"
-        ))
-      }else{
-        cat(
-          paste0(
-            "<br><b>",
-            gsub(
-              "^[[:lower:]]",
-              toupper(substr(input$response_variable, 1, 1)),
-              input$response_variable
-            ),
-            ":</b> ",
-            data$plot_ready$x[[input$response_variable]][click_data$main],
-            "<br><br>"
-          )
-        )
-      }
+      cat(paste0(
+        "<br><font color =",
+        data$plot_ready$x$text_color[click_data$main],
+        "><b>Entry:</b> ",
+        format_citation(
+          data$plot_ready$x[click_data$main, ],
+          abstract = FALSE,
+          details = (input$hide_names == FALSE)
+        ),
+        "</font><br><br>"
+      ))
     }else{
       if(length(click_data$topic) > 0){
         cat(
