@@ -10,7 +10,7 @@ screen_abstracts <- function(x){
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
     if(any(accepted_inputs == class(x)) == FALSE){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_abstracts")}
 
     switch(class(x),
       "bibliography" = {x <- as.data.frame(x)},
@@ -29,13 +29,13 @@ screen_abstracts <- function(x){
   )
 
   # start server
-  server<-function(input, output, session){
+  server <- function(input, output, session){
 
     # BUILD REACTIVE VALUES
     data <- reactiveValues(raw = NULL)
     progress <- reactiveValues(
-      abstract_sequence = NULL,
-      abstract_current = NULL
+      current = 1,
+      row = NULL
     )
 
     # CREATE HEADER IMAGE
@@ -46,117 +46,269 @@ screen_abstracts <- function(x){
     # DATA INPUT
     ## when specified, ensure input data is processed correctly
     observeEvent(input$data_in, {
-      source <- input$data_in
-      is_csv <- grepl(".csv$", source$name)
-      if(is.null(x)){
-        if(is.null(source)){
-          x <- NULL
-        }else{
-          if(is_csv){
-            x <- read.csv(source$datapath, stringsAsFactors = FALSE)
-          }else{
-            x <- as.data.frame(read_bibliography(source$datapath))
-          }
-        }
+      if(is.null(data$raw)){
+        data_previous <- x
       }else{
-        if(is.null(source)){
-          x <- x
-        }else{
-          if(is_csv){
-            x <- merge_columns(
-              x,
-              read.csv(source$datapath, stringsAsFactors = FALSE)
-            )
-          }else{
-            x <- merge_columns(
-              x,
-              as.data.frame(read_bibliography(source$datapath))
-            )
-          }
-        }
+        data_previous <- data$raw
       }
+      import_result <- import_shiny(
+        source = input$data_in,
+        current_data = data_previous
+      )
+
       # set order columns
-      x$order_initial <- c(1:nrow(x))
+      import_result$order_initial <- c(1:nrow(import_result))
       if(any(colnames(x) == "title")){
-        x$order_alphabetical <- rank(x$title)
+        import_result$order_alphabetical <- rank(import_result$title)
       }else{
-        x$order_alphabetical <- x$order_initial
+        import_result$order_alphabetical <- import_result$order_initial
       }
-      x$order_random <- rank(rnorm(nrow(x)))
+      import_result$order_random <- rank(rnorm(nrow(import_result)))
       # note: these columns should be deleted in exported data
-
-      if(any(colnames(x) == "selected") == FALSE){
-        x$selected <- NA
-      }
-      if(any(colnames(x) == "notes") == FALSE){
-        x$notes <- NA
-      }
-      data$raw <- x
-      progress$abstract_sequence <- rep(NA, length(which(is.na(x$selected))))
-      progress$abstract_sequence[1] <- which(x[which(is.na(x$selected)), input$order] == 1)
-      progress$abstract_current <- 1
-
+      import_result$color <- "#000000"
+      if(any(colnames(import_result) == "selected") == FALSE){import_result$selected <- NA}
+      if(any(colnames(import_result) == "notes") == FALSE){import_result$notes <- NA}
+      data$raw <- import_result
+      progress$row <- which(data$raw[, input$order] == progress$current)
     })
 
     # ABSTRACT SCREENING
     # change order of articles as necessary
     observeEvent(input$order, {
-      progress$abstract_sequence[progress$abstract_current] <- which.min(
-        data$raw[which(is.na(data$raw$selected)), input$order]
-      )
+      progress$current <- 1
+      progress$row <- which(data$raw[, input$order] == progress$current)
     })
 
     # display text for the current entry
     # note that observe is necessary to force changes when input$order changes
     observe({
       output$citation <- renderPrint({
-        if(!is.null(data$raw)){
-          cat(
+        validate(
+          need(data$raw, "Import data to begin")
+        )
+        if(any(colnames(data$raw) == "abstract")){
+          abstract_text <- data$raw$abstract[progress$row]
+        }else{
+          abstract_text <- "<em>No abstract available</em>"
+        }
+        cat(
+          paste0(
+            "<font color =",
+            data$raw$color[progress$row],
+            ">",
             format_citation(
-              data$raw[progress$abstract_sequence[progress$abstract_current], ],
+              data$raw[progress$row, ],
               abstract = FALSE,
-              details = (input$hide_names == FALSE)
+              details = (input$hide_names == FALSE),
+              add_html = TRUE
+            ),
+            "<br><br>",
+           abstract_text,
+           "</font>"
+         )
+        )
+      })
+    })
+
+    # RENDER SELECTION BUTTONS
+    output$selector_buttons <- renderUI({
+      # validate(
+      #   need(data$raw, message = FALSE)
+      # )
+      if(!is.null(data$raw)){
+        notes_tr <- data$raw$notes[progress$row]
+        if(is.na(notes_tr)){
+          notes_display <- ""
+        }else{
+          notes_display <- notes_tr
+        }
+        div(
+          list(
+            actionButton(
+              inputId = "select_yes",
+              label = "Select",
+              style = "
+                background-color: #7c93c1;
+                color: #fff;
+                width: 100px"
+            ),
+            br(),
+            br(),
+            actionButton(
+              inputId = "select_no",
+              label = "Exclude",
+              style = "
+                background-color: #c17c7c;
+                color: #fff;
+                width: 100px"
+            ),
+            br(),
+            br(),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                width: 55px",
+              actionButton(
+                inputId = "abstract_previous",
+                label = "<",
+                width = "45px",
+                style = "background-color: #6b6b6b;"
+              )
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                width: 45px",
+              actionButton(
+                inputId = "abstract_next",
+                label = ">",
+                width = "45px",
+                style = "background-color: #6b6b6b;"
+              )
+            ),
+            br(),
+            br(),
+            textAreaInput(
+              inputId = "abstract_notes",
+              label = "Notes",
+              value = notes_display,
+              resize = "vertical",
+              width = "100%",
+              height = "150px"
+            )
+          ),
+          HTML(
+            paste0(
+              length(which(data$raw$selected == "selected")) +
+              length(which(data$raw$selected == "excluded")),
+              " of ",
+              nrow(data$raw),
+              " entries screened"
             )
           )
-        }
-      })
-
-      output$abstract_text <- renderPrint({
-        if(!is.null(data$raw)){
-          if(any(colnames(data$raw) == "abstract")){
-            cat(data$raw$abstract[
-              progress$abstract_sequence[progress$abstract_current]
-            ])
-          }else{
-            cat("No abstracts available")
-          }
-        }else{
-          cat("No data available")
-        }
-      })
+        )
+      }
     })
 
     # record & respond to user inputs
-    observeEvent(input$abstract_save, {
-      data$raw$selected[progress$abstract_current] <- input$abstract_selector
-      data$raw$notes[progress$abstract_current] <- input$abstract_notes
-      progress$abstract_current <- progress$abstract_current + 1
-      progress$abstract_sequence[progress$abstract_current] <- which.min(
-        data$raw[which(is.na(data$raw$selected)), input$order]
-      )
+    observeEvent(input$select_yes, {
+      data$raw$selected[progress$row] <- "selected"
+      data$raw$color[progress$row] <- "#405d99"
+      data$raw$notes[progress$row] <- input$abstract_notes
+    })
+
+    observeEvent(input$select_no, {
+      data$raw$selected[progress$row] <- "excluded"
+      data$raw$color[progress$row] <- "#993f3f"
+      data$raw$notes[progress$row] <- input$abstract_notes
     })
 
     observeEvent(input$abstract_next, {
-      data$raw$selected[progress$abstract_current] <- "skipped"
-      progress$abstract_current <- progress$abstract_current + 1
-      progress$abstract_sequence[progress$abstract_current] <- which.min(
-        data$raw[which(is.na(data$raw$selected)), input$order]
-      )
+      test_add <- which(data$raw[, input$order] == progress$current + 1)
+      if(length(test_add) > 0){
+        progress$current <- progress$current + 1
+        progress$row <- which(data$raw[, input$order] == progress$current)
+      }
+      data$raw$notes[progress$row] <- input$abstract_notes
     })
 
     observeEvent(input$abstract_previous, {
-      progress$abstract_current <- progress$abstract_current - 1
+      if((progress$current - 1) > 0){
+        progress$current <- progress$current - 1
+        progress$row <- which(data$raw[, input$order] == progress$current)
+      }
     })
+
+    # SAVE OPTIONS
+    observeEvent(input$save_data, {
+      if(is.null(data$raw)){
+        showModal(
+          modalDialog(
+            HTML(
+              "Import some data to begin<br><br>
+              <em>Click anywhere to exit</em>"
+            ),
+            title = "Error: no data to save",
+            footer = NULL,
+            easyClose = TRUE
+          )
+        )
+      }else{
+        showModal(
+          modalDialog(
+            textInput("save_filename",
+              label = "File Name"
+            ),
+            selectInput("save_data_filetype",
+              label = "File Type",
+              choices = c("csv", "rds")
+            ),
+            actionButton("save_data_execute", "Save"),
+            modalButton("Cancel"),
+            title = "Save As",
+            footer = NULL,
+            easyClose = FALSE
+          )
+        )
+      }
+    })
+
+    observeEvent(input$save_data_execute, {
+      if(nchar(input$save_filename) == 0){
+        filename <- "revtools_title_screening"
+      }else{
+        if(grepl("\\.[[:lower:]]{3}$", input$save_filename)){
+          filename <- substr(
+            input$save_filename, 1,
+            nchar(input$save_filename) - 4
+          )
+        }else{
+          filename <- input$save_filename
+        }
+      }
+      filename <- paste(filename, input$save_data_filetype, sep = ".")
+      switch(input$save_data_filetype,
+        "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
+        "rds" = {saveRDS(data$raw, file = filename)}
+      )
+      removeModal()
+    })
+
+    # add option to remove data
+    observeEvent(input$clear_data, {
+      shiny::showModal(
+        shiny::modalDialog(
+          HTML("If you proceed, all data will be removed from this window,
+          including any progress you have made screening your data.
+          If you have not saved your data,
+          you might want to consider doing that first.<br><br>
+          Are you sure you want to continue?<br><br>"
+          ),
+          shiny::actionButton(
+            inputId = "clear_data_confirmed",
+            label = "Confirm"),
+          shiny::modalButton("Cancel"),
+          title = "Clear all data",
+          footer = NULL,
+          easyClose = FALSE
+        )
+      )
+    })
+
+    observeEvent(input$clear_data_confirmed, {
+      lapply(seq_len(data$n_current), function(a){
+        removeUI(
+          selector = paste0("#citation_", a)
+        )
+      })
+      data$raw <- NULL
+      progress$current <- 1
+      progress$row <- NULL
+      removeModal()
+    })
+
 
 
   } # end server

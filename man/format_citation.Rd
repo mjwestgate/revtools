@@ -12,7 +12,7 @@ format_citation(data, details = TRUE, abstract = FALSE, add_html = FALSE)
   \item{x}{An object of class \code{data.frame} or \code{bibliography}.}
   \item{details}{Logical: Should identifying information such as author names & journal titles be displayed? Defaults to FALSE.}
   \item{abstract}{Logical: Should the abstract be shown (if available)? Defaults to FALSE.}
-  item{add_html}{Logical: Should the journal title be italicized using html codes? Defaults to FALSE.}
+  \item{add_html}{Logical: Should the journal title be italicized using html codes? Defaults to FALSE.}
 }
 \value{
 a string of length == length(x), containing formatted citations.

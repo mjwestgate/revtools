@@ -11,7 +11,18 @@ screen_abstracts_ui <- function(){
       menuItem("Data",
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label = "Import")
+        fileInput("data_in", label = "Import"),
+        actionButton(
+          inputId = "save_data",
+          label = "Save Data",
+          width = "80%"
+        ),
+        actionButton(
+          inputId = "clear_data",
+          label = "Clear Data",
+          width = "80%"
+        ),
+        br()
       ),
       menuItem("Appearance",
         icon = icon("paint-brush"),
@@ -37,53 +48,18 @@ screen_abstracts_ui <- function(){
     revtools_css(),
     fluidRow(
       column(
-        width = 5,
-        shiny::h4("Abstract Screening"),
-        br(),
-        strong("Citation"),
-        br(),
-        tableOutput("citation"),
-        br(),
-        radioButtons(
-          inputId = "abstract_selector",
-          label = "Selection",
-          choices = c("Select", "Exclude"),
-          inline = TRUE
-        ),
-        textAreaInput(
-          inputId = "abstract_notes",
-          label = "Notes",
-          resize = "vertical",
-          width = "100%",
-          height = "150px"
-        ),
-        splitLayout(
-          actionButton(
-            inputId = "abstract_previous",
-            label = "Previous",
-            width = "80px",
-            style = "background-color: #6b6b6b;"
-          ),
-          p(""),
-          actionButton(
-            inputId = "abstract_save",
-            label = "Save",
-            width = "80px"
-          ),
-          p(""),
-          actionButton(
-            inputId = "abstract_next",
-            label = "Next",
-            width = "80px",
-            style = "background-color: #6b6b6b;"
-          ),
-          cellWidths = c("20%", "5%", "20%", "5%", "20%")
-        )
+        width = 1
       ),
       column(
-        width = 7,
-        strong("Abstract"),
-        tableOutput("abstract_text")
+        width = 8,
+        tableOutput("citation")
+      ),
+      column(
+        width = 1
+      ),
+      column(
+        width = 2,
+        uiOutput(outputId = "selector_buttons")
       )
     )
   )
@@ -95,6 +71,5 @@ screen_abstracts_ui <- function(){
       body = body
     )
   )
-
 
 }

@@ -6,7 +6,7 @@ screen_titles <- function(x){
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
     if(!any(accepted_inputs == class(x))){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_visual")}
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_titles")}
 
       if(class(x) == "bibliography"){
         x <- as.data.frame(x)
