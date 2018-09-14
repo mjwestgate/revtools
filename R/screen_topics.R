@@ -8,7 +8,10 @@ screen_topics <- function(
   remove_words = NULL
 ){
 
-data_in <- load_topic_data(x, remove_words)
+data_in <- load_topic_data(
+  data = x,
+  stopwords = remove_words
+)
 
 # create ui
 ui_data <- screen_topics_ui()
@@ -228,7 +231,7 @@ server <- function(input, output, session){
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
       if(any(dtm_rowsums == 0)){
-        data$raw$display[which(data$raw$display)[which(dtm_rowsums == 0)]] <- FALSE
+        # data$raw$display[which(data$raw$display)[which(dtm_rowsums == 0)]] <- FALSE
         keep_rows <- which(dtm_rowsums > 0)
         data$grouped <- data$grouped[keep_rows, ]
         data$dtm <- data$dtm[keep_rows, ]
@@ -259,33 +262,19 @@ server <- function(input, output, session){
         option = "A"
       )
 
-      # add topic to data$raw,
-      # noting that this data have been split in create_grouped_dataframe(),
-      # which affects the order
-      topic_dframe <- data.frame(
-        variable = sort(unique(
-          data$raw[which(data$raw$display), input$response_variable]
-        )),
-        topic = topicmodels::topics(data$model),
-        stringsAsFactors = FALSE
-      )
-      result <- base::merge(
-        x = data.frame(
-          data$raw[, which(colnames(data$raw) != "topic")],
-          order = seq_len(nrow(data$raw)),
-          stringsAsFactors = FALSE
-        ),
-        y = topic_dframe,
-        by.x = input$response_variable,
-        by.y = "variable",
-        all.x = TRUE,
-        all.y = FALSE,
-        sort = FALSE
-      )
-      data$raw <- result[, which(colnames(result) != "order")]
-      # issue with this approach is that it causes columns to be reordered;
-      # input$response variable is now first.
-      # might be worth using lapply() or similar instead of merge()
+      # add topic to data$raw
+      data$grouped$topic <- topicmodels::topics(data$model)
+      data$raw$topic <- unlist(lapply(
+        data$raw[, input$response_variable],
+        function(a, lookup){
+          if(any(lookup[, 1] == a)){
+            lookup$topic[which(lookup[, 1] == a)]
+          }else{
+            NA
+          }
+        },
+      lookup = data$grouped
+      ))
 
       # add appearance info
       plot_features$appearance <- build_appearance(
@@ -411,7 +400,9 @@ server <- function(input, output, session){
       cat(paste0(
         "<br><font color =",
         data$plot_ready$x$text_color[click_data$main],
-        "><b>Entry:</b> ",
+        "><b>Entry ID:</b> ",
+        data$plot_ready$x[click_data$main, 1],
+        "<br>",
         format_citation(
           data$plot_ready$x[click_data$main, ],
           abstract = FALSE,

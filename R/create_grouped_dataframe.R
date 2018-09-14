@@ -12,10 +12,14 @@ create_grouped_dataframe <- function(data, response_variable, text_variables){
       data_split <- split(data, data[, response_variable])
 
       if(length(data_split) == nrow(data)){ # i.e. if there is no grouping, retain whole data.frame
-        data_list <- lapply(data_split, function(a, inc_columns){
+        data_list <- lapply(data_split, function(a, inc_columns, response){
           a$text <- paste(a[inc_columns], collapse = " ")
+          a <- a[c(response, colnames(a)[which(colnames(a) != response)])]
           return(a)
-        }, inc_columns = text_variables)
+        },
+        inc_columns = text_variables,
+        response = response_variable
+        )
       }else{
         data_list <- lapply(data_split, function(a, inc_columns, n_cols, response){
           n_rows <- nrow(a)
