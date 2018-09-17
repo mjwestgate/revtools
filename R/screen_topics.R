@@ -397,12 +397,20 @@ server <- function(input, output, session){
   # show selected entry
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){
+      if(input$hide_names){
+        id_text <- ""
+      }else{
+        id_text <- paste0(
+          "<b>Entry ID:</b> ",
+          data$plot_ready$x[click_data$main, 1],
+          "<br>"
+        )
+      }
       cat(paste0(
         "<br><font color =",
         data$plot_ready$x$text_color[click_data$main],
-        "><b>Entry ID:</b> ",
-        data$plot_ready$x[click_data$main, 1],
-        "<br>",
+        ">",
+        id_text,
         format_citation(
           data$plot_ready$x[click_data$main, ],
           abstract = FALSE,

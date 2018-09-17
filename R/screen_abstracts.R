@@ -1,7 +1,3 @@
-# NOTE: next stesp:
-  # make screen_titles() & screen_abstracts(), as these are always separate tasks
-  # make screen_visual() a wrapper function for these, with option type = "titles" or similar
-
 screen_abstracts <- function(x){
 
   if(missing(x)){x <- NULL}
@@ -31,14 +27,20 @@ screen_abstracts <- function(x){
   # start server
   server <- function(input, output, session){
 
-    # BUILD REACTIVE VALUES
-    data <- reactiveValues(raw = NULL)
+    # build reactive values
+    data <- reactiveValues(
+      raw = NULL
+      # notes = ""
+    )
     progress <- reactiveValues(
       current = 1,
       row = NULL
     )
+    display <- reactiveValues(
+      notes = FALSE
+    )
 
-    # CREATE HEADER IMAGE
+    # create header image
     output$header <- renderPlot({
       revtools_logo(text = "screen_abstracts")
     })
@@ -58,16 +60,23 @@ screen_abstracts <- function(x){
 
       # set order columns
       import_result$order_initial <- c(1:nrow(import_result))
-      if(any(colnames(x) == "title")){
+      if(any(colnames(import_result) == "title")){
         import_result$order_alphabetical <- rank(import_result$title)
       }else{
         import_result$order_alphabetical <- import_result$order_initial
       }
       import_result$order_random <- rank(rnorm(nrow(import_result)))
-      # note: these columns should be deleted in exported data
+
+      # set display/save columns
       import_result$color <- "#000000"
-      if(any(colnames(import_result) == "selected") == FALSE){import_result$selected <- NA}
-      if(any(colnames(import_result) == "notes") == FALSE){import_result$notes <- NA}
+      if(!any(colnames(import_result) == "selected")){
+        import_result$selected <- NA
+      }
+      if(!any(colnames(import_result) == "notes")){
+        import_result$notes <- ""
+      }
+
+      # export to reactiveValues
       data$raw <- import_result
       progress$row <- which(data$raw[, input$order] == progress$current)
     })
@@ -102,6 +111,12 @@ screen_abstracts <- function(x){
               details = (input$hide_names == FALSE),
               add_html = TRUE
             ),
+            "<br>",
+            switch(as.character(data$raw$color[progress$row]),
+              "#000000" = "",
+              "#405d99" = "<em>Status: Selected</em>",
+              "#993f3f" = "<em>Status: Excluded</em>"
+            ),
             "<br><br>",
            abstract_text,
            "</font>"
@@ -112,16 +127,7 @@ screen_abstracts <- function(x){
 
     # RENDER SELECTION BUTTONS
     output$selector_buttons <- renderUI({
-      # validate(
-      #   need(data$raw, message = FALSE)
-      # )
       if(!is.null(data$raw)){
-        notes_tr <- data$raw$notes[progress$row]
-        if(is.na(notes_tr)){
-          notes_display <- ""
-        }else{
-          notes_display <- notes_tr
-        }
         div(
           list(
             actionButton(
@@ -170,39 +176,82 @@ screen_abstracts <- function(x){
             ),
             br(),
             br(),
-            textAreaInput(
-              inputId = "abstract_notes",
+            actionButton(
+              inputId = "notes_toggle",
               label = "Notes",
-              value = notes_display,
-              resize = "vertical",
-              width = "100%",
-              height = "150px"
-            )
-          ),
-          HTML(
-            paste0(
-              length(which(data$raw$selected == "selected")) +
-              length(which(data$raw$selected == "excluded")),
-              " of ",
-              nrow(data$raw),
-              " entries screened"
-            )
+              style = "
+                background-color: #adadad;
+                color: #fff;
+                width: 100px"
+            ),
+            br()
           )
         )
       }
+    })
+
+    output$progress_text <- renderPrint({
+      if(!is.null(data$raw)){
+        HTML(
+          paste0(
+            "<br>",
+            length(which(data$raw$selected == "selected")) +
+            length(which(data$raw$selected == "excluded")),
+            " of ",
+            nrow(data$raw),
+            " entries screened"
+          )
+        )
+      }
+    })
+
+    # when toggle is triggered, invert display status of notes
+    observeEvent(input$notes_toggle, {
+      display$notes <- !display$notes
+    })
+
+    # render notes
+    output$render_notes <- renderUI({
+      if(display$notes){
+        div(
+          list(
+            br(),
+            textAreaInput(
+              inputId = "abstract_notes",
+              label = NULL,
+              value = data$raw$notes[progress$row],
+              resize = "vertical",
+              width = "100%",
+              height = "150px"
+            ),
+            actionButton(
+              inputId = "notes_save",
+              label = "Save Notes",
+              width = "100px"
+            ),
+            br()
+          )
+        )
+      }
+    })
+
+    # save notes
+    observeEvent(input$notes_save, {
+      data$raw$notes[progress$row] <- input$abstract_notes
     })
 
     # record & respond to user inputs
     observeEvent(input$select_yes, {
       data$raw$selected[progress$row] <- "selected"
       data$raw$color[progress$row] <- "#405d99"
-      data$raw$notes[progress$row] <- input$abstract_notes
+      # if(display$notes){
+      #   data$raw$notes[progress$row] <- input$abstract_notes
+      # }
     })
 
     observeEvent(input$select_no, {
       data$raw$selected[progress$row] <- "excluded"
       data$raw$color[progress$row] <- "#993f3f"
-      data$raw$notes[progress$row] <- input$abstract_notes
     })
 
     observeEvent(input$abstract_next, {
@@ -211,7 +260,6 @@ screen_abstracts <- function(x){
         progress$current <- progress$current + 1
         progress$row <- which(data$raw[, input$order] == progress$current)
       }
-      data$raw$notes[progress$row] <- input$abstract_notes
     })
 
     observeEvent(input$abstract_previous, {
@@ -298,14 +346,10 @@ screen_abstracts <- function(x){
     })
 
     observeEvent(input$clear_data_confirmed, {
-      lapply(seq_len(data$n_current), function(a){
-        removeUI(
-          selector = paste0("#citation_", a)
-        )
-      })
       data$raw <- NULL
       progress$current <- 1
       progress$row <- NULL
+      display$notes <- FALSE
       removeModal()
     })
 

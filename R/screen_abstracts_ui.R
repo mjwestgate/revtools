@@ -59,7 +59,9 @@ screen_abstracts_ui <- function(){
       ),
       column(
         width = 2,
-        uiOutput(outputId = "selector_buttons")
+        uiOutput(outputId = "selector_buttons"),
+        uiOutput(outputId = "render_notes"),
+        tableOutput(outputId = "progress_text")
       )
     )
   )
