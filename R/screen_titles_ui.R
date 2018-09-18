@@ -31,7 +31,7 @@ screen_titles_ui <- function(){
           label = "Number of articles shown",
           min = 2,
           max = 20,
-          value = 10,
+          value = 8,
           step = 2
         ),
         selectInput(

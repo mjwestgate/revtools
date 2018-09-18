@@ -267,10 +267,14 @@ server <- function(input, output, session){
       data$raw$topic <- unlist(lapply(
         data$raw[, input$response_variable],
         function(a, lookup){
-          if(any(lookup[, 1] == a)){
-            lookup$topic[which(lookup[, 1] == a)]
-          }else{
+          if(is.na(a)){
             NA
+          }else{
+            if(any(lookup[, 1] == a)){
+              lookup$topic[which(lookup[, 1] == a)]
+            }else{
+              NA
+            }
           }
         },
       lookup = data$grouped
