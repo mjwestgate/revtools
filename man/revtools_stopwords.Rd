@@ -17,10 +17,10 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- read_bibliography(file_location)
+x <- as.data.frame(read_bibliography(file_location))
 
 # construct a document-term matrix
-x_DTM <- make_DTM(x,
+x_DTM <- make_DTM(x$title,
   stop_words = revtools_stopwords())
 # Note that make_DTM calls revtools_stopwords by default, so this is technically redundant
 }

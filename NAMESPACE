@@ -2,7 +2,7 @@ export(as.bibliography, read_bibliography, write_bibliography,
 summary.bibliography, print.bibliography, '[.bibliography', c.bibliography,
 format_citation,
 format_citation.bibliography, format_citation.data.frame, format_citation.list,
-fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
+fuzzdist, fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
 merge_columns, make_DTM, run_LDA, revtools_stopwords,
 screen_duplicates, screen_titles, screen_abstracts, 
@@ -17,6 +17,8 @@ S3method(summary, bibliography)
 S3method(as.data.frame, bibliography)
 S3method('[', bibliography)
 importFrom(ade4, dudi.coa)
+importFrom("utils", "combn", "read.csv")
+importFrom("stats", "rnorm")
 importFrom(grDevices, grey)
 importFrom(modeltools, posterior)
 importFrom(plotly,
@@ -33,6 +35,7 @@ reactiveValues, observe, observeEvent, isolate,
 renderPrint, renderPlot, renderUI, splitLayout,
 validate, need,
 showModal, modalDialog, removeModal, modalButton,
+insertUI, removeUI,
 shinyApp)
 importFrom(shinydashboard,
 sidebarMenu, menuItem, sidebarMenuOutput, renderMenu)

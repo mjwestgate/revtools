@@ -1,22 +1,22 @@
 # methods for class(screen_topics_progress)
-summary.screen_topics_progress <- function(data, ...){
+summary.screen_topics_progress <- function(object, ...){
 cat(
 	paste0("screen_topics_progress object containing 7 entries including:\n
     raw = data on ",
-		  nrow(data$raw),
+		  nrow(object$raw),
 		  " citations sent to screen_topics()\n
     grouped = raw data grouped into ",
-      nrow(data$grouped),
+      nrow(object$grouped),
       " unique ",
-      colnames(data$grouped)[1],
+      colnames(object$grouped)[1],
       "s\n
     dtm = document term matrix with ",
-		  nrow(data$dtm),
+		  nrow(object$dtm),
       " rows & ",
-      ncol(data$dtm),
+      ncol(object$dtm),
 		  " columns\n
     model = topic model with ",
-		  data$model@k,
+		  object$model@k,
 		  " topics"
 	)
 )

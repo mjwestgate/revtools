@@ -56,11 +56,11 @@ revtools_css <- function(){
 
 # add a logo with optional added text
 revtools_logo <- function(text){
-  par(
+  graphics::par(
     mar = rep(0, 4),
     oma = rep(0, 4),
     bg = "#251256FF")
-  plot(
+  graphics::plot(
     x = 1,
     y = 1,
     xlim = c(0, 1),
@@ -69,14 +69,14 @@ revtools_logo <- function(text){
     ann = FALSE,
     axes = FALSE
   )
-  rasterImage(revtools:::logo,
+  graphics::rasterImage(revtools:::logo,
     xleft = -0.04,
     ybottom = 0.905,
     xright = 1.04,
     ytop = 1.04)
 
   if(!missing(text)){
-    text(
+    graphics::text(
       x = 1.04,
       y = 0.93,
       pos = 2,

@@ -65,7 +65,9 @@ screen_abstracts <- function(x){
       }else{
         import_result$order_alphabetical <- import_result$order_initial
       }
-      import_result$order_random <- rank(rnorm(nrow(import_result)))
+      import_result$order_random <- base::rank(
+        rnorm(nrow(import_result))
+      )
 
       # set display/save columns
       import_result$color <- "#000000"

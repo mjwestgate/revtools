@@ -23,10 +23,10 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- read_bibliography(file_location)
+x <- as.data.frame(read_bibliography(file_location))
 
 # construct a document-term matrix
 # note: this can take a long time to run for large datasets
-x_DTM <- make_DTM(x)
+x_DTM <- make_DTM(x$title)
 dim(x_DTM) # 20 articles, 1069 words
 }

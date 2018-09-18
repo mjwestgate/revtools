@@ -1,4 +1,10 @@
-format_citation <- function(data, ...){
+format_citation <- function(
+  data,
+  details = TRUE,
+  abstract = FALSE,
+  add_html = FALSE, 
+  ...
+){
   UseMethod("format_citation")
   }
 
@@ -8,7 +14,8 @@ format_citation.list <- function(
 	data, # list of data from a standard import function
   details = TRUE, # whether to allow or suppress bibliographic details - name, year, journal
 	abstract = FALSE, # option to return only the citation for an article
-  add_html = FALSE
+  add_html = FALSE,
+  ...
 	){
   	if(!details){
       result <- as.character(data["title"])
@@ -75,7 +82,8 @@ format_citation.bibliography <-  function(
 	data,
   details = TRUE,
 	abstract = FALSE,
-  add_html = FALSE
+  add_html = FALSE,
+  ...
 	){
   lapply(data, function(a, details, abstract, add_html){
     format_citation.list(a, details, abstract, add_html)
@@ -91,7 +99,8 @@ format_citation.data.frame <- function(
   data,
   details = TRUE, # whether to allow (TRUE) or suppress (FALSE) bibliographic details
   abstract = FALSE,
-  add_html = FALSE
+  add_html = FALSE,
+  ...
   ){
   data <- clean_names(data)
   if(any(names(data) == "journal")){

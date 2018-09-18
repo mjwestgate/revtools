@@ -18,7 +18,7 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- read_bibliography(file_location)
+x <- as.data.frame(read_bibliography(file_location))
 y <- x[, 1:3]
 z <- merge_columns(x, y)
 }

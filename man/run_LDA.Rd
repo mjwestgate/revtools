@@ -3,7 +3,7 @@
 \title{Calculate a topic model}
 \description{Calculate a topic model using Latent Dirichlet Allocation (\code{LDA}) or Correlated Topic Models (\code{CTM}), using the \code{topicmodels} package.}
 \usage{
-run_LDA(x, topic_model, n_topics, iterations)
+run_LDA(dtm, topic_model, n_topics, iterations)
 }
 \arguments{
   \item{dtm}{a Document Term Matrix (DTM)}
@@ -24,10 +24,10 @@ file_location <- system.file(
   "avian_ecology_bibliography.ris",
   package = "revtools"
 )
-x <- read_bibliography(file_location)
+x <- as.data.frame(read_bibliography(file_location))
 
 # run a topic model based on these data
 # note: the following lines can take a very long time to run, especially for large datasets!
-x_DTM <- make_DTM(x)
+x_DTM <- make_DTM(x$title)
 \dontrun{x_LDA <- run_LDA(x_DTM, "lda", 5, 5000)}
 }

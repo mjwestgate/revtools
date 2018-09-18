@@ -55,7 +55,7 @@ print.bibliography <- function(x, n, ...){
 }
 
 
-c.bibliography <- function(..., recursive = FALSE){
+c.bibliography <- function(...){
   result <- lapply(list(...), function(a){
     class(a) <- "list"
     return(a)
