@@ -69,7 +69,7 @@ revtools_logo <- function(text){
     ann = FALSE,
     axes = FALSE
   )
-  graphics::rasterImage(revtools:::logo,
+  graphics::rasterImage(logo,
     xleft = -0.04,
     ybottom = 0.905,
     xright = 1.04,
