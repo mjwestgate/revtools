@@ -1,9 +1,12 @@
 tag_lookup <- function(type = "ris"){
+  if(!any(c("ris", "medline") == type)){
+    stop("tag_lookup only accepts types 'ris' or 'medline'")
+  }
   ris_list <- switch(type,
     "ris" = {
       list(
         "type" = c("TY"),
-        "author" = c("AU", paste("A", c(1:5), sep = "")),
+        "author" = c("AU", paste0("A", c(1:5))),
         "author_full" = "AF",
         "year" = c("PY", "Y1"),
         "title" = c("TI", "T1"),
@@ -122,6 +125,6 @@ tag_lookup <- function(type = "ris"){
       lookup = length_list
     ))
   }
-  
+
   return(ris_dframe)
 }

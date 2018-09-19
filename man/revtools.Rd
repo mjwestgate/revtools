@@ -2,7 +2,7 @@
 \name{revtools-package}
 \alias{revtools}
 \title{revtools: Tools to support reviews and evidence synthesis}
-\description{Researchers commonly need to summarize scientific information, a process known as 'evidence synthesis'. The first stage of a synthesis process (such as a systematic review or meta-analysis) is to download a list of references from academic search engines such as 'Web of Knowledge' or 'Scopus'. This information can be sorted manually (the traditional approach to systematic review), or the user can draw on tools from machine learning to help them visualise patterns in the corpus. \code{revtools} uses topic models to render ordinations of text drawn from article titles, keywords and abstracts, and allows the user to interactively select or exclude individual references, words or topics. \code{revtools} does not currently provide tools for analysis of data drawn from those references, features that are available in other packages such as \code{metafor}.}
+\description{Researchers commonly need to summarize scientific information, a process known as 'evidence synthesis'. The first stage of a synthesis process (such as a systematic review or meta-analysis) is to download a list of references from academic search engines such as 'Web of Knowledge' or 'Scopus'. The traditional approach to systematic review is then to sort these data manually, first by locating and removing duplicated entries, and then screening to remove irrelevant content by viewing titles and abstracts (in that order). 'revtools' provides interfaces for each of these tasks. An alternative approach, however, is to draw on tools from machine learning to visualise patterns in the corpus. In this case, you can use 'revtools' to render ordinations of text drawn from article titles, keywords and abstracts, and interactively select or exclude individual references, words or topics.}
 \section{Functions}{
 	\strong{Shiny apps}
   \itemize{
@@ -15,6 +15,7 @@
 	\itemize{
 		\item \code{\link{read_bibliography}} Import bibliographic data
 		\item \code{\link{write_bibliography}} Export bibliographic data
+    \item \code{\link{tag_lookup}} Lookup table for ris tag transformations
 	}
 	\strong{Data storage and manipulation}
 	\itemize{

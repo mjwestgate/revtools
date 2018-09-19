@@ -7,10 +7,13 @@
 screen_abstracts(x)
 }
 \arguments{
-  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
+  \item{x}{An (optional) object of class \code{data.frame} or \code{bibliography} to open in the browser. If empty, the app will launch with no data. Data can be added within the app via the 'import' button.}
 }
 \value{
-This function launches a Shiny app in the users' default browser, allowing the user to select or exclude individual articles in order.
+This function launches a Shiny app in the users' default browser, allowing the user to select or exclude individual articles.
+}
+\seealso{
+	\code{\link{screen_titles}} for screening articles in groups rather than individually; \code{\link{screen_topics}} to view articles as a point cloud.
 }
 \examples{
 # to run the app and upload data interactively

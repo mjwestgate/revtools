@@ -1,16 +1,21 @@
 \name{screen_duplicates}
 \alias{screen_duplicates}
-\title{Shiny app for screening for duplicated articles}
+\title{Shiny app for locating and excluding duplicated entries in a dataset}
 \description{In development
 }
 \usage{
 screen_duplicates(x)
 }
 \arguments{
-  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
+  \item{x}{An (optional) object of class \code{data.frame} or \code{bibliography} to open in the browser. If empty, the app will launch with no data. Data can be added within the app via the 'import' button.}
 }
 \value{
 This function launches a Shiny app in the users' default browser, allowing the user to customize their parameters for duplicate detection, and visualise the results.
+}
+\details{This app is effectively a wrapper for \code{\link{find_duplicates}}, with the added option to manually screen pairs of duplicates to check the results. Consequently, this is a more reliable method than \code{\link{extract_unique_references}} of dealing with the duplicates identified by \code{\link{find_duplicates}}, and for testing whether that function has returned sensible results for a given dataset.
+}
+\seealso{
+	\code{\link{screen_titles}} or \code{\link{screen_abstracts}} for manual screening of individual articles.
 }
 \examples{
 # to run the app and upload data interactively

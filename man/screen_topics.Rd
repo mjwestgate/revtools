@@ -8,7 +8,7 @@
 screen_topics(x, remove_words)
 }
 \arguments{
-  \item{x}{Optionally import bibliographic data from a \code{.csv} file or a bibliographic format that can be imported by \code{read_bibliography}.}
+  \item{x}{An (optional) object of class \code{data.frame} or \code{bibliography} to open in the browser. If empty, the app will launch with no data. Data can be added within the app via the 'import' button.}
   \item{remove_words}{Optional vector of words to be removed from consideration by the Topic Model. If none are given, \code{start_review_window} will use \code{tm::stopwords()}. Note that this vector will be converted to lower case before processing, so the algorithm is not case sensitive.}
 }
 \value{
@@ -25,6 +25,9 @@ Ordinations are calculated using LDA (library \code{"topicmodels"}) and are disp
 When you have finished viewing/screening, you can export information to a .csv or .rda file (saved to the working directory) using the 'Save' tab.
 
 Note that \code{"start_review_window()"} is the earlier form of this function; this has been deprecated and will be removed from future versions of \code{revtools}.
+}
+\seealso{
+	\code{\link{screen_titles}} or \code{\link{screen_abstracts}} for manual screening; \code{\link{screen_duplicates}} to remove duplicates.
 }
 \examples{
 # to run the app and upload data interactively
