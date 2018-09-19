@@ -6,17 +6,17 @@
 extract_unique_references(x, matches)
 }
 \arguments{
-  \item{x}{a data.frame as returned by find_duplicates}
+  \item{x}{a \code{data.frame} to be subsetted}
   \item{matches}{a vector of matches, e.g. as returned from \code{\link{find_duplicates}}}
 }
 \value{
-a data.frame containing basic information for each reference (row)
+a subsetted \code{data.frame} containing one entry for each group identified in \code{matches}.
 }
 \note{
 This function creates a simplified version of \code{x}, by extracting the reference from each group of 'identical' references that contains the most text. It is assumed that this is the most 'complete' record of those available in the dataset. This function does not merge data from multiple 'identical' records due to the potential for mis-matching that this approach would create.
 }
 \seealso{
-	\code{\link{find_duplicates}}
+	\code{\link{find_duplicates}} for duplicate identification; \code{\link{scren_duplicates}} for an interactive alternative to duplicate removal.
 }
 \examples{
 # import data

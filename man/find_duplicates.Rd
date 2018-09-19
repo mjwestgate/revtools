@@ -32,7 +32,7 @@ Missing values are handled differently. Entries that are \code{NA} for \code{mat
 Finally, \code{to_lower} and \code{remove_punctuation} specify whether to transform the text prior to searching for duplicates.
 }
 \seealso{
-	\code{\link{extract_unique_references}}
+	\code{\link{screen_duplicates}} and \code{\link{extract_unique_references}} for manual and automated screening (respectively) of results from this function.
 }
 \examples{
 # import data

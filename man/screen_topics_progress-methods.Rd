@@ -1,7 +1,7 @@
-\name{screen_topics_progress-methods)}
+\name{screen_topics_progress-methods}
 \alias{screen_topics_progress-methods}
 \alias{summary.screen_topics_progress}
-\title{Methods for class 'review_info'}
+\title{Methods for class 'screen_topics_progress'}
 \description{Tools to display useful information on class \code{screen_topics_progress}.}
 \usage{
 \method{summary}{screen_topics_progress}(object, ...)
