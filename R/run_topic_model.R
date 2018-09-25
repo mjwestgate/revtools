@@ -1,10 +1,21 @@
 # function to run a topic model with specified parameters
-run_LDA<-function(
+# old name
+run_LDA <- function(
+  dtm,
+  topic_model = "lda",
+  n_topics = 5,
+  iterations = 2000
+){
+  run_topic_model(dtm, topic_model, n_topics, iterations)
+}
+
+# new name
+run_topic_model <- function(
 	dtm,
 	topic_model = "lda",
 	n_topics = 5,
 	iterations = 2000
-	){
+){
 	LDA_control <- list(
     iter = iterations
   )
@@ -22,4 +33,4 @@ run_LDA<-function(
       )
     }
   )
-	}
+}

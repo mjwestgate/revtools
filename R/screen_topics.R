@@ -254,7 +254,7 @@ server <- function(input, output, session){
         response_variable = input$response_variable,
         text_variables = input$variable_selector
       )
-      data$dtm <- make_DTM(
+      data$dtm <- make_dtm(
         x = data$grouped$text,
         stop_words = data$stopwords
       )
@@ -275,7 +275,7 @@ server <- function(input, output, session){
       }
 
       # calculate topic model
-      data$model <- run_LDA(
+      data$model <- run_topic_model(
         dtm = data$dtm,
         topic_model = tolower(input$model_type),
         n_topics = input$n_topics,

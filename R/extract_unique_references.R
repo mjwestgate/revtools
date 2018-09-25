@@ -6,6 +6,9 @@ extract_unique_references <- function(
     stop("please specify a vector containing identified matches
     (e.g. as returned by find_duplicates)")
   }
+  if(length(matches) == 1){
+    matches <- x[, matches]
+  }
 	x_split <- split(x, matches)
 	x_split <- lapply(x_split, function(a){
     if(nrow(a) == 1){

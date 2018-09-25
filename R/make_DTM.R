@@ -1,12 +1,19 @@
 # function to take a data.frame with bibliographic information, extract useful information, and make a DTM
 make_DTM <- function(
-	x, # a vector
+  x, # a vector
 	stop_words
-	){
+){
+  make_dtm(x, stop_words)
+}
+
+make_dtm <- function(
+	x,
+	stop_words
+){
 
   # check format
-  if(class(x)!="character"){
-	  stop("make_DTM only accepts arguments of class 'character'")
+  if(class(x) != "character"){
+	  stop("make_dtm only accepts arguments of class 'character'")
 	}
 
 	# sort out stop words

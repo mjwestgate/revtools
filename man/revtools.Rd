@@ -31,7 +31,7 @@
 	}
 	\strong{Topic modelling}
 	\itemize{
-		\item \code{\link{make_DTM}} Construct a Document-Term Matrix from bibliographic data
-		\item \code{\link{run_LDA}} Wrapper function for topic models
+		\item \code{\link{make_dtm}} Construct a Document-Term Matrix from bibliographic data
+		\item \code{\link{run_topic_model}} Wrapper function for topic models
 	}
 }
