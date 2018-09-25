@@ -163,6 +163,9 @@ screen_topics_ui <- function(){
           ),
           column(
             width = 4,
+            tableOutput(
+              outputId = "selector_n"
+            ),
             plotlyOutput(
               outputId = "plot_topics",
               height = "450px"
@@ -206,6 +209,9 @@ screen_topics_ui <- function(){
           ),
           column(
             width = 4,
+            tableOutput(
+              outputId = "selector_n2"
+            ),
             plotlyOutput(
               outputId = "plot_topics_2",
               height = "450px"

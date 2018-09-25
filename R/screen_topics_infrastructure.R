@@ -6,6 +6,10 @@ load_topic_data <- function(
 
   if(missing(stopwords)){
     stopwords <- revtools_stopwords()
+  }else{
+    if(is.null(stopwords)){
+      stopwords <- revtools_stopwords()
+    }
   }
 
   x <- list(

@@ -119,6 +119,36 @@ server <- function(input, output, session){
     }
   })
 
+  # show number of articles in current dataset
+  output$selector_n <- renderPrint({
+    if(is.null(data$raw)){
+      cat("<br>")
+    }else{
+      cat(paste0(
+        "Dataset containing ",
+        nrow(data$raw),
+        " entries | ",
+        length(which(!is.na(data$raw$selected))),
+        " screened<br><br>"
+      ))
+    }
+  })
+
+  # duplicate of above for 'words' screen
+  output$selector_n2 <- renderPrint({
+    if(is.null(data$raw)){
+      cat("<br>")
+    }else{
+      cat(paste0(
+        "Dataset containing ",
+        nrow(data$raw),
+        " entries | ",
+        length(which(!is.na(data$raw$selected))),
+        " screened<br><br>"
+      ))
+    }
+  })
+
   # add option to remove data
   observeEvent(input$clear_data, {
     shiny::showModal(
