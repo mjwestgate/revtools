@@ -62,7 +62,8 @@ server <- function(input, output, session){
   plot_features <- reactiveValues(
     palette = palette_initial,
     appearance = appearance_initial,
-    notes = FALSE
+    notes = FALSE,
+    common_words = FALSE
   )
   click_data <- reactiveValues(
     main = c(),
@@ -258,6 +259,12 @@ server <- function(input, output, session){
         stop_words = data$stopwords
       )
 
+      if(input$response_variable != data$columns[1]){
+        plot_features$common_words <- TRUE
+      }else{
+        plot_features$common_words <- FALSE
+      }
+
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
       if(any(dtm_rowsums == 0)){
@@ -430,29 +437,30 @@ server <- function(input, output, session){
   # SHOW INFO ON CLICKED POINTS
   # show selected entry
   output$selector_text <- renderPrint({
-    if(length(click_data$main) > 0){
-      if(input$hide_names){
-        id_text <- ""
-      }else{
-        id_text <- paste0(
-          "<b>Entry ID:</b> ",
-          data$plot_ready$x[click_data$main, 1],
-          "<br>"
+    if(length(click_data$main) > 0){ # i.e. display data for one entry
+      citation_tr <- format_citation(
+        data$plot_ready$x[click_data$main, ],
+        abstract = FALSE,
+        details = (input$hide_names == FALSE)
+      )
+      if(plot_features$common_words){
+        display_text <- paste0(
+          "<b>",
+          citation_tr,
+          "</b><br><em>Most common words:</em> ",
+          data$plot_ready$x$common_words[click_data$main]
         )
+      }else{
+        display_text <- citation_tr
       }
       cat(paste0(
         "<br><font color =",
         data$plot_ready$x$text_color[click_data$main],
         ">",
-        id_text,
-        format_citation(
-          data$plot_ready$x[click_data$main, ],
-          abstract = FALSE,
-          details = (input$hide_names == FALSE)
-        ),
+        display_text,
         "</font><br><br>"
       ))
-    }else{
+    }else{ # display data for one topic
       if(length(click_data$topic) > 0){
         cat(
           paste0(

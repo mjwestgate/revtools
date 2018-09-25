@@ -118,7 +118,7 @@ no_duplicates_modal <- function(){
   showModal(
     modalDialog(
       HTML("Click anywhere to exit"),
-      title = "No duplicates found",
+      title = "No were duplicates found using your search parameters",
       footer = NULL,
       easyClose = TRUE
     )

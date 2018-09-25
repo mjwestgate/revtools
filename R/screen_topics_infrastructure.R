@@ -92,6 +92,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     )
   )
 
+  # add citation in correctly formatted way
   x_df$caption <- paste0(
     add_line_breaks(
       format_citation(
@@ -103,6 +104,12 @@ build_plot_data <- function(info, dtm, model, hide_names){
     x_df$topic,
     "]"
   )
+  x_df$common_words <- apply(dtm, 1, function(a){
+    paste(
+      names(sort(a, decreasing = TRUE)[1:5]),
+      collapse = "; "
+    )
+  })
   x_df$text_color <- "#000000"
 
   # build word plot information (y)
