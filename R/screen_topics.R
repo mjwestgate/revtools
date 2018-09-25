@@ -467,10 +467,8 @@ server <- function(input, output, session){
             "<br><font color =",
             data$plot_ready$topic$text_color[click_data$topic],
             "><b>Topic: ", click_data$topic,
-            "</b><br><em>Most likely terms:</em> ",
-    				data$plot_ready$topic$terms_default[click_data$topic],
-            "<br><em>Heighest weighted terms:</em> ",
-    				data$plot_ready$topic$terms_weighted[click_data$topic],
+            "</b><br>",
+    				data$plot_ready$topic$caption_full[click_data$topic],
             "</font><br><br>"
           )
   			)
@@ -846,12 +844,10 @@ server <- function(input, output, session){
     if(any(data$stopwords == words$selected) == FALSE){
       data$stopwords <- c(data$stopwords, words$selected)
     }
-    if(any(words$current$term == words$selected)){
-      row_color <- which(words$current$term == words$selected)
-      plot_features$appearance$y$color[words$rows[row_color]] <- "#CCCCCC"
+    if(any(plot_features$appearance$y$id == words$selected)){
+      row_color <- which(plot_features$appearance$y$id == words$selected)
+      plot_features$appearance$y$color[row_color] <- "#CCCCCC"
     }
-    # Note: this doesn't grey out terms in the plots of other topics,
-    # but will do for now
   })
 
   # SAVE OPTIONS

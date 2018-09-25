@@ -146,6 +146,35 @@ build_plot_data <- function(info, dtm, model, hide_names){
   y_df$selected <- TRUE
   y_df$text_color <- "#000000"
 
+  # calculate which topics are most likely, highest weighted, or both
+  topics_default <- topicmodels::terms(model, 5)
+  topics_weighted <- apply(
+    y_matrix / apply(y_matrix, 1, sum), 2,
+    function(a){names(sort(a, decreasing = TRUE)[1:5])
+  })
+  topic_caption_list <- lapply(
+    seq_len(model@k),
+    function(a, d, w){
+      comparison <- w[, a] %in% d[, a]
+      word_list <- list(
+        "<em>high likelihood</em>" = d[!(d[, a] %in% w[, a]), a],
+        "<em>high weight</em>" = w[!(w[, a] %in% d[, a]), a],
+        "<em>both</em>" = w[w[, a] %in% d[, a], a]
+      )
+      word_vector <- unlist(lapply(
+        word_list,
+        function(b){paste(b, collapse = ", ")}
+      ))
+      result <- paste(
+        paste(names(word_vector), word_vector, sep = ": "),
+        collapse = "<br>"
+      )
+      return(result)
+    },
+    d = topics_default,
+    w = topics_weighted
+  )
+
   # add topic information
   topic_df <- data.frame(
     topic = seq_len(
@@ -154,27 +183,11 @@ build_plot_data <- function(info, dtm, model, hide_names){
     n = as.numeric(
       xtabs(~ topicmodels::topics(model))
     ),
-    terms_default = apply(
-      topicmodels::terms(model, 5),
-      2,
-      function(a){paste(a, collapse = ", ")}
-    ),
-    terms_weighted = apply(
-      y_matrix / apply(y_matrix, 1, sum), 2,
-      function(a){paste(
-        names(
-          sort(a, decreasing = TRUE)
-        )[1:5],
-        collapse = ", "
-      )}
-    ),
+    caption = apply(topics_default, 2, function(a){
+      paste(a, collapse = ", ")
+    }),
+    caption_full = unlist(topic_caption_list),
     stringsAsFactors = FALSE
-  )
-  topic_df$caption <- paste0(
-    "Most likely: ",
-    topic_df$terms_default,
-    "\nHighest weighted: ",
-    topic_df$terms_weighted
   )
   topic_df$text_color <- "#000000"
 
@@ -184,7 +197,6 @@ build_plot_data <- function(info, dtm, model, hide_names){
     y = y_df,
     topic = topic_df
   )
-
   return(plot_list)
 }
 
