@@ -1,3 +1,77 @@
+# similar to import_shiny, but for initial load of data
+load_topic_data <- function(
+  data,
+  stopwords
+){
+
+  if(missing(stopwords)){
+    stopwords <- revtools_stopwords()
+  }
+
+  x <- list(
+    raw = NULL,
+    stopwords = stopwords,
+    columns = NULL,
+    grouped = NULL,
+    dtm = NULL,
+    model = NULL,
+    plot_ready = NULL
+  )
+
+  if(!is.null(data)){
+
+    # throw a warning if a known file type isn't given
+    accepted_inputs <- c(
+      "bibliography",
+      "data.frame",
+      "screen_topics_progress"
+    )
+    if(!any(accepted_inputs == class(data))){
+      stop("only classes 'bibliography', 'data.frame' or
+      'screen_topics_progress' accepted by screen_topics")
+    }
+
+    # add data as necessary for that file type
+    switch(class(data),
+      "bibliography" = {
+        result <- as.data.frame(data)
+        colnames(result) <- clean_names(colnames(result))
+        x$raw <- add_required_columns(result)
+      },
+      "data.frame" = {
+        colnames(data) <- clean_names(colnames(data))
+        x$raw <- add_required_columns(data)
+      },
+      "screen_topics_progress" = {
+        x$raw <- data$raw
+        x$stopwords <- data$stopwords
+        x$columns <- data$columns
+        x$grouped <- data$grouped
+        x$dtm <- data$dtm
+        x$model <- data$model
+        x$plot_ready <- data$plot_ready
+      }
+    )
+
+    # add colnames
+    if(is.null(x$columns)){
+      x$columns <- get_topic_colnames(x$raw)
+    }
+
+  } # end if(!is.null(data))
+
+  # add user-defined stopwords if given
+  if(!is.null(stopwords)){
+    x$stopwords <- unique(c(
+      x$stopwords,
+      as.character(stopwords)
+    ))
+  }
+
+  return(x)
+}
+
+
 build_plot_data <- function(info, dtm, model, hide_names){
   x_matrix <- modeltools::posterior(model)$topics # article x topic
   y_matrix <- t(modeltools::posterior(model)$terms)
@@ -91,7 +165,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
     "\nHighest weighted: ",
     topic_df$terms_weighted
   )
-  topic_df$text_color <- "#000000" 
+  topic_df$text_color <- "#000000"
 
   # return
   plot_list <- list(
@@ -124,16 +198,35 @@ add_required_columns <- function(data){
   return(data)
 }
 
+# function to cleanly extract colnames of interest from supplied datasets
+get_topic_colnames <- function(data){
+  colnames(data)[
+    which(
+      (colnames(data) %in%
+      c("selected", "topic", "display", "notes")) == FALSE
+    )
+  ]
+}
 
 build_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
-    data.frame(
+    result <- data.frame(
       id = a[, 1],
       topic = a$topic,
       color = palette[a$topic],
       stringsAsFactors = FALSE
     )
-  }, colours = palette)
+    if(any(colnames(a) == "text_color")){
+      if(any(a$text_color == "#405d99")){
+        result$color[which(a$text_color == "#405d99")] <- "#000000"
+      }
+      if(any(a$text_color == "#993f3f")){
+        result$color[which(a$text_color == "#993f3f")] <- "#CCCCCC"
+      }
+    }
+    return(result)
+  },
+  colours = palette)
 }
 
 

@@ -113,3 +113,14 @@ calculating_modal <- function(){
     )
   )
 }
+
+no_duplicates_modal <- function(){
+  showModal(
+    modalDialog(
+      HTML("Click anywhere to exit"),
+      title = "No duplicates found",
+      footer = NULL,
+      easyClose = TRUE
+    )
+  )
+}

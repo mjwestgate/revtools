@@ -1,17 +1,8 @@
-screen_titles <- function(x){
+screen_titles <- function(
+  x = NULL
+){
 
-  if(missing(x)){x <- NULL}
-  if(!is.null(x)){
-
-    # throw a warning if a known file type isn't given
-    accepted_inputs <- c("bibliography", "data.frame")
-    if(!any(accepted_inputs == class(x))){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_titles")}
-
-      if(class(x) == "bibliography"){
-        x <- as.data.frame(x)
-      }
-  }
+  data_in <- load_title_data(data = x)
 
   # create ui
   ui_data <- screen_titles_ui()
@@ -26,14 +17,13 @@ screen_titles <- function(x){
   # start server
   server <- function(input, output, session){
 
-    # BUILD REACTIVE VALUES
+    # build reactive values
     data <- reactiveValues(
-      raw = x,
-      current = NULL,
-      n_current = NULL,
-      n_previous = NULL
+      raw = data_in$data$raw,
+      current = data_in$data$current,
+      n_current = data_in$data$n_current,
+      n_previous = data_in$data$n_previous
     )
-    # view <- reactiveValues(current = NULL)
     click_values <- reactiveValues(
       yes = NULL,
       no = NULL,
@@ -41,17 +31,32 @@ screen_titles <- function(x){
       group = c(0)
     )
     selector <- reactiveValues(
-      yes = c(0),
-      no = c(0),
-      maybe = c(0)
+      yes = data_in$selector$yes,
+      no = data_in$selector$no,
+      maybe = data_in$selector$maybe
     )
 
-    # CREATE HEADER IMAGE
+    # create header image
     output$header <- renderPlot({
       revtools_logo(text = "screen_titles")
     })
 
-    # DATA INPUT
+    ## ensure something is drawn if data are supplied from the workspace
+    observe({
+      if(!is.null(x)){
+        lapply(
+          seq_len(8),
+          function(a, data){
+            add_reference_ui(
+              entry_number = a,
+              ui_selector = "placeholder"
+            )
+          },
+          data = data$raw
+        )
+      }
+    })
+
     ## when specified, ensure input data is processed correctly
     observeEvent(input$data_in, {
       if(is.null(data$raw)){
@@ -72,13 +77,15 @@ screen_titles <- function(x){
       )
 
       # add extra columns as needed
-      if(any(colnames(import_result) == "selected") == FALSE){
+      if(!any(colnames(import_result) == "selected")){
         import_result$selected <- NA
       }
-      if(any(colnames(import_result) == "notes") == FALSE){
+      if(!any(colnames(import_result) == "notes")){
         import_result$notes <- NA
       }
-      import_result$color <- "#000000"
+      if(!any(colnames(import_result) == "color")){
+        import_result$color <- "#000000"
+      }
 
       # save progress
       data$raw <- import_result
@@ -161,7 +168,7 @@ screen_titles <- function(x){
     })
 
 
-    # ADD/SUBTRACT & RENDER TEXT BOXES
+    # add or remove text boxes; render text for each box
     observeEvent({
       data$current
       data$raw
@@ -241,7 +248,7 @@ screen_titles <- function(x){
     })
 
 
-    # TRACK ARTICLE SELECTIONS
+    # track article selections
     observe({
 
       # track whether 'yes' buttons are hit
@@ -288,7 +295,7 @@ screen_titles <- function(x){
 
     })
 
-    # SAVE OPTIONS
+    # save
     observeEvent(input$save_data, {
       if(is.null(data$raw)){
         showModal(

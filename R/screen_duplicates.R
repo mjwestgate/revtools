@@ -314,10 +314,12 @@ screen_duplicates <- function(x){
         if(length(group_result) > 0){
           progress$entry <- 1
           data$grouped <- group_result
+          removeModal()
         }else{
           progress$entry <- NULL
+          removeModal()
+          no_duplicates_modal()
         }
-        removeModal()
       }
     })
 

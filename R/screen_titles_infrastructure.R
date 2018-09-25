@@ -1,3 +1,60 @@
+load_title_data <- function(data){
+
+  x <- list(
+    data = list(
+      raw = NULL,
+      current = NULL,
+      n_current = NULL,
+      n_previous = NULL
+    ),
+    selector = list(
+      yes = c(0),
+      no = c(0),
+      maybe = c(0)
+    )
+  )
+
+  if(!is.null(data)){
+    # throw a warning if a known file type isn't given
+    accepted_inputs <- c("bibliography", "data.frame")
+    if(!any(accepted_inputs == class(data))){
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_titles")}
+    if(class(data) == "bibliography"){
+      data <- as.data.frame(data)
+    }
+
+    # create citation
+    if(!any(colnames(data) == "citation")){
+      data$citation <- format_citation(
+        data = data,
+        details = FALSE,
+        add_html = TRUE
+      )
+    }
+    # add extra columns as needed
+    if(!any(colnames(data) == "selected")){data$selected <- NA}
+    if(!any(colnames(data) == "notes")){data$notes <- NA}
+    if(!any(colnames(data) == "color")){data$color <- "#000000"}
+
+    # save progress
+    x$data$raw <- data
+    x$data$n_current <- min(c(
+      8,
+      length(which(is.na(data$selected)))
+    ))
+    x$data$current <- seq_len(x$data$n_current)
+    x$data$n_previous <- 8
+    rep_zeroes <- rep(0, x$data$n_current)
+    x$selector$yes <- rep_zeroes
+    x$selector$no <- rep_zeroes
+    x$selector$maybe <- rep_zeroes
+
+  }
+
+  return(x)
+}
+
+
 # function to add a single title + selector buttons to the ui
 add_reference_ui <- function(
   entry_number, # an index to record which entry these data are linked to

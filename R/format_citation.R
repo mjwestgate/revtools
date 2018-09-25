@@ -2,7 +2,7 @@ format_citation <- function(
   data,
   details = TRUE,
   abstract = FALSE,
-  add_html = FALSE, 
+  add_html = FALSE,
   ...
 ){
   UseMethod("format_citation")
@@ -102,7 +102,7 @@ format_citation.data.frame <- function(
   add_html = FALSE,
   ...
   ){
-  data <- clean_names(data)
+  colnames(data) <- clean_names(colnames(data))
   if(any(names(data) == "journal")){
     source <- "journal"
   }else{

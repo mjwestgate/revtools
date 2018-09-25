@@ -273,20 +273,17 @@ generate_bibliographic_names <- function(x){
 
 	# where this is not possible, give a 'ref1' style result only as a last resort.
 	if(any(nonunique_names == "ref")){
-		rows.tr<-which(nonunique_names == "ref")
-		nonunique_names[rows.tr] <- paste(
-      "ref",
-      c(1:length(rows.tr)),
-      sep = "_")
-		}
+		rows_tr <- which(nonunique_names == "ref")
+		nonunique_names[rows_tr] <- create_index("ref", length(rows_tr))
+	}
 
 	# ensure names are unique
 	if(length(unique(nonunique_names)) < length(nonunique_names)){
 		name_counts <- xtabs(~ nonunique_names)
 		duplicated_names <- names(which(name_counts > 1))
 		for(i in 1:length(duplicated_names)){
-			rows<-which(nonunique_names == duplicated_names[i])
-			new_names<-paste(
+			rows <- which(nonunique_names == duplicated_names[i])
+			new_names <- paste(
         nonunique_names[rows],
         letters[1:length(rows)],
         sep = "_")

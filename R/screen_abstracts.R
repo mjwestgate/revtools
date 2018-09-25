@@ -1,18 +1,8 @@
-screen_abstracts <- function(x){
+screen_abstracts <- function(
+  x = NULL
+){
 
-  if(missing(x)){x <- NULL}
-  if(!is.null(x)){
-
-    # throw a warning if a known file type isn't given
-    accepted_inputs <- c("bibliography", "data.frame")
-    if(any(accepted_inputs == class(x)) == FALSE){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_abstracts")}
-
-    switch(class(x),
-      "bibliography" = {x <- as.data.frame(x)},
-      "data.frame" = {x <- x}
-    )
-  }
+  data_in <- load_abstract_data(data = x)
 
   # create ui
   ui_data <- screen_abstracts_ui()
@@ -29,12 +19,11 @@ screen_abstracts <- function(x){
 
     # build reactive values
     data <- reactiveValues(
-      raw = NULL
-      # notes = ""
+      raw = data_in$data$raw
     )
     progress <- reactiveValues(
-      current = 1,
-      row = NULL
+      current = data_in$progress$current,
+      row = data_in$progress$row
     )
     display <- reactiveValues(
       notes = FALSE
@@ -49,7 +38,7 @@ screen_abstracts <- function(x){
     ## when specified, ensure input data is processed correctly
     observeEvent(input$data_in, {
       if(is.null(data$raw)){
-        data_previous <- x
+        data_previous <- data_in$raw
       }else{
         data_previous <- data$raw
       }
@@ -57,26 +46,7 @@ screen_abstracts <- function(x){
         source = input$data_in,
         current_data = data_previous
       )
-
-      # set order columns
-      import_result$order_initial <- c(1:nrow(import_result))
-      if(any(colnames(import_result) == "title")){
-        import_result$order_alphabetical <- rank(import_result$title)
-      }else{
-        import_result$order_alphabetical <- import_result$order_initial
-      }
-      import_result$order_random <- base::rank(
-        rnorm(nrow(import_result))
-      )
-
-      # set display/save columns
-      import_result$color <- "#000000"
-      if(!any(colnames(import_result) == "selected")){
-        import_result$selected <- NA
-      }
-      if(!any(colnames(import_result) == "notes")){
-        import_result$notes <- ""
-      }
+      import_result <- add_abstract_columns(import_result)
 
       # export to reactiveValues
       data$raw <- import_result

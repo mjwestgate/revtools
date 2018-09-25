@@ -213,7 +213,7 @@ server <- function(input, output, session){
       plot_features$appearance <- NULL
 
       # choose which rows to use for later calculation
-      if(all(is.na(data$raw$selected)) == FALSE){
+      if(!all(is.na(data$raw$selected))){
         data$raw$display[which(is.na(data$raw$selected) == FALSE)] <- FALSE
       }
 
@@ -582,7 +582,6 @@ server <- function(input, output, session){
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
       data$raw$selected[selected_rows] <- TRUE
-      # data$raw$notes[rows] <- input$select_notes
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -609,7 +608,6 @@ server <- function(input, output, session){
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
       data$raw$selected[selected_rows] <- FALSE
-      # data$raw$notes[selected_rows] <- input$select_notes
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -848,11 +846,6 @@ server <- function(input, output, session){
             inputId = "save_filename",
             label = "File Name"
           ),
-          # selectInput(
-          #   inputId = "save_data_filetype",
-          #   label = "File Type",
-          #   choices = c("csv", "rds")
-          # ),
           actionButton(
             inputId = "save_data_execute",
             label = "Save"
@@ -885,10 +878,6 @@ server <- function(input, output, session){
       file_extension <- "csv"
     }
     filename <- paste(filename, file_extension, sep = ".")
-    # switch(input$save_data_filetype,
-    #   "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
-    #   "rds" = {saveRDS(data$raw, file = filename)}
-    # )
     switch(input$save_what,
       "choices" = {
         write.csv(data$raw,
