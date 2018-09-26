@@ -277,7 +277,7 @@ server <- function(input, output, session){
       # calculate topic model
       data$model <- run_topic_model(
         dtm = data$dtm,
-        topic_model = tolower(input$model_type),
+        type = tolower(input$model_type),
         n_topics = input$n_topics,
         iterations = input$n_iterations
       )

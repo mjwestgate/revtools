@@ -29,8 +29,9 @@
 		\item \code{\link{find_duplicates}} Locate potentially duplicated references
 		\item \code{\link{extract_unique_references}} return a data.frame with only 'unique' references
 	}
-	\strong{Topic modelling}
+	\strong{Text mining}
 	\itemize{
+    \item \code{\link{revwords}} Stopwords used in revtools functions
 		\item \code{\link{make_dtm}} Construct a Document-Term Matrix from bibliographic data
 		\item \code{\link{run_topic_model}} Wrapper function for topic models
 	}

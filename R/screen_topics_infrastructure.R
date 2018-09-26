@@ -5,10 +5,10 @@ load_topic_data <- function(
 ){
 
   if(missing(stopwords)){
-    stopwords <- revtools_stopwords()
+    stopwords <- revwords()
   }else{
     if(is.null(stopwords)){
-      stopwords <- revtools_stopwords()
+      stopwords <- revwords()
     }
   }
 

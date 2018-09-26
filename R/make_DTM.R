@@ -18,7 +18,7 @@ make_dtm <- function(
 
 	# sort out stop words
 	if(missing(stop_words)){
-    stop_words <- revtools_stopwords()
+    stop_words <- revwords()
 	}else{
     stop_words <- unique(
       tolower(stop_words)

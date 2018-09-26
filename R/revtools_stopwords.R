@@ -1,4 +1,4 @@
-revtools_stopwords <- function(){
+revwords <- function(){
   c(
     tm::stopwords(),
     # add words for numbers

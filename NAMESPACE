@@ -6,7 +6,7 @@ format_citation.bibliography, format_citation.data.frame, format_citation.list,
 fuzzdist,
 fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
-merge_columns, make_dtm, make_DTM, run_LDA, run_topic_model, revtools_stopwords,
+merge_columns, make_dtm, make_DTM, run_LDA, run_topic_model, revwords,
 start_review_window,
 screen_duplicates, screen_titles, screen_abstracts,
 screen_topics)

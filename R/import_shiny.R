@@ -48,7 +48,7 @@ import_shiny_topic_data <- function(
 
   x <- list(
     raw = NULL,
-    stopwords = revtools_stopwords(),
+    stopwords = revwords(),
     columns = NULL,
     grouped = NULL,
     dtm = NULL,
