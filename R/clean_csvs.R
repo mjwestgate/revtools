@@ -1,4 +1,36 @@
-## function to create a string of named length in format "string_number" that sorts in correct order
+# import csv in a format suitable for revtools apps
+revtools_csv <- function(path){
+  data <- read.csv(path, stringsAsFactors = FALSE)
+  colnames(data) <- clean_names(colnames(data))
+  if(colnames(data)[1] != "label"){
+    if(
+      length(unique(data[, 1])) < nrow(data) |
+      any(c("author", "title", "year", "journal") == colnames(data)[1])
+    ){
+      data <- data.frame(
+        label = create_index("ref", nrow(data)),
+        data,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  if(any(colnames(data) == "author")){
+    data$author <- clean_author_delimiters(data$author)
+  }
+  return(data)
+}
+
+# detect author delimiters
+clean_author_delimiters <- function(x){
+  if(all(grepl("\\sand\\s|\\sAND\\s|\\s&\\s", x))){
+    x <- gsub("\\sAND\\s|\\s&\\s", "\\sand\\s", x)
+  }else{
+    x <- gsub(",(?=\\s[[:alpha:]]{2,})", " and", x, perl = TRUE)
+  }
+  return(x)
+}
+
+# function to create a string of named length in format "string_number" that sorts in correct order
 create_index <- function(string, n, sep = "_"){
   if(missing(string)){
     string <- "V"
@@ -35,23 +67,4 @@ clean_names <- function(
   x <- sub("authors", "author", x) # remove plural authors
   x <- make.unique(x, sep = "_")
   return(x)
-}
-
-# import csv in a format suitable for revtools apps
-revtools_csv <- function(path){
-  data <- read.csv(path, stringsAsFactors = FALSE)
-  colnames(data) <- clean_names(colnames(data))
-  if(colnames(data)[1] != "label"){
-    if(
-      length(unique(data[, 1])) < nrow(data) |
-      any(c("author", "title", "year", "journal") == colnames(data)[1])
-    ){
-      data <- data.frame(
-        label = create_index("ref", nrow(data)),
-        data,
-        stringsAsFactors = FALSE
-      )
-    }
-  }
-  return(data)
 }

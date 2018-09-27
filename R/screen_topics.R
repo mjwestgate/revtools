@@ -441,7 +441,8 @@ server <- function(input, output, session){
       citation_tr <- format_citation(
         data$plot_ready$x[click_data$main, ],
         abstract = FALSE,
-        details = (input$hide_names == FALSE)
+        details = (input$hide_names == FALSE),
+        add_html = TRUE
       )
       if(plot_features$common_words){
         display_text <- paste0(
