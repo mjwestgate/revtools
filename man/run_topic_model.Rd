@@ -28,7 +28,7 @@ file_location <- system.file(
   "avian_ecology_bibliography.ris",
   package = "revtools"
 )
-x <- as.data.frame(read_bibliography(file_location))
+x <- read_bibliography(file_location)
 
 # run a topic model based on these data
 # note: the following lines can take a very long time to run, especially for large datasets!

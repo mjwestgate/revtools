@@ -27,7 +27,7 @@ When you have finished viewing/screening, you can export information to a .csv o
 Note that "\code{start_review_window}" is the earlier form of this function; this has been deprecated and will be removed from future versions of \code{revtools}.
 }
 \seealso{
-	\code{\link{screen_titles}} or \code{\link{screen_abstracts}} for manual screening; \code{\link{screen_duplicates}} to remove duplicates.
+	\code{\link{screen_titles}} or \code{\link{screen_abstracts}} for manual screening; \code{\link{screen_topics_progress-class}} for saving and restoring progress in \code{screen_topics}.
 }
 \examples{
 # to run the app and upload data interactively

@@ -40,10 +40,10 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- as.data.frame(read_bibliography(file_location))
+x <- read_bibliography(file_location)
 
 # generate then locate some 'fake' duplicates
 x_duplicated <- rbind(x, x[1:5,])
 x_check <- find_duplicates(x_duplicated)
-# returns a data.frame with an added 'group' column
+# returns a vector of potential matches
 }

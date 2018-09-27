@@ -25,4 +25,5 @@ file_location <- system.file(
   package = "revtools")
 x <- read_bibliography(file_location, return_df = FALSE)
 format_citation(x[[1]])
+format_citation(as.data.frame(x)[1, ]) # same result
 }

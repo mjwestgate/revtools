@@ -9,4 +9,3 @@ Imports: ade4, plotly, shiny, shinydashboard, SnowballC, stringdist, tm, topicmo
 License: GPL-3
 URL: https://github.com/mjwestgate/revtools, https://revtools.net
 LazyData: true
-RoxygenNote: 6.1.0

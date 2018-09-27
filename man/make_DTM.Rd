@@ -29,7 +29,7 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- as.data.frame(read_bibliography(file_location))
+x <- read_bibliography(file_location)
 
 # construct a document-term matrix
 # note: this can take a long time to run for large datasets

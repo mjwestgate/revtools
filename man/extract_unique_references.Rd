@@ -25,7 +25,7 @@ file_location <- system.file(
   "avian_ecology_bibliography.ris",
   package = "revtools"
 )
-x <- as.data.frame(read_bibliography(file_location))
+x <- read_bibliography(file_location)
 
 # generate duplicated references (for example purposes)
 x_duplicated <- rbind(x, x[1:5,])
