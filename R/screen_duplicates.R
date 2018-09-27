@@ -414,7 +414,7 @@ screen_duplicates <- function(x){
     # text blocks
     output$text_1 <- renderPrint({
       validate(
-        need(data$grouped, "")
+        need(length(data$grouped) > 0, "")
       )
       format_duplicates(
         x = data$grouped[[progress$entry]][1, ],
@@ -424,7 +424,7 @@ screen_duplicates <- function(x){
     })
     output$text_2 <- renderPrint({
       validate(
-        need(data$grouped, "")
+        need(length(data$grouped) > 0, "")
       )
       format_duplicates(
         x = data$grouped[[progress$entry]][2, ],
