@@ -2,15 +2,13 @@
 
 Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
 
+---
+
 For a complete introduction to revtools you can check out the [user manual](https://revtools.net/user_manual/1_introduction.html); but to get started now you can download revtools either from this site (development version) or CRAN (stable version) as follows:
 ```
-# install
-install.packages("revtools") # from CRAN
-# OR
-devtools::install_github("mjwestgate/revtools") # from GitHub
-
-# load
-library(revtools)
+install.packages("revtools") # install from CRAN
+devtools::install_github("mjwestgate/revtools") # install from GitHub
+library(revtools) # load
 ```
 
 Once you've installed & loaded revtools, you can use any of the inbuilt apps by loading them and drag-and-dropping in the data you want to analyse. All the apps export to csv format so you don't need to use R to investigate their results if you'd prefer not to. The apps available in revtools are:
