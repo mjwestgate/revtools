@@ -1,8 +1,10 @@
 read_bibliography	import bibliography
 write_bibliography	export bibliography
-as.data.frame		convert an object of class ‘bibliography’ to a data.frame
 find_duplicates	identify duplicated references within a data.frame
 extract_unique_references	pull out one example of each unique reference
-make_DTM	construct a document term matrix from a data.frame
-run_LDA	wrapper function to topicmodels::LDA and related methods
-start_review_window	draw an interactive plot of bibliographic data
+make_dtm	construct a document term matrix from a data.frame
+run_topic_model	wrapper function to topicmodels::LDA and related methods
+screen_duplicates	interactive duplicate detection
+screen_titles	screen articles by title
+screen_abstracts	screen articles by abstract
+screen_topics	draw an interactive plot of bibliographic data
