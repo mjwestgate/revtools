@@ -18,7 +18,7 @@ file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
-x <- read_bibliography(file_location)
+x <- read_bibliography(file_location, return_df = FALSE)
 
 # export a subset of entries as a new file
 write_bibliography(x[1:5],

@@ -3,38 +3,47 @@
 # New function to import a file, regardless of format
 # This is based on auto-detection of key parameters
 read_bibliography <- function(
-	x
+	filename,
+  return_df = TRUE
 	){
-
-	# import x
-	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-	z <- scan(x,
-    sep = "\t",
-    what = "character",
-    quote = "",
-    quiet = TRUE,
-    blank.lines.skip = FALSE
-  )
-	Encoding(z) <- "latin1"
-	z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
-
-	# detect whether file is bib-like or ris-like via the most common single characters
-	nrows <- min(c(200, length(z)))
-	zsub <- z[c(1: nrows)]
-  n_brackets <- length(grep("\\{", zsub))
-  n_dashes <- length(grep(" - ", zsub))
-
-	if(n_brackets >  n_dashes){
-    result <- read_bib(z)  # simple case - no further work needed
-	}else{  #  ris format can be inconsistent; custom code needed
-    z_dframe <- prep_ris(z, detect_delimiter(zsub))
-		# import appropriate format
-		if(any(z_dframe$ris == "PMID")){
-      result <- read_medline(z_dframe)
-		}else{
-      result <- read_ris(z_dframe)
+  if(grepl(".csv$", filename)){
+    result <- revtools_csv(filename)
+    if(!return_df){
+      result <- as.bibliography(result)
     }
-	}
+  }else{
+    # import x
+  	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
+  	z <- scan(filename,
+      sep = "\t",
+      what = "character",
+      quote = "",
+      quiet = TRUE,
+      blank.lines.skip = FALSE
+    )
+  	Encoding(z) <- "latin1"
+  	z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
+
+  	# detect whether file is bib-like or ris-like via the most common single characters
+  	nrows <- min(c(200, length(z)))
+  	zsub <- z[seq_len(nrows)]
+    n_brackets <- length(grep("\\{", zsub))
+    n_dashes <- length(grep(" - ", zsub))
+  	if(n_brackets >  n_dashes){
+      result <- read_bib(z)  # simple case - no further work needed
+  	}else{  #  ris format can be inconsistent; custom code needed
+      z_dframe <- prep_ris(z, detect_delimiter(zsub))
+  		# import appropriate format
+  		if(any(z_dframe$ris == "PMID")){
+        result <- read_medline(z_dframe)
+  		}else{
+        result <- read_ris(z_dframe)
+      }
+  	}
+    if(return_df){
+      result <- as.data.frame(result)
+    }
+  }
 	return(result)
 }
 

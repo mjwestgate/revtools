@@ -1,6 +1,6 @@
 # import csv in a format suitable for revtools apps
-revtools_csv <- function(path){
-  data <- read.csv(path, stringsAsFactors = FALSE)
+revtools_csv <- function(filename){
+  data <- read.csv(filename, stringsAsFactors = FALSE)
   colnames(data) <- clean_names(colnames(data))
   if(colnames(data)[1] != "label"){
     if(

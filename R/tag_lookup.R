@@ -1,11 +1,13 @@
-tag_lookup <- function(type = "ris"){
-  if(!any(c("ris", "medline") == type)){
-    stop("tag_lookup only accepts types 'ris' or 'medline'")
+tag_lookup <- function(
+  type = "ris"
+){
+  if(!any(c("ris", "ris_write", "medline") == type)){
+    stop("tag_lookup only accepts types 'ris', 'ris_write' or 'medline'")
   }
   ris_list <- switch(type,
     "ris" = {
       list(
-        "type" = c("TY"),
+        "type" = "TY",
         "author" = c("AU", paste0("A", c(1:5))),
         "author_full" = "AF",
         "year" = c("PY", "Y1"),
@@ -28,6 +30,34 @@ tag_lookup <- function(type = "ris"){
         "editor" = "ED",
         "edition" = "ED",
         "language" = "LA"
+      )
+    },
+    "ris_write" = {
+      list(
+        "type" = "TY",
+        "author" = "AU",
+        "year" = "PY",
+        "title" = "TI",
+        "journal" = "JO",
+        "volume" = "VL",
+        "number" = "IS",
+        "startpage" = "SP",
+        "endpage" = "EP",
+        "abstract" = "AB",
+        "keywords" = "KW",
+      	"doi" = "DO",
+        "call" = "CN",
+      	"issn" = "SN",
+        "url" = "UR",
+        "accession" = "AN",
+        "institution" = "CY",
+        "publisher" = "PB",
+      	"pubplace" = "PP",
+        "address" = "AD",
+        "editor" = "ED",
+        "edition" = "ET",
+        "language" = "LA",
+        "end" = "ER"
       )
     },
     "medline" = {
@@ -124,6 +154,12 @@ tag_lookup <- function(type = "ris"){
       },
       lookup = length_list
     ))
+    # if(!duplicates){
+    #   ris_dframe <- do.call(rbind, lapply(
+    #     split(ris_dframe, ris_dframe$order),
+    #     function(a){a[1, ]}
+    #   ))
+    # }
   }
 
   return(ris_dframe)
