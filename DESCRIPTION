@@ -7,5 +7,5 @@ Description: Researchers commonly need to summarize scientific information, a pr
 Depends: R (>= 3.5.0)
 Imports: ade4, plotly, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite, modeltools
 License: GPL-3
-URL: https://github.com/mjwestgate/revtools, https://revtools.net
+URL: https://revtools.net
 LazyData: true

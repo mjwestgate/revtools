@@ -56,33 +56,19 @@ screen_titles_ui <- function(){
     revtools_css(),
     fluidRow(
       div(id = "placeholder"),
-      br(),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 10px",
-        HTML("<br>")
-      ),
       div(
         style = "
           display: inline-block;
           vertical-align: top;",
-        uiOutput("next_group")
+        uiOutput("select_all_buttons")
       ),
+      br(),
+      br(),
       div(
         style = "
           display: inline-block;
-          vertical-align: top;
-          width: 10px",
-        HTML("<br>")
-      ),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 200px",
-        tableOutput("progress_text")
+          vertical-align: top;",
+        uiOutput("navigation_buttons")
       )
     )
   )

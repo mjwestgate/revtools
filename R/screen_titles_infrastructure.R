@@ -55,6 +55,15 @@ load_title_data <- function(data){
 }
 
 
+# function to add 'page numbers' to titles screen
+calc_pages <- function(n, each){
+  rep(
+    seq_len(ceiling(n / each)),
+    each = each
+  )[seq_len(n)]
+}
+
+
 # function to add a single title + selector buttons to the ui
 add_reference_ui <- function(
   entry_number, # an index to record which entry these data are linked to
@@ -105,6 +114,8 @@ add_reference_ui <- function(
             ),
             label = "Exclude",
             style = "
+              display: inline-block;
+              vertical-align: top;
               width: 80px;
               background-color: #c17c7c;
               color: #fff;"
@@ -123,7 +134,9 @@ add_reference_ui <- function(
             ),
             label = "Unknown",
             style = "
-              width: 80px;
+              display: inline-block;
+              vertical-align: top;
+              width: 83px;
               background-color: #adadad;
               color: #fff;"
           )
