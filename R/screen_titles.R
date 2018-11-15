@@ -109,6 +109,7 @@ screen_titles <- function(
         n = nrow(data$raw),
         each = input$n_citations
       )
+      data$raw$order <- seq_len(nrow(data$raw))
       click_values$page <- 1
       selector$yes <- rep(0, data$n_current)
       selector$no <- rep(0, data$n_current)
@@ -161,23 +162,9 @@ screen_titles <- function(
         })
         update$add_logical <- FALSE
         data$n_previous <- data$n_current
-        ## new content
         selector$yes <- rep(0, data$n_previous)
         selector$no <- rep(0, data$n_previous)
         selector$maybe <- rep(0, data$n_previous)
-        # selector$yes <- input_tracker(
-        #   input = input,
-        #   string = "citation_[[:digit:]]+_yes"
-        # )$value
-        # selector$no <- input_tracker(
-        #   input = input,
-        #   string = "citation_[[:digit:]]+_no"
-        # )$value
-        # selector$maybe <- input_tracker(
-        #   input = input,
-        #   string = "citation_[[:digit:]]+_maybe"
-        # )$value
-        ## end new
       }
     })
 
@@ -190,11 +177,6 @@ screen_titles <- function(
         })
         update$remove_logical <- FALSE
         data$n_previous <- data$n_current
-        # new content
-        # selector$yes <- selector$yes[data$n_current]
-        # selector$no <- selector$no[data$n_current]
-        # selector$maybe <- selector$maybe[data$n_current]
-        # end new
       }
     })
 
@@ -402,9 +384,14 @@ screen_titles <- function(
           n = nrow(data$raw),
           each = input$n_citations
         )
+        data$raw$order <- switch(input$order,
+          "order_initial" = {seq_len(nrow(data$raw))},
+          "order_alphabetical" = {rank(data$raw$title)},
+          "order_random" = {order(rnorm(length(page_values)))}
+        )
         data$raw$page <- switch(input$order,
           "order_initial" = {page_values},
-          "order_alphabetical" = {page_values[order(data$raw$title)]},
+          "order_alphabetical" = {page_values[data$raw$order]},
           "order_random" = {page_values[order(rnorm(length(page_values)))]}
         )
         data$current <- which(data$raw$page == click_values$page)
@@ -420,7 +407,10 @@ screen_titles <- function(
     observe({
       if(!is.null(data$raw)){
         # id selected text
-        data$current <- which(data$raw$page == click_values$page)
+        selected_rows <- which(data$raw$page == click_values$page)
+        data$current <- selected_rows[order(data$raw$order[selected_rows])]
+        # data$current <- which(data$raw$page == click_values$page)
+        data$n_current <- length(data$current)
 
         # render text for each reference
         lapply(seq_len(data$n_current), function(a, df){
@@ -490,6 +480,7 @@ screen_titles <- function(
           selector$maybe <- click_values$maybe$value
         }
       }
+
     })
 
     # track 'select all' buttons
@@ -520,42 +511,23 @@ screen_titles <- function(
           n_total,
           " titles categorized</font>"
         ))
+        # add tracker to prompt saving
+        if(all(!is.na(data$raw$selected))){
+          save_modal(
+            x = data$raw,
+            title = "Screening Complete: Save results?"
+          )
+        }
       }
     })
 
 
     # SAVE OR CLEAR DATA
     observeEvent(input$save_data, {
-      if(is.null(data$raw)){
-        showModal(
-          modalDialog(
-            HTML(
-              "Import some data to begin<br><br>
-              <em>Click anywhere to exit</em>"
-            ),
-            title = "Error: no data to save",
-            footer = NULL,
-            easyClose = TRUE
-          )
-        )
-      }else{
-        showModal(
-          modalDialog(
-            textInput("save_filename",
-              label = "File Name"
-            ),
-            selectInput("save_data_filetype",
-              label = "File Type",
-              choices = c("csv", "rds")
-            ),
-            actionButton("save_data_execute", "Save"),
-            modalButton("Cancel"),
-            title = "Save As",
-            footer = NULL,
-            easyClose = FALSE
-          )
-        )
-      }
+      save_modal(
+        x = data$raw,
+        title = "Save As"
+      )
     })
 
     observeEvent(input$save_data_execute, {
@@ -581,23 +553,7 @@ screen_titles <- function(
 
     # add option to remove data
     observeEvent(input$clear_data, {
-      shiny::showModal(
-        shiny::modalDialog(
-          HTML("If you proceed, all data will be removed from this window,
-          including any progress you have made screening your data.
-          If you have not saved your data,
-          you might want to consider doing that first.<br><br>
-          Are you sure you want to continue?<br><br>"
-          ),
-          shiny::actionButton(
-            inputId = "clear_data_confirmed",
-            label = "Confirm"),
-          shiny::modalButton("Cancel"),
-          title = "Clear all data",
-          footer = NULL,
-          easyClose = FALSE
-        )
-      )
+      clear_data_modal()
     })
 
     observeEvent(input$clear_data_confirmed, {

@@ -501,23 +501,7 @@ screen_duplicates <- function(x){
 
     # add option to remove data
     observeEvent(input$clear_data, {
-      shiny::showModal(
-        shiny::modalDialog(
-          HTML("If you proceed, all data will be removed from this window,
-          including any progress you have made screening your data.
-          If you have not saved your data,
-          you might want to consider doing that first.<br><br>
-          Are you sure you want to continue?<br><br>"
-          ),
-          shiny::actionButton(
-            inputId = "clear_data_confirmed",
-            label = "Confirm"),
-          shiny::modalButton("Cancel"),
-          title = "Clear all data",
-          footer = NULL,
-          easyClose = FALSE
-        )
-      )
+      clear_data_modal()
     })
 
     observeEvent(input$clear_data_confirmed, {
