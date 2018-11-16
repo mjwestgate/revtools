@@ -4,13 +4,12 @@
 \description{Identify potential duplicates within a \code{data.frame}.}
 \usage{
 find_duplicates(data, match_variable = "title", group_variables = NULL,
-  match_function = c("fuzzdist", "stringdist", "exact"),
-  method = "fuzz_m_ratio", threshold = 0.1,
+  match_function = "fuzzdist", method = "fuzz_m_ratio", threshold = 0.1,
   to_lower = TRUE, remove_punctuation = FALSE)
 }
 \arguments{
   \item{data}{a \code{data.frame} containing data to be matched}
-  \item{match_variable}{a length-1 vector listing the column in which duplicates should be sought}
+  \item{match_variable}{a length-1 integer or string listing the column in which duplicates should be sought}
   \item{group_variables}{an optional vector listing the columns to use as grouping variables; that is, categories withing which duplicates should be sought (see 'note'). Optionally NULL to compare all entries against one another.}
   \item{match_function}{a function to calculate dissimilarity between strings. Defaults to \code{fuzzdist}.}
   \item{method}{the required 'method' option that corresponds with match_function. Defaults to \code{fuzz_m_ratio}.}
@@ -25,7 +24,7 @@ an integer vector, in which entries with the same integer have been selected as 
 
 The argument \code{group_variables} specifies variables that contain supplementary information that can reduce the number of entries that need to be searched. For example, you might want to only match article titles if they occur within the same journal, or in the same year. The more variables you specify, the fewer pairs of matches that have to be tested to locate duplicates, greatly increasing the speed of the algorithm. Conversely, if no variables are specified, then each entry is checked against every other entry that has yet to be excluded from the dataset. This is fine for small datasets, but massively increases computation time for large datasets.
 
-Missing values are handled differently. Entries that are \code{NA} for \code{match_variable} are always labelled as uique values, and are not checked for duplicates against the rest of the dataset. However, entries of \code{group_variables} that are \code{NA} are included in every comparison.
+Missing values are handled differently. Entries that are \code{NA} for \code{match_variable} are always labelled as unique values, and are not checked for duplicates against the rest of the dataset. However, entries of \code{group_variables} that are \code{NA} are included in every comparison.
 
 \code{find_duplicates} contains three 'built-in' methods for string matching. "stringdist" calls the function of the same name from the package \code{stringdist}; ditto for "fuzzdist" which is in \code{revtools}, but based on the Python library \code{fuzzywuzzy}. "exact" simply searches for exact matches. In principle you could call any function for string matching, so long as it accepts the arguments \code{a}, \code{b} and \code{method} (see documentation on stringdist for details), and returns a measure of distance (i.e. not similarity).
 
