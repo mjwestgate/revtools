@@ -281,84 +281,10 @@ screen_titles <- function(
       }
     })
 
-
-    # GROUP SELECTION
     # render 'select all' buttons
     output$select_all_buttons <- renderUI({
       if(!is.null(data$raw)){
-        div(
-          list(
-            br(),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 10px",
-              HTML("<br>")
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 80px",
-              actionButton(
-                inputId = "all_yes",
-                label = HTML("Select<br>All"),
-                style = "
-                  width: 80px;
-                  height: 60px;
-                  background-color: #405d99;
-                  color: #fff;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 80px",
-              actionButton(
-                inputId = "all_no",
-                label = HTML("Exclude<br>All"),
-                style = "
-                  width: 80px;
-                  height: 60px;
-                  background-color: #993f3f;
-                  color: #fff;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 80px",
-              actionButton(
-                inputId = "all_maybe",
-                label = HTML("All<br>Unknown"),
-                style = "
-                  width: 83px;
-                  height: 60px;
-                  background-color: #6d6d6d;
-                  color: #fff;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 10px",
-              HTML("<br>")
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 700px",
-              tableOutput(
-                outputId = "progress_text"
-              )
-            )
-          )
-        )
+        select_all_buttons()
       }
     })
 
@@ -409,7 +335,6 @@ screen_titles <- function(
         # id selected text
         selected_rows <- which(data$raw$page == click_values$page)
         data$current <- selected_rows[order(data$raw$order[selected_rows])]
-        # data$current <- which(data$raw$page == click_values$page)
         data$n_current <- length(data$current)
 
         # render text for each reference

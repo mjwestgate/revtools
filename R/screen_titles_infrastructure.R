@@ -54,15 +54,13 @@ load_title_data <- function(data){
   return(x)
 }
 
-
-# function to add 'page numbers' to titles screen
+# function to add 'page numbers' to screen_titles
 calc_pages <- function(n, each){
   rep(
     seq_len(ceiling(n / each)),
     each = each
   )[seq_len(n)]
 }
-
 
 # function to add a single title + selector buttons to the ui
 add_reference_ui <- function(
@@ -193,4 +191,81 @@ input_tracker <- function(input, string){
   )
   result <- result[order(result$id), ]
   return(result)
+}
+
+# function to add 'select all' buttons to screen_titles
+select_all_buttons <- function(){
+  div(
+    list(
+      br(),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 10px",
+        HTML("<br>")
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 80px",
+        actionButton(
+          inputId = "all_yes",
+          label = HTML("Select<br>All"),
+          style = "
+            width: 80px;
+            height: 60px;
+            background-color: #405d99;
+            color: #fff;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 80px",
+        actionButton(
+          inputId = "all_no",
+          label = HTML("Exclude<br>All"),
+          style = "
+            width: 80px;
+            height: 60px;
+            background-color: #993f3f;
+            color: #fff;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 80px",
+        actionButton(
+          inputId = "all_maybe",
+          label = HTML("All<br>Unknown"),
+          style = "
+            width: 83px;
+            height: 60px;
+            background-color: #6d6d6d;
+            color: #fff;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 10px",
+        HTML("<br>")
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 700px",
+        tableOutput(
+          outputId = "progress_text"
+        )
+      )
+    )
+  )
 }
