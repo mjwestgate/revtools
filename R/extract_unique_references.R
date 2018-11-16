@@ -16,7 +16,11 @@ extract_unique_references <- function(
       result$n_duplicates <- 1
     }else{
 		  row <- which.max(
-        apply(apply(a, 1, nchar), 2, sum)
+        apply(
+          apply(a, 1, nchar),
+          2,
+          function(b){sum(b, na.rm = TRUE)}
+        )
       )
       result <- a[row, ]
 		  result$n_duplicates <- nrow(a)

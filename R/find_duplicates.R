@@ -2,28 +2,45 @@ find_duplicates <- function(
   data,
   match_variable = "title",
   group_variables = NULL,
-  match_function = c("fuzzdist", "stringdist", "exact"),
+  match_function = "fuzzdist", # "stringdist", "exact"),
   method = "fuzz_m_ratio",
   threshold = 0.1,
   to_lower = TRUE,
   remove_punctuation = FALSE
 ){
 
+  # error catching
+  # data
   if(missing(data)){
     stop("'data' is missing: Please provide a data.frame")
   }
 
+  # match variable
   if(!any(colnames(data) == match_variable)){
     stop(
-      match_variable,
-      " is not a valid column name in ",
-      data,
-      ": Please specify which column should be searched for duplicates"
+      paste0(
+        match_variable,
+        " is not a valid column name in ",
+        data,
+        ": Please specify which column should be searched for duplicates"
+      )
     )
   }
 
-  # error catching
-  match_function <- match.arg(match_function)
+  # match function
+  if(missing(match_function)){
+    match_function <- "fuzzdist"
+  }
+  if(!any(c("fuzzdist", "stringdist", "exact") == match_function)){
+    stop(
+      paste0(
+        match_function,
+        " is an invalid input to match_function; please specify one of 'fuzzdist', 'stringdist' or 'exact'."
+      )
+    )
+  }
+
+  # method
   if(match_function != "exact"){
     valid_methods <- eval(formals(match_function)$method)
     if(!any(valid_methods == method)){
@@ -70,7 +87,7 @@ find_duplicates <- function(
         # include only those entries in the same grouping categories as the current entry
         # plus any entries that are missing those values
         if(is.null(group_variables)){
-          rows_tr <- remaining_rows[-1]
+          rows_tr <- remaining_rows
         }else{
           match_list <- lapply(group_variables, function(a, data, row){
             (data[, a] == data[row_start, a]) | is.na(data[, a])
@@ -103,7 +120,7 @@ find_duplicates <- function(
               )
             ) <= threshold
           }
-          if(any(match_result)){
+          if(any(match_result, na.rm = TRUE)){
             rows_selected <- rows_tr[which(match_result)]
             data$checked[c(row_start, rows_selected)] <- TRUE
             data$group[c(row_start, rows_selected)] <- progress
