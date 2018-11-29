@@ -152,7 +152,7 @@ prep_ris <- function(
 	if(delimiter == "endrow"){
     # work out what most common starting tag is
     z_dframe$ref <- c(0, cumsum(z_dframe$ris == "ER")[
-      c(1:(nrow(z_dframe)-1))]
+      seq_len(nrow(z_dframe)-1)]
     ) # split by reference
 
     start_tags <- unlist(lapply(
@@ -183,7 +183,7 @@ prep_ris <- function(
 
 	# cleaning
 	z_dframe$ref <- c(0, cumsum(z_dframe$ris == "ER")[
-    c(1:(nrow(z_dframe)-1))]
+    seq_len(nrow(z_dframe)-1)]
   ) # split by reference
 	z_dframe <- z_dframe[which(z_dframe$text != ""), ] # remove empty rows
 	z_dframe <- z_dframe[which(z_dframe$ris != "ER"), ] # remove end rows
@@ -294,7 +294,7 @@ generate_bibliographic_names <- function(x){
 			rows <- which(nonunique_names == duplicated_names[i])
 			new_names <- paste(
         nonunique_names[rows],
-        letters[1:length(rows)],
+        letters[seq_len(length(rows))],
         sep = "_")
 			nonunique_names[rows] <- new_names
     }
@@ -547,7 +547,7 @@ read_bib <- function(x){
     entry_dframe <- entry_dframe[order(entry_dframe$row), c("tag", "value")]
 
   	if(any(entry_dframe$value == "}")){
-  		entry_dframe <- entry_dframe[c(1:which(entry_dframe$value == "}")[1]-1), ]
+  		entry_dframe <- entry_dframe[seq_len(which(entry_dframe$value == "}")[1]-1), ]
   	}
     if(any(entry_dframe$value == "")){
   		entry_dframe <- entry_dframe[-which(entry_dframe$value == ""), ]
@@ -588,7 +588,7 @@ read_bib <- function(x){
 
   # add type
   x_final <- lapply(
-    c(1:length(x_final)),
+    seq_len(length(x_final)),
     function(a, type, data){
       c(type = type[a], data[[a]])
     },

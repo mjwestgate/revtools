@@ -39,7 +39,7 @@ renderPrint, renderPlot, renderUI, splitLayout,
 validate, need,
 showModal, modalDialog, removeModal, modalButton,
 insertUI, removeUI,
-shinyApp)
+shinyApp, stopApp)
 importFrom(shinydashboard,
 sidebarMenu, menuItem, sidebarMenuOutput, renderMenu)
 importFrom(stats, xtabs)

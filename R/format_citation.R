@@ -28,7 +28,7 @@ format_citation.list <- function(
           function(a){
     				dot.lookup <- a %in% "."
     				if(any(dot.lookup)){
-              a <- a[1:max(which(dot.lookup))]
+              a <- a[seq_len(max(which(dot.lookup)))]
             }
     				return(paste(a, collapse = ""))
     			}
@@ -118,7 +118,7 @@ format_citation.data.frame <- function(
     all(c("author", "year", source, "title") %in% names(data)) &
     (details == TRUE)
   ){
-	data_list <- split(data, c(1:nrow(data)))
+	data_list <- split(data, seq_len(nrow(data)))
   data_out <- unlist(lapply(data_list, function(a){
 		author_vector <- strsplit(a[['author']], " and ")[[1]]
 		if(length(author_vector) == 1){

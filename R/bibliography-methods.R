@@ -18,7 +18,7 @@ summary.bibliography <- function(object, ...){
 		source_freq <- sort(
       xtabs(~ sources),
       decreasing = TRUE
-    )[c(1:min(5, n_sources))]
+    )[seq_len(min(c(5, n_sources)))]
 		# put text together
 		result <- paste(
 			paste0(
@@ -75,14 +75,14 @@ print.bibliography <- function(x, n, ...){
       n <- length_tr
     }
 	}
-	text_tr <- format_citation(x[c(1:n)])
+	text_tr <- format_citation(x[seq_len(n)])
 	cat(paste(unlist(text_tr), collapse = "\n\n"))
 }
 
 
 '[.bibliography' <- function(x, n){
   class(x) <- "list"
-  if(all(n %in% c(1:length(x))) == FALSE){
+  if(all(n %in% seq_len(length(x))) == FALSE){
     stop("subset out of bounds")
   }
   z <- x[n]

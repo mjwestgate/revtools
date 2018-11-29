@@ -8,4 +8,5 @@ Depends: R (>= 3.5.0)
 Imports: ade4, plotly, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite, modeltools
 License: GPL-3
 URL: https://revtools.net
+BugReports: https://github.com/mjwestgate/revtools/issues
 LazyData: true
