@@ -92,3 +92,21 @@ clear_data_modal <- function(){
     )
   )
 }
+
+exit_modal <- function(){
+  showModal(
+    modalDialog(
+      HTML("If you proceed, this app will close.
+      If you have specified an object in your workspace, your progress will be invisibly saved to that object; otherwise your progress will be lost.<br><br>
+      Are you sure you want to continue?<br><br>"
+      ),
+      actionButton(
+        inputId = "exit_app_confirmed",
+        label = "Confirm"),
+      modalButton("Cancel"),
+      title = "Exit App",
+      footer = NULL,
+      easyClose = FALSE
+    )
+  )
+}

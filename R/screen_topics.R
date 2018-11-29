@@ -940,9 +940,26 @@ server <- function(input, output, session){
     removeModal()
   })
 
+  observeEvent(input$exit_app, {
+    exit_modal()
+  })
+
+  observeEvent(input$exit_app_confirmed, {
+    output <- list(
+      raw = data$raw,
+      stopwords = data$stopwords,
+      columns = data$columns,
+      grouped = data$grouped,
+      dtm = data$dtm,
+      model = data$model,
+      plot_ready = data$plot_ready
+    )
+    class(output) <- "screen_topics_progress"
+    stopApp(returnValue = invisible(output))
+  })
 
 } # end server
 
-shinyApp(ui, server) # run
+print(shinyApp(ui, server))
 
 }

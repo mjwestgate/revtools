@@ -11,6 +11,9 @@ load_title_data <- function(data){
       yes = c(0),
       no = c(0),
       maybe = c(0)
+    ),
+    click_values = list(
+      page = NULL
     )
   )
 
@@ -48,6 +51,7 @@ load_title_data <- function(data){
     x$selector$yes <- rep_zeroes
     x$selector$no <- rep_zeroes
     x$selector$maybe <- rep_zeroes
+    x$click_values$page <- 1
 
   }
 
@@ -191,6 +195,67 @@ input_tracker <- function(input, string){
   )
   result <- result[order(result$id), ]
   return(result)
+}
+
+# function to add navigation buttons
+navigation_buttons <- function(){
+  div(
+    list(
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 10px",
+        HTML("<br>")
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 249px",
+        actionButton(
+          inputId = "page_first",
+          label = "<<",
+          width = "60px",
+          style = "background-color: #6b6b6b;"
+        ),
+        actionButton(
+          inputId = "page_back",
+          label = "<",
+          width = "60px",
+          style = "background-color: #6b6b6b;"
+        ),
+        actionButton(
+          inputId = "page_next",
+          label = ">",
+          width = "60px",
+          style = "background-color: #6b6b6b;"
+        ),
+        actionButton(
+          inputId = "page_last",
+          label = ">>",
+          width = "60px",
+          style = "background-color: #6b6b6b;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 10px",
+        HTML("")
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 200px",
+        tableOutput(
+          outputId = "progress_pages"
+        )
+      )
+    )
+  )
 }
 
 # function to add 'select all' buttons to screen_titles

@@ -548,10 +548,16 @@ screen_duplicates <- function(x){
       removeModal()
     })
 
+    observeEvent(input$exit_app, {
+      exit_modal()
+    })
 
+    observeEvent(input$exit_app_confirmed, {
+      stopApp(returnValue = invisible(data$raw))
+    })
 
   } # end server
 
-  shinyApp(ui, server)
+  print(shinyApp(ui, server))
 
 }

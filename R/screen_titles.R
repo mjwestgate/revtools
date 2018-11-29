@@ -29,7 +29,7 @@ screen_titles <- function(
       yes = NULL,
       no = NULL,
       maybe = NULL,
-      page = NULL
+      page = data_in$click_values$page
     )
     selector <- reactiveValues(
       yes = data_in$selector$yes,
@@ -185,67 +185,11 @@ screen_titles <- function(
     # render navigation buttons
     output$navigation_buttons <- renderUI({
       if(!is.null(data$raw)){
-        div(
-          list(
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 10px",
-              HTML("<br>")
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 249px",
-              actionButton(
-                inputId = "page_first",
-                label = "<<",
-                width = "60px",
-                style = "background-color: #6b6b6b;"
-              ),
-              actionButton(
-                inputId = "page_back",
-                label = "<",
-                width = "60px",
-                style = "background-color: #6b6b6b;"
-              ),
-              actionButton(
-                inputId = "page_next",
-                label = ">",
-                width = "60px",
-                style = "background-color: #6b6b6b;"
-              ),
-              actionButton(
-                inputId = "page_last",
-                label = ">>",
-                width = "60px",
-                style = "background-color: #6b6b6b;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 10px",
-              HTML("")
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 200px",
-              tableOutput(
-                outputId = "progress_pages"
-              )
-            )
-          )
-        )
+        navigation_buttons()
       }
     })
 
-    # set page navigation
+    # set page navigation functionality
     observeEvent(input$page_first, {
       if(input$page_first > 0){
         click_values$page <- 1
@@ -468,8 +412,8 @@ screen_titles <- function(
           filename <- input$save_filename
         }
       }
-      filename <- paste(filename, input$save_data_filetype, sep = ".")
-      switch(input$save_data_filetype,
+      filename <- paste(filename, input$save_type, sep = ".")
+      switch(input$save_type,
         "csv" = {write.csv(data$raw, file = filename, row.names = FALSE)},
         "rds" = {saveRDS(data$raw, file = filename)}
       )
@@ -505,9 +449,16 @@ screen_titles <- function(
       removeModal()
     })
 
+    observeEvent(input$exit_app, {
+      exit_modal()
+    })
+
+    observeEvent(input$exit_app_confirmed, {
+      stopApp(returnValue = invisible(data$raw))
+    })
 
   } # end server
 
-  shinyApp(ui, server)
+  print(shinyApp(ui, server))
 
 }

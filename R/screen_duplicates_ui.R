@@ -31,6 +31,11 @@ screen_duplicates_ui <- function(){
           label = "Clear Data",
           width = "85%"
         ),
+        actionButton(
+          inputId = "exit_app",
+          label = "Exit App",
+          width = "85%"
+        ),
         br()
       ),
       menuItem("Matching",

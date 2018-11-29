@@ -15,12 +15,17 @@ screen_abstracts_ui <- function(){
         actionButton(
           inputId = "save_data",
           label = "Save Data",
-          width = "80%"
+          width = "85%"
         ),
         actionButton(
           inputId = "clear_data",
           label = "Clear Data",
-          width = "80%"
+          width = "85%"
+        ),
+        actionButton(
+          inputId = "exit_app",
+          label = "Exit App",
+          width = "85%"
         ),
         br()
       ),
