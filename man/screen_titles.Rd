@@ -17,12 +17,15 @@ This function launches a Shiny app in the users' default browser, allowing the u
 }
 \examples{
 # to run the app and upload data interactively
-\dontrun{screen_abstracts()}
+\dontrun{screen_titles()}
 # or to specify data from the workspace
 file_location <- system.file(
   "extdata",
   "avian_ecology_bibliography.ris",
   package = "revtools")
 x <- read_bibliography(file_location)
-\dontrun{screen_abstracts(x)}
+# to run the app using these data:
+\dontrun{screen_titles(x)}
+# or to run the app & save results to the workspace:
+\dontrun{result <- screen_titles(x)}
 }

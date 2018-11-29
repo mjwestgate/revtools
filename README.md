@@ -11,14 +11,14 @@ devtools::install_github("mjwestgate/revtools") # install from GitHub
 library(revtools) # load
 ```
 
-Once you've installed & loaded revtools, you can use any of the inbuilt apps by loading them and drag-and-dropping in the data you want to analyse. All the apps export to csv format so you don't need to use R to investigate their results if you'd prefer not to. The apps available in revtools are:
+Once you've installed & loaded revtools, you can use any of the inbuilt apps by loading them and drag-and-dropping the data you want to analyse. All the apps export to csv format so you don't need to use R to investigate their results if you'd prefer not to. The apps available in revtools are:
 
-- <code>screen_duplicates()</code> to look for duplicates within a dataset
+- <code>screen_duplicates()</code> to investigate potential duplicates within a dataset
 - <code>screen_titles()</code> to screen articles by title
 - <code>screen_abstracts()</code> to screen articles by abstract
 - <code>screen_topics()</code> to run topic models on bibliographic data
 
-I've you're a keen to investigate your data a bit more deeply, revtools is designed to make data import as straightforward as possible. It does this by using a single function to import bibliographic data from bib, ris, ciw or csv formats:
+If you're a keen to investigate your data in the R workspace, revtools is designed to make data import as straightforward as possible. It does this by using a single function to import bibliographic data from bib, ris, ciw or csv formats:
 
 ```
 file_location <- system.file("extdata",
@@ -33,7 +33,10 @@ Then you can pass these data to your apps as you would with any other function:
 ```
 screen_topics(data) # runs using your data
 
-# to reload a previously saved version
+# you can save progress to the workspace by specifying an object:
+result <- screen_topics(data)
+
+# or save to a file within the app, and reload that saved file:
 y <- readRDS("saved_object.rds")
 screen_topics(y)
 ```

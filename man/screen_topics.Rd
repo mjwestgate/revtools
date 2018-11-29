@@ -38,5 +38,8 @@ file_location <- system.file(
   "avian_ecology_bibliography.ris",
   package = "revtools")
 x <- read_bibliography(file_location)
+# to run the app using these data:
 \dontrun{screen_topics(x)}
+# or to run the app & save results to the workspace:
+\dontrun{result <- screen_topics(x)}
 }
