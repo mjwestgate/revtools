@@ -17,10 +17,10 @@ data_in <- load_topic_data(
 ui_data <- screen_topics_ui()
 ui <- shinydashboard::dashboardPage(
   title = "revtools | screen_topics",
-	header = ui_data$header,
-	sidebar = ui_data$sidebar,
-	body = ui_data$body,
-	skin = "black"
+  header = ui_data$header,
+  sidebar = ui_data$sidebar,
+  body = ui_data$body,
+  skin = "black"
 )
 
 # start server
@@ -58,6 +58,7 @@ server <- function(input, output, session){
     appearance_initial <- NULL
   }
 
+  # SERVER CODE 02 START
   # add remaining reactiveValue objects
   plot_features <- reactiveValues(
     palette = palette_initial,
@@ -78,13 +79,14 @@ server <- function(input, output, session){
     search_clicks = NULL,
     selected = NULL
   )
-
+  # SERVER CODE 02 END
 
   # create header image
   output$header <- renderPlot({
     revtools_logo(text = "screen_topics")
   })
 
+  # SERVER CODE 03 START
   # DATA INPUT
   ## when specified, ensure input data is processed correctly
   observeEvent(input$data_in, {
@@ -268,7 +270,6 @@ server <- function(input, output, session){
       # check for rows with no words; update to ensure all entries in 'data' match one another
       dtm_rowsums <- apply(data$dtm, 1, sum)
       if(any(dtm_rowsums == 0)){
-        # data$raw$display[which(data$raw$display)[which(dtm_rowsums == 0)]] <- FALSE
         keep_rows <- which(dtm_rowsums > 0)
         data$grouped <- data$grouped[keep_rows, ]
         data$dtm <- data$dtm[keep_rows, ]
@@ -959,6 +960,7 @@ server <- function(input, output, session){
   })
 
 } # end server
+# SERVER CODE 03 END
 
 print(shinyApp(ui, server))
 
