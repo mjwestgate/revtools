@@ -1,50 +1,101 @@
 # This script contains files for importing common bibliographic formats in to R
 
-# New function to import a file, regardless of format
-# This is based on auto-detection of key parameters
+# user-accessible function
 read_bibliography <- function(
-	filename,
+	file_name,
+  filename,
   return_df = TRUE
 	){
-  if(grepl(".csv$", filename)){
-    result <- revtools_csv(filename)
+  if(missing(file_name) & missing(filename)){
+    stop("file_name is missing with no default")
+  }
+
+  if(missing(file_name) & !missing(filename)){
+    file_name <- filename
+  }
+
+  # attempt to catch unquote errors
+  # filename_string <- as.character(substitute(file_name))
+  # if(exists(filename_string)){
+  #   file.exists(file_name)
+  #   stop(paste0("Object '", filename_string, "' not found"))
+  # }
+  # causes function to not recognize file paths - revise or delete
+
+  if(length(file_name) > 1){
+    result_list <- lapply(file_name, function(a, df){
+      read_bibliography_internal(a, df)
+    },
+    df = return_df
+    )
+    names(result_list) <- file_name
+    if(return_df){
+      result <- merge_columns(result_list)
+      result$file_name <- unlist(
+        lapply(seq_len(length(result_list)),
+        function(a, data){
+          rep(names(data)[a], nrow(data[[a]]))
+        },
+        data = result_list
+      ))
+      return(result)
+    }else{
+      result <- do.call(c, result_list)
+      return(result)
+    }
+  }else{
+    return(
+      read_bibliography_internal(file_name, return_df)
+    )
+  }
+
+}
+
+
+# underlying workhorse function
+read_bibliography_internal <- function(
+  file_name,
+  return_df = TRUE
+	){
+  if(grepl(".csv$", file_name)){
+    result <- revtools_csv(file_name)
     if(!return_df){
       result <- as.bibliography(result)
     }
   }else{
     # import x
-  	invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-  	z <- scan(filename,
+    invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
+    z <- scan(file_name,
       sep = "\t",
       what = "character",
       quote = "",
       quiet = TRUE,
       blank.lines.skip = FALSE
     )
-  	Encoding(z) <- "latin1"
-  	z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
+    Encoding(z) <- "latin1"
+    z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
 
-  	# detect whether file is bib-like or ris-like via the most common single characters
-  	nrows <- min(c(200, length(z)))
-  	zsub <- z[seq_len(nrows)]
+    # detect whether file is bib-like or ris-like via the most common single characters
+    nrows <- min(c(200, length(z)))
+    zsub <- z[seq_len(nrows)]
     n_brackets <- length(grep("\\{", zsub))
     n_dashes <- length(grep(" - ", zsub))
-  	if(n_brackets >  n_dashes){
+    if(n_brackets >  n_dashes){
       result <- read_bib(z)  # simple case - no further work needed
-  	}else{  #  ris format can be inconsistent; custom code needed
+    }else{  #  ris format can be inconsistent; custom code needed
       z_dframe <- prep_ris(z, detect_delimiter(zsub))
-  		# import appropriate format
-  		if(any(z_dframe$ris == "PMID")){
+      # import appropriate format
+      if(any(z_dframe$ris == "PMID")){
         result <- read_medline(z_dframe)
-  		}else{
+      }else{
         result <- read_ris(z_dframe)
       }
-  	}
+    }
     if(return_df){
       result <- as.data.frame(result)
     }
   }
-	return(result)
+  return(result)
 }
 
 

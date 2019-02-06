@@ -2,13 +2,16 @@
 \alias{read_bibliography}
 \title{Import bibliographic data}
 \description{Import standard formats from academic search engines and referencing software.}
-\usage{read_bibliography(filename, return_df = TRUE)}
+\usage{read_bibliography(file_name, filename, return_df = TRUE)}
 \arguments{
-  \item{filename}{Path to a bibliographic file}
-  \item{return_df}{logical; should the object returned be a data.frame? Defaults to TRUE.}
+  \item{file_name}{A vector or list containing paths to one or more bibliographic files.}
+  \item{filename}{Synonym for file_name included for backwards-compatibility; will be removed from future versions of revtools.}
+  \item{return_df}{logical; should the object returned be a data.frame? Defaults to TRUE. If FALSE, returns an object of class \code{bibliography}.}
 }
 \details{
 This function aims to import bibliographic data from a range of formats in a consistent manner.
+
+If the user provides a number of paths in a vector or list, then files are imported in sequence and joined into a single \code{data.frame} (or a \code{list} if \code{return_df = FALSE}) using \code{\link{merge_columns}}. If \code{return_df = TRUE} (the default) then an extra column called 'file_name' is appended to the resulting \code{data.frame} to show the file in which each entry originated.
 
 If the file is in .csv format, then \code{read_bibliography} will import the file using \code{read.csv}, with three changes. First, it ensures that the first column contains an index (i.e. a unique value for each row), and creates one if it is absent. Second, it converts column names to lower case and switches all delimiters to underscores. Third, it ensures that author names are delimited by 'and' for consistency with \code{format_citation}.
 
