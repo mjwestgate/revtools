@@ -1,5 +1,5 @@
 Package: revtools
-Version: 0.3.0
+Version: 0.3.0.9000
 Title: Tools to Support Evidence Synthesis
 Authors@R: c(person(c("Martin", "J."), "Westgate", role=c("aut", "cre"),
   email="martinjwestgate@gmail.com"))
