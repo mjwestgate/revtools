@@ -2,6 +2,7 @@ screen_titles <- function(
   x = NULL
 ){
 
+  options(shiny.maxRequestSize = 50*1024^2)
   data_in <- load_title_data(data = x)
 
   # create ui

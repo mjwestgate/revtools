@@ -2,10 +2,9 @@
 \alias{read_bibliography}
 \title{Import bibliographic data}
 \description{Import standard formats from academic search engines and referencing software.}
-\usage{read_bibliography(file_name, filename, return_df = TRUE)}
+\usage{read_bibliography(filename, return_df = TRUE)}
 \arguments{
-  \item{file_name}{A vector or list containing paths to one or more bibliographic files.}
-  \item{filename}{Synonym for file_name included for backwards-compatibility; will be removed from future versions of revtools.}
+  \item{filename}{A vector or list containing paths to one or more bibliographic files.}
   \item{return_df}{logical; should the object returned be a data.frame? Defaults to TRUE. If FALSE, returns an object of class \code{bibliography}.}
 }
 \details{

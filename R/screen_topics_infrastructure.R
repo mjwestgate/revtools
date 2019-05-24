@@ -110,7 +110,6 @@ build_plot_data <- function(info, dtm, model, hide_names){
       collapse = "; "
     )
   })
-  x_df$text_color <- "#000000"
 
   # build word plot information (y)
   y_df <- data.frame(
@@ -144,7 +143,6 @@ build_plot_data <- function(info, dtm, model, hide_names){
     stringsAsFactors = FALSE
   )
   y_df$selected <- TRUE
-  y_df$text_color <- "#000000"
 
   # calculate which topics are most likely, highest weighted, or both
   topics_default <- topicmodels::terms(model, 5)
@@ -189,7 +187,6 @@ build_plot_data <- function(info, dtm, model, hide_names){
     caption_full = unlist(topic_caption_list),
     stringsAsFactors = FALSE
   )
-  topic_df$text_color <- "#000000"
 
   # return
   plot_list <- list(
@@ -221,6 +218,7 @@ add_required_columns <- function(data){
   return(data)
 }
 
+
 # function to cleanly extract colnames of interest from supplied datasets
 get_topic_colnames <- function(data){
   colnames(data)[
@@ -231,22 +229,16 @@ get_topic_colnames <- function(data){
   ]
 }
 
+
 build_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
     result <- data.frame(
       id = a[, 1],
       topic = a$topic,
       color = palette[a$topic],
+      text_color = "#000000",
       stringsAsFactors = FALSE
     )
-    if(any(colnames(a) == "text_color")){
-      if(any(a$text_color == "#405d99")){
-        result$color[which(a$text_color == "#405d99")] <- "#000000"
-      }
-      if(any(a$text_color == "#993f3f")){
-        result$color[which(a$text_color == "#993f3f")] <- "#CCCCCC"
-      }
-    }
     return(result)
   },
   colours = palette)

@@ -11,7 +11,11 @@ screen_titles_ui <- function(){
       menuItem("Data",
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label = "Import"),
+        fileInput(
+          inputId = "data_in",
+          label = "Import",
+          multiple = TRUE
+        ),
         actionButton(
           inputId = "save_data",
           label = "Save Data",

@@ -11,7 +11,11 @@ screen_duplicates_ui <- function(){
       menuItem("Data",
         icon = shiny::icon("bar-chart-o"),
         startExpanded = TRUE,
-        fileInput("data_in", label = "Import"),
+        fileInput(
+          inputId = "data_in",
+          label = "Import",
+          multiple = TRUE
+        ),
         uiOutput("data_selector"),
         uiOutput("response_selector"),
         menuItem("Grouping Variable(s)",

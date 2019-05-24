@@ -2,6 +2,7 @@ screen_abstracts <- function(
   x = NULL
 ){
 
+  options(shiny.maxRequestSize = 50*1024^2)
   data_in <- load_abstract_data(data = x)
 
   # create ui

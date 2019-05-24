@@ -1,5 +1,6 @@
 screen_duplicates <- function(x){
 
+  options(shiny.maxRequestSize = 50*1024^2)
   input_data <- list(
     raw = NULL,
     columns = NULL,

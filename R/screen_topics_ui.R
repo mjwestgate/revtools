@@ -17,7 +17,8 @@ screen_topics_ui <- function(){
         startExpanded = TRUE,
         fileInput(
           inputId = "data_in",
-          label = "Import"
+          label = "Import",
+          multiple = TRUE
         ),
         uiOutput(
           outputId = "response_selector"

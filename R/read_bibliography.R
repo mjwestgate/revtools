@@ -2,36 +2,23 @@
 
 # user-accessible function
 read_bibliography <- function(
-	file_name,
   filename,
   return_df = TRUE
 	){
-  if(missing(file_name) & missing(filename)){
-    stop("file_name is missing with no default")
+  if(missing(filename)){
+    stop("filename is missing with no default")
   }
 
-  if(missing(file_name) & !missing(filename)){
-    file_name <- filename
-  }
-
-  # attempt to catch unquote errors
-  # filename_string <- as.character(substitute(file_name))
-  # if(exists(filename_string)){
-  #   file.exists(file_name)
-  #   stop(paste0("Object '", filename_string, "' not found"))
-  # }
-  # causes function to not recognize file paths - revise or delete
-
-  if(length(file_name) > 1){
-    result_list <- lapply(file_name, function(a, df){
+  if(length(filename) > 1){
+    result_list <- lapply(filename, function(a, df){
       read_bibliography_internal(a, df)
     },
     df = return_df
     )
-    names(result_list) <- file_name
+    names(result_list) <- filename
     if(return_df){
       result <- merge_columns(result_list)
-      result$file_name <- unlist(
+      result$filename <- unlist(
         lapply(seq_len(length(result_list)),
         function(a, data){
           rep(names(data)[a], nrow(data[[a]]))
@@ -45,7 +32,7 @@ read_bibliography <- function(
     }
   }else{
     return(
-      read_bibliography_internal(file_name, return_df)
+      read_bibliography_internal(filename, return_df)
     )
   }
 
@@ -54,18 +41,18 @@ read_bibliography <- function(
 
 # underlying workhorse function
 read_bibliography_internal <- function(
-  file_name,
+  filename,
   return_df = TRUE
 	){
-  if(grepl(".csv$", file_name)){
-    result <- revtools_csv(file_name)
+  if(grepl(".csv$", filename)){
+    result <- revtools_csv(filename)
     if(!return_df){
       result <- as.bibliography(result)
     }
   }else{
     # import x
     invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-    z <- scan(file_name,
+    z <- scan(filename,
       sep = "\t",
       what = "character",
       quote = "",
