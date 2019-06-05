@@ -7,9 +7,9 @@ aggregate_tasks(file_names, match_column, selection_column, reviewer_names)
 }
 \arguments{
   \item{file_names}{a vector or list of file paths used to locate screened files. Must be in .csv format.}
-  \item{match_column}{The name of the column used to match identical references. In revtools this is "label", which is the default here.}
-  \item{selection_column}{The name of the column used to store 'selection' data; i.e. which entries have been retained and which excluded. In revtools this is "selected", which is the default here.}
-  \item{reviewer_names}{Optional vector of names used to label the 'results' columns in the resulting data.frame}
+  \item{match_column}{The name of the column used to match identical references. In revtools this is 'label', which is the default here.}
+  \item{selection_column}{The name of the column used to store 'selection' data; i.e. which entries have been retained and which excluded. In revtools this is 'selected', which is the default here.}
+  \item{reviewer_names}{Optional vector of names used to label the 'results' columns in the resulting \code{data.frame}.}
 }
 \value{
 Returns a data.frame with one row per unique value of \code{match_column}, showing the content of \code{selection_column} for each reviewer.

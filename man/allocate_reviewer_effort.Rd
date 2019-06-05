@@ -3,8 +3,8 @@
 \title{Determine optimal way to divide articles among 2 or more reviewers}
 \description{This function takes information on the number (and optionally, identity) of reviewers and combines it with data on how it should be allocated to return a data.frame showing the proportion of articles to be assessed by each person.}
 \usage{
-allocate_reviewer_effort(reviewers, effort,
-  proportion_checked, max_reviewers = 3, quiet = TRUE)
+allocate_reviewer_effort(reviewers, effort, proportion_checked,
+    max_reviewers = 3, quiet = TRUE)
 }
 \arguments{
   \item{reviewers}{Either an integer giving the number of reviewers, or a vector of strings giving reviewer names.}
