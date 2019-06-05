@@ -23,10 +23,10 @@ If the imported file is in a ris-like format, then the object returned by \code{
 	\code{\link{bibliography-class}}, \code{\link{tag_lookup}}
 }
 \examples{
-  file_location <- system.file(
-    "extdata",
-    "avian_ecology_bibliography.ris",
-    package = "revtools")
+file_location <- system.file(
+  "extdata",
+  "avian_ecology_bibliography.ris",
+  package = "revtools")
 x <- read_bibliography(file_location)
 class(x) # = data.frame
 x <- read_bibliography(file_location, return_df = FALSE)

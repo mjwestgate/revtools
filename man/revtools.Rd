@@ -19,6 +19,12 @@
 		\item \code{\link{bibliography-methods}} Print, summary, as.bibliography, as.data.frame and [ methods for class 'bibliography'
     \item \code{\link{tag_lookup}} Lookup table for ris tag transformations
     \item \code{\link{merge_columns}} rbind two data.frames with different numbers of columns
+  }
+  \strong{Distributing tasks among a team}
+  \itemize{
+    \item \code{\link{allocate_reviewer_effort}}
+    \item \code{\link{distribute_tasks}}
+    \item \code{\link{aggregate_tasks}}
 	}
 	\strong{Duplicate detection}
 	\itemize{

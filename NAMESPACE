@@ -3,6 +3,7 @@ as.bibliography, summary.bibliography, print.bibliography, '[.bibliography', c.b
 tag_lookup,
 format_citation,
 format_citation.bibliography, format_citation.data.frame, format_citation.list,
+allocate_reviewer_effort, distribute_tasks, aggregate_tasks,
 fuzzdist,
 fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
