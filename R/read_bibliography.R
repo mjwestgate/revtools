@@ -5,8 +5,13 @@ read_bibliography <- function(
   filename,
   return_df = TRUE
 	){
+
   if(missing(filename)){
     stop("filename is missing with no default")
+  }
+  file_check <- unlist(lapply(filename, file.exists))
+  if(any(!file_check)){
+    stop("file not found")
   }
 
   if(length(filename) > 1){
@@ -44,6 +49,7 @@ read_bibliography_internal <- function(
   filename,
   return_df = TRUE
 	){
+
   if(grepl(".csv$", filename)){
     result <- revtools_csv(filename)
     if(!return_df){
@@ -52,12 +58,28 @@ read_bibliography_internal <- function(
   }else{
     # import x
     invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-    z <- scan(filename,
-      sep = "\t",
-      what = "character",
-      quote = "",
-      quiet = TRUE,
-      blank.lines.skip = FALSE
+    z <- tryCatch(
+      {
+        scan(filename,
+          sep = "\t",
+          what = "character",
+          quote = "",
+          quiet = TRUE,
+          blank.lines.skip = FALSE
+        )
+      },
+      warning = function(w){
+        stop(
+          "file import failed: data type not recognized by read_bibliography",
+          call. = FALSE
+        )
+      },
+      error = function(e){
+        stop(
+          "file import failed: data type not recognized by read_bibliography",
+          call. = FALSE
+        )
+      }
     )
     Encoding(z) <- "latin1"
     z <- gsub("<[[:alnum:]]{2}>", "", z) # remove errors from above process
@@ -86,7 +108,7 @@ read_bibliography_internal <- function(
 }
 
 
-rollingsum <- function(a, n=2L){
+rollingsum <- function(a, n = 2L){
   tail(cumsum(a) - cumsum(c(rep(0, n), head(a, -n))), -n + 1)
 }
 
@@ -180,7 +202,7 @@ prep_ris <- function(
           all(a == "" | a == " ")
         }
       ))
-    )]<-"ER"
+    )] <- "ER"
 		# ensure multiple consecutive empty rows are removed
 		z_rollsum <- rollingsum(z_dframe$ris == "ER")
 		if(any(z_rollsum > 1)){
@@ -354,10 +376,17 @@ read_ris <- function(x){
 
 	# find a way to store missing .bib data rather than discard
 	if(any(is.na(x.merge$bib))){
-		rows.tr <- which(is.na(x.merge$bib))
-		x.merge$bib[rows.tr] <- "further_info"
-		x.merge$order[rows.tr] <- 99
-		}
+		rows_tr <- which(is.na(x.merge$bib))
+    x.merge$bib[rows_tr] <- x.merge$ris[rows_tr]
+    if(all(is.na(x.merge$order))){
+      start_val <- 0
+    }else{
+      start_val <- max(x.merge$order, na.rm = TRUE)
+    }
+    x.merge$order[rows_tr] <- as.numeric(
+      as.factor(x.merge$ris[rows_tr])
+    ) + start_val
+	}
 
 	# method to systematically search for year data
 	year_check <- regexpr("\\d{4}", x.merge$text)
@@ -414,22 +443,17 @@ read_ris <- function(x){
 	if(any(x.merge$bib == "author")){
 		lookup.tags <- xtabs( ~ x.merge$ris[which(x.merge$bib == "author")])
 		if(length(lookup.tags) > 1){
-			max.tags <- which(lookup.tags == max(lookup.tags))
-			if(length(max.tags) > 1){
-				tag_nchar <- unlist(lapply(
-          as.list(names(max.tags)),
-          function(a, data){
-					  mean(nchar(data$text[which(data$ris == a)]))
-					},
-          data = x.merge
-        ))
-				final_tag <- names(tag_nchar[which.max(tag_nchar)])
-			}else{
-        final_tag <- names(max.tags)
+      replace_tags <- names(which(lookup.tags < max(lookup.tags)))
+      replace_rows <- which(x.merge$ris %in% replace_tags)
+      x.merge$bib[replace_rows] <- x.merge$ris[replace_rows]
+      if(all(is.na(x.merge$order))){
+        start_val <- 0
+      }else{
+        start_val <- max(x.merge$order, na.rm = TRUE)
       }
-			replace_rows <- which(x.merge$bib == "author" & x.merge$ris != final_tag)
-			x.merge$bib[replace_rows] <- "further_info"
-			x.merge$order[replace_rows] <- 99
+      x.merge$order[replace_rows] <- start_val + as.numeric(
+        as.factor(x.merge$ris[replace_rows])
+      )
 		}
 	}
 
@@ -439,10 +463,6 @@ read_ris <- function(x){
 	# convert to list format
 	x.final <- lapply(x.split, function(a){
 		result <- split(a$text, a$bib)
-		# MISC
-		if(any(names(result) == "further_info")){
-			names(result$further_info) <- a$ris[which(a$bib == "further_info")]
-    }
 		# YEAR
 		if(any(names(result) == "year")){
 			if(any(nchar(result$year) >= 4)){

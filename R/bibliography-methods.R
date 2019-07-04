@@ -106,14 +106,19 @@ c.bibliography <- function(...){
 as.data.frame.bibliography <- function(x, ...){
 
 	cols <- unique(unlist(lapply(x, names)))
-	cols <- cols[which(cols != "further_info")]
+
+  # fix bug where ris tags get placed first if they appear before bib tags
+  col_n <- nchar(cols)
+  if(any(col_n < 3)){
+    cols <- cols[c(which(col_n >= 3), which(col_n < 3))]
+  }
 
 	x_list <- lapply(x, function(a, cols){
 		result <- lapply(cols, function(b, lookup){
 			if(any(names(lookup) == b)){
 				data_tr <- lookup[[b]]
 				if(length(data_tr) > 1){
-          data_tr<-paste0(data_tr, collapse = " and ")
+          data_tr <- paste0(data_tr, collapse = " and ")
         }
 				return(data_tr)
 			}else{
