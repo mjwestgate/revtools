@@ -49,11 +49,11 @@ screen_duplicates_ui <- function(){
           inputId = "match_function",
           label = "Select function",
           choices = c(
-            "stringdist" = "stringdist::stringdist",
+            "stringdist" = "stringdist",
             "fuzzdist" = "fuzzdist",
             "exact" = "exact"
           ),
-          selected = "fuzzdist"
+          selected = "stringdist"
         ),
         uiOutput("algorithm_selector"),
         uiOutput("threshold_selector"),
