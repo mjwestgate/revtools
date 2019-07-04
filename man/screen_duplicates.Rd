@@ -4,10 +4,11 @@
 \description{In development
 }
 \usage{
-screen_duplicates(x)
+screen_duplicates(x, max_file_size)
 }
 \arguments{
   \item{x}{An (optional) object of class \code{data.frame} or \code{bibliography} to open in the browser. If empty, the app will launch with no data. Data can be added within the app via the 'import' button.}
+  \item{max_file_size}{Optional argument to set the maximum file size (in MB) that the app will accept.}
 }
 \value{
 This function launches a Shiny app in the users' default browser, allowing the user to customize their parameters for duplicate detection, and visualise the results.

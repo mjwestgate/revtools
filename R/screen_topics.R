@@ -1,14 +1,20 @@
 # function to launch a shiny app for topic model visualisation & article/word (de)selection
-start_review_window <- function(x, remove_words){
-  screen_topics(x, remove_words)
+start_review_window <- function(x, remove_words, max_file_size){
+  screen_topics(x, remove_words, max_file_size)
 }
 
 screen_topics <- function(
   x = NULL,
-  remove_words = NULL
+  remove_words = NULL,
+  max_file_size
 ){
 
-options(shiny.maxRequestSize = 50*1024^2)
+# set file size if requested, ensuring to reset on exit
+if(!missing(max_file_size)){
+  initial_file_size <- options("shiny.maxRequestSize")
+  options(shiny.maxRequestSize = max_file_size * 1024^2)
+  on.exit(options(initial_file_size))
+}
 
 data_in <- load_topic_data(
   data = x,

@@ -1,6 +1,15 @@
-screen_duplicates <- function(x){
+screen_duplicates <- function(
+  x,
+  max_file_size
+){
 
-  options(shiny.maxRequestSize = 50*1024^2)
+  # set file size if requested, ensuring to reset on exit
+  if(!missing(max_file_size)){
+    initial_file_size <- options("shiny.maxRequestSize")
+    options(shiny.maxRequestSize = max_file_size * 1024^2)
+    on.exit(options(initial_file_size))
+  }
+
   input_data <- list(
     raw = NULL,
     columns = NULL,

@@ -1,8 +1,15 @@
 screen_titles <- function(
-  x = NULL
+  x = NULL,
+  max_file_size
 ){
 
-  options(shiny.maxRequestSize = 50*1024^2)
+  # set file size if requested, ensuring to reset on exit
+  if(!missing(max_file_size)){
+    initial_file_size <- options("shiny.maxRequestSize")
+    options(shiny.maxRequestSize = max_file_size * 1024^2)
+    on.exit(options(initial_file_size))
+  }
+
   data_in <- load_title_data(data = x)
 
   # create ui
