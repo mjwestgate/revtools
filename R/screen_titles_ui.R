@@ -2,6 +2,12 @@ screen_titles_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
+    tag("li",
+      list(
+        class = "dropdown",
+        textOutput(outputId = "progress_text")
+      )
+    ),
     title = plotOutput("header")
   )
 

@@ -219,20 +219,6 @@ screen_titles <- function(
       }
     })
 
-    output$progress_pages <- renderPrint({
-      if(is.null(data$raw)){
-        cat("")
-      }else{
-        cat(paste0(
-          "<font size = 3>Page ",
-          click_values$page,
-          " of ",
-          max(data$raw$page),
-          "</font>"
-        ))
-      }
-    })
-
     # render 'select all' buttons
     output$select_all_buttons <- renderUI({
       if(!is.null(data$raw)){
@@ -358,43 +344,45 @@ screen_titles <- function(
         }
       }
 
+      if(!is.null(data$raw)){
+        completeness_check(data$raw)
+      }  
+
     })
 
     # track 'select all' buttons
     observeEvent(input$all_yes, {
       data$raw$selected[data$current] <- "selected"
       data$raw$color[data$current] <- "#405d99"
+      completeness_check(data$raw)
     })
     observeEvent(input$all_no, {
       data$raw$selected[data$current] <- "excluded"
       data$raw$color[data$current] <- "#993f3f"
+      completeness_check(data$raw)
     })
     observeEvent(input$all_maybe, {
       data$raw$selected[data$current] <- "unknown"
       data$raw$color[data$current] <- "#6d6d6d"
+      completeness_check(data$raw)
     })
 
     # add progress indicator
-    output$progress_text <- renderPrint({
-      if(is.null(data$raw)){
-        cat("")
-      }else{
+    output$progress_text <- renderText({
+      if(!is.null(data$raw)){
         n_progress <- length(which(is.na(data$raw$selected) == FALSE))
         n_total <- nrow(data$raw)
-        cat(paste0(
-          "<font size = 3><b>Progress:</b> ",
-          n_progress,
-          " of ",
-          n_total,
-          " titles categorized</font>"
-        ))
-        # add tracker to prompt saving
-        if(all(!is.na(data$raw$selected))){
-          save_modal(
-            x = data$raw,
-            title = "Screening Complete: Save results?"
+        HTML(
+          paste0(
+            n_progress,
+            " of ",
+            n_total,
+            " entries screened | Showing page ",
+            click_values$page,
+            " of ",
+            max(data$raw$page)
           )
-        }
+        )
       }
     })
 

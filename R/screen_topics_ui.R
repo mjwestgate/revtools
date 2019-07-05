@@ -2,9 +2,13 @@ screen_topics_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
-    title = plotOutput(
-      outputId = "header"
-    )
+    tag("li",
+      list(
+        class = "dropdown",
+        textOutput(outputId = "progress_text")
+      )
+    ),
+    title = plotOutput("header")
   )
 
   # UI CODE 01 START
@@ -170,9 +174,6 @@ screen_topics_ui <- function(){
           ),
           column(
             width = 4,
-            tableOutput(
-              outputId = "selector_n"
-            ),
             plotlyOutput(
               outputId = "plot_topics",
               height = "450px"

@@ -128,25 +128,22 @@ server <- function(input, output, session){
   })
 
   # show number of articles in current dataset
-  output$selector_n <- renderPrint({
-    if(is.null(data$raw)){
-      cat("<br>")
-    }else{
-      cat(paste0(
-        "Dataset containing ",
-        nrow(data$raw),
-        " entries | ",
-        length(which(!is.na(data$raw$selected))),
-        " screened<br><br>"
-      ))
+  output$progress_text <- renderText({
+    if(!is.null(data$raw)){
+      HTML(
+        paste0(
+          length(which(!is.na(data$raw$selected))),
+          " of ",
+          nrow(data$raw),
+          " entries screened"
+        )
+      )
     }
   })
 
   # duplicate of above for 'words' screen
   output$selector_n2 <- renderPrint({
-    if(is.null(data$raw)){
-      cat("<br>")
-    }else{
+    if(!is.null(data$raw)){
       cat(paste0(
         "Dataset containing ",
         nrow(data$raw),

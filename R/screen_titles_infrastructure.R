@@ -237,22 +237,6 @@ navigation_buttons <- function(){
           width = "60px",
           style = "background-color: #6b6b6b;"
         )
-      ),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 10px",
-        HTML("")
-      ),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 200px",
-        tableOutput(
-          outputId = "progress_pages"
-        )
       )
     )
   )
@@ -314,23 +298,19 @@ select_all_buttons <- function(){
             background-color: #6d6d6d;
             color: #fff;"
         )
-      ),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 10px",
-        HTML("<br>")
-      ),
-      div(
-        style = "
-          display: inline-block;
-          vertical-align: top;
-          width: 700px",
-        tableOutput(
-          outputId = "progress_text"
-        )
       )
     )
   )
+}
+
+
+completeness_check <- function(
+  x # data$raw
+){
+  if(all(!is.na(x$selected))){
+    save_modal(
+      x = x,
+      title = "Screening Complete: Save results?"
+    )
+  }
 }
