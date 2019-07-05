@@ -35,7 +35,8 @@ screen_abstracts <- function(
       row = data_in$progress$row
     )
     display <- reactiveValues(
-      notes = FALSE
+      notes = FALSE,
+      column = "label"
     )
 
     # create header image
@@ -62,9 +63,38 @@ screen_abstracts <- function(
       progress$row <- which(data$raw[, input$order] == progress$current)
     })
 
+    # allow user to select order
+    output$column_selector <- renderUI({
+      if(input$order == "order_selected"){
+        available_colnames <- colnames(data$raw)
+        available_colnames <- available_colnames[
+          !available_colnames %in% c(
+            "order_initial", "order_alphabetical", "order_random", "order_selected",
+            "notes", "selected", "color"
+          )]
+        selectInput(
+          inputId = "order_result",
+          label = "Select variable to order by:",
+          choices = available_colnames,
+          selected = display$column
+        )
+      }
+    })
+
+    # ensure decisions about selected columns are retained
+    observeEvent(input$order_result, {
+      display$column <- input$order_result
+    })
+
     # ABSTRACT SCREENING
     # change order of articles as necessary
-    observeEvent(input$order, {
+    observeEvent(input$order_result_go, {
+      if(input$order == "order_selected"){
+        data$raw$order_selected <- rank(
+          data$raw[, input$order_result],
+          ties.method = "random"
+        )
+      }
       progress$current <- 1
       progress$row <- which(data$raw[, input$order] == progress$current)
     })
@@ -171,16 +201,17 @@ screen_abstracts <- function(
       }
     })
 
-    output$progress_text <- renderPrint({
+    ## show progress in the header
+    output$progress_text <- renderText({
       if(!is.null(data$raw)){
         HTML(
           paste0(
-            "<br>",
             length(which(data$raw$selected == "selected")) +
             length(which(data$raw$selected == "excluded")),
+            " entries screened | Showing entry ",
+            progress$current,
             " of ",
-            nrow(data$raw),
-            " entries screened"
+            nrow(data$raw)
           )
         )
       }

@@ -2,6 +2,12 @@ screen_abstracts_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
+    tag("li",
+      list(
+        class = "dropdown",
+        textOutput(outputId = "progress_text")
+      )
+    ),
     title = plotOutput("header")
   )
 
@@ -41,8 +47,15 @@ screen_abstracts_ui <- function(){
           choices = list(
             "Random" = "order_random",
             "Input" = "order_initial",
-            "Alphabetical" = "order_alphabetical"
+            "Alphabetical" = "order_alphabetical",
+            "User-defined" = "order_selected"
           )
+        ),
+        uiOutput("column_selector"),
+        actionButton(
+          inputId = "order_result_go",
+          label = "Re-order",
+          width = "85%"
         ),
         selectInput("hide_names",
           label = "Hide identifying information?",
@@ -69,8 +82,7 @@ screen_abstracts_ui <- function(){
       column(
         width = 2,
         uiOutput(outputId = "selector_buttons"),
-        uiOutput(outputId = "render_notes"),
-        tableOutput(outputId = "progress_text")
+        uiOutput(outputId = "render_notes")
       )
     )
   )
