@@ -1,6 +1,6 @@
 # functions for allocating screening tasks among a team
 
-# take inputs to allocate_reviewer_effort and return a clean list of parameters
+# take inputs to allocate_effort and return a clean list of parameters
 get_clean_reviewers <- function(
   reviewers,
   effort
@@ -48,13 +48,6 @@ get_clean_reviewers <- function(
     }
   }
 
-  # ensure the person with the most effort is placed first - probably not necessary
-  # if(all(!is.na(effort_out))){
-  #   effort_order <- order(effort_out, decreasing = TRUE)
-  #   effort_out <- effort_out[effort_order]
-  #   names <- names[effort_order]
-  # }
-
   result <- list(
     n = n,
     names = names,
@@ -66,8 +59,19 @@ get_clean_reviewers <- function(
 }
 
 
+# function for clean rounding; original available at http://biostatmatt.com/archives/2902
+round_preserve_sum <- function(x, digits = 0) {
+  up <- 10 ^ digits
+  x <- x * up
+  y <- floor(x)
+  indices <- tail(order(x-y), round(sum(x)) - sum(y))
+  y[indices] <- y[indices] + 1
+  y / up
+}
+
+
 # function to divide up effort among many reviewers
-allocate_reviewer_effort <- function(
+allocate_effort <- function(
   reviewers, # can be one of
     # single number (of reviewers)
     # string (their reviewers)
@@ -76,6 +80,7 @@ allocate_reviewer_effort <- function(
   proportion_checked,
     # proportion of articles checked by two or more reviewers
   max_reviewers = 3, # i.e. most people to review a single document
+  precision = 2, # number of decimal places to report result to
   quiet = TRUE
 ){
   # catch errors
@@ -113,12 +118,13 @@ allocate_reviewer_effort <- function(
   # work out exact case if effort is equal
   if(max(rev$effort) - min(rev$effort) < 0.01){
     if(missing(proportion_checked)){ # equal effort
-      optimize_df$proportion <- 1 / estimate_n
+      optimize_df$proportion <- round_preserve_sum(1 / estimate_n, precision)
     }else{
-      multi_rows <- apply(optimize_matrix, 2, sum) > 1
-      optimize_df$proportion <- 0
-      optimize_df$proportion[multi_rows] <- proportion_checked / length(which(multi_rows))
-      optimize_df$proportion[!multi_rows] <- (1 - proportion_checked) / length(which(!multi_rows))
+      multi_rows <- optimize_df$n > 1
+      proportion <- rep(0, nrow(optimize_df))
+      proportion[multi_rows] <- proportion_checked / length(which(multi_rows))
+      proportion[!multi_rows] <- (1 - proportion_checked) / length(which(!multi_rows))
+      optimize_df$proportion <- round_preserve_sum(proportion, precision)
     }
   }else{ # use optim
     if(!missing(proportion_checked)){
@@ -128,39 +134,35 @@ allocate_reviewer_effort <- function(
       formula_sums <- c(formula_sums, proportion_checked)
     }
     # optimize
-    # note that it should be possible to make a better estimate of par
-    # e.g. for two reviewers the solution is trivial in most cases
+    optim_fun <- function(a, x, n, sums){
+      a_bin <- plogis(a)
+      a_sum <- a_bin / sum(a_bin)
+      z <- rep(a_sum, each = nrow(x)) * x
+      row_result <- (sums - apply(z, 1, sum))
+      if(nrow(x) > n){ # add extra weight to proportion_checked row
+        weight_rows <- c((n + 1) : nrow(x))
+        row_result[weight_rows] <- row_result[weight_rows] * n
+      }
+      sum(row_result^2)
+    }
     result <- stats::optim(
-      par = rep(0.5, estimate_n),
-      fn = function(a, x, n, sums){
-        z <- a * x
-        z <- z/sum(z[n, ]) # only reviewer times should sum; not proportions
-        row_result <- sums - apply(z, 1, sum)
-        sum(row_result^2)
-      },
+      par = rep(1, estimate_n),
+      fn = optim_fun,
       x = optimize_matrix,
       sums = formula_sums,
-      n = rev$seq,
+      n = length(rev$seq),
       method = "L-BFGS-B",
-      lower = 0,
-      upper = 2,
+      lower = -5,
+      upper = 5,
       control = list(maxit = 10^5)
     )
-    # note: consider changing weights between % allocated and researcher weights;
-      # current approach means that researchers get n-1 times as much weight.
-      # as a result the proportion_checked argument doesn't strongly affect the result
     if(result$convergence > 0){
       stop("unable to optimize matrix")
     }
-    optimize_df$proportion <- result$par / sum(result$par)
+    par_t <- plogis(result$par)
+    par_f <- par_t / sum(par_t)
+    optimize_df$proportion <- round_preserve_sum(par_f, precision)
   }
-
-  # if rounding applied to optimize_df$proportion:
-  # if((1- sum(optimize_df$proportion))^2 > 0){
-  #   rounding_error <- sum(optimize_df$proportion) - 1
-  #   highest_val <- which.max(optimize_df$proportion)
-  #   optimize_df$proportion[highest_val] <- optimize_df$proportion[highest_val] - rounding_error
-  # }
 
   if(!quiet){
     nums <- apply(t(optimize_matrix) * optimize_df$proportion, 2, sum)
@@ -201,7 +203,7 @@ distribute_tasks <- function(
   write_csv = TRUE, # TRUE or FALSE
   file_name = "reviewer.csv", # note that reviewer_name will be appended after this for each instance
   return_data = FALSE, # should a list be returned giving the data split as in source files?
-  ... # extra info passed to allocate_reviewer_effort
+  ... # extra info passed to allocate_effort
 ){
   # error catching
   if(missing(data)){
@@ -217,7 +219,7 @@ distribute_tasks <- function(
 
   # catch errors in reviewer_matrix
   if(class(reviewers) != "data.frame"){
-    reviewer_data <- allocate_reviewer_effort(reviewers, ...)
+    reviewer_data <- allocate_effort(reviewers, ...)
   }else{
     if(colnames(reviewers)[ncol(reviewers)] != "proportion"){
       stop("reviewers is a data.frame, but final column is not named 'proportion'")

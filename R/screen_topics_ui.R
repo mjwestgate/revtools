@@ -18,7 +18,6 @@ screen_topics_ui <- function(){
     title = plotOutput("header")
   )
 
-  # UI CODE 01 START
   sidebar <- shinydashboard::dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -240,7 +239,6 @@ screen_topics_ui <- function(){
       )
     )
   )
-# UI CODE 01 END
 
 return(
   list(

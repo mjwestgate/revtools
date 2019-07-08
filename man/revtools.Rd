@@ -22,7 +22,7 @@
   }
   \strong{Distributing tasks among a team}
   \itemize{
-    \item \code{\link{allocate_reviewer_effort}} Specify how to distribute screening effort among a team of reviewers
+    \item \code{\link{allocate_effort}} Specify how to distribute screening effort among a team of reviewers
     \item \code{\link{distribute_tasks}} Split a dataset among a team of reviewers
     \item \code{\link{aggregate_tasks}} Combine screening results from a team of reviewers
 	}

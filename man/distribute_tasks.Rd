@@ -8,20 +8,20 @@ distribute_tasks(data, reviewers, write_csv = TRUE,
 }
 \arguments{
   \item{data}{a vector of strings}
-  \item{reviewers}{Either a \code{data.frame} as returned by \code{allocate_reviewer_effort}, an integer giving the number of reviewers, or a vector of strings giving reviewer names.}
+  \item{reviewers}{Either a \code{data.frame} as returned by \code{allocate_effort}, an integer giving the number of reviewers, or a vector of strings giving reviewer names.}
   \item{write_csv}{Logical - should the function write a set of csv files (1 per reviewer)? Defaults to TRUE}
   \item{file_name}{a file path & name showing where .csv files should be saved. Ignored if \code{write_csv} is FALSE. Defaults to 'reviewer_[name].csv'.}
   \item{return_data}{Logical - should a list be (invisibly) returned, in which each entry is the data sent to a single reviewer? Defaults to FALSE.}
-  \item{...}{Further arguments passed to \code{allocate_reviewer_effort}}
+  \item{...}{Further arguments passed to \code{allocate_effort}}
 }
 \value{
 Invisibly returns a list of data.frames, each with same columns as \code{data} but containing only a subset of rows.
 }
 \details{
-The dataset is allocated each author in the proportion of articles specified by \code{\link{allocate_reviewer_effort}}, with the identity of articles passed to reviewer being chosen by \code{rnorm}. As a result, this function is very sensitive to the inputs provided to \code{\link{allocate_reviewer_effort}}, so it is often worth running that function first and checking the results to be certain that effort is being distributed in a way that you are happy with.
+The dataset is allocated each author in the proportion of articles specified by \code{\link{allocate_effort}}, with the identity of articles passed to reviewer being chosen by \code{rnorm}. As a result, this function is very sensitive to the inputs provided to \code{\link{allocate_effort}}, so it is often worth running that function first and checking the results to be certain that effort is being distributed in a way that you are happy with.
 }
 \seealso{
-	\code{\link{allocate_reviewer_effort}} for a detailed description of how the division among reviewers is accomplished.
+	\code{\link{allocate_effort}} for a detailed description of how the division among reviewers is accomplished.
 }
 \examples{
 # import some data
