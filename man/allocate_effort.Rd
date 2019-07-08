@@ -4,7 +4,7 @@
 \description{This function takes information on the number (and optionally, identity) of reviewers and combines it with data on how it should be allocated to return a data.frame showing the proportion of articles to be assessed by each person.}
 \usage{
 allocate_effort(reviewers, effort, proportion_checked,
-    precision = 2, max_reviewers = 3, quiet = TRUE)
+    max_reviewers = 3, precision = 2, quiet = TRUE)
 }
 \arguments{
   \item{reviewers}{Either an integer giving the number of reviewers, or a vector of strings giving reviewer names.}
