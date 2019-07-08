@@ -1,6 +1,12 @@
 # add custom css
 revtools_css <- function(){
   shiny::tag("style", shiny::HTML("
+    .navbar-custom-menu {
+      width: 800px;
+    }
+    .navbar-nav {
+      width: 800px;
+    }
     .content-wrapper,
       .right-side {
         background-color: #e2e2e2;

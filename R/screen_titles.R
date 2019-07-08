@@ -346,7 +346,7 @@ screen_titles <- function(
 
       if(!is.null(data$raw)){
         completeness_check(data$raw)
-      }  
+      }
 
     })
 
@@ -368,24 +368,33 @@ screen_titles <- function(
     })
 
     # add progress indicator
-    output$progress_text <- renderText({
+    output$progress_text <- renderUI({
       if(!is.null(data$raw)){
         n_progress <- length(which(is.na(data$raw$selected) == FALSE))
         n_total <- nrow(data$raw)
-        HTML(
-          paste0(
-            n_progress,
-            " of ",
-            n_total,
-            " entries screened | Showing page ",
-            click_values$page,
-            " of ",
-            max(data$raw$page)
-          )
+        div(
+          style = "
+            display: inline-block;
+            vertical-align: top;
+            text-align: right;
+            width: 780px",
+          renderText({
+            HTML(
+              paste0(
+                n_progress,
+                " of ",
+                n_total,
+                " entries screened | Showing page ",
+                click_values$page,
+                " of ",
+                max(data$raw$page)
+              )
+            )
+          })
         )
       }
     })
-
+    
 
     # SAVE OR CLEAR DATA
     observeEvent(input$save_data, {

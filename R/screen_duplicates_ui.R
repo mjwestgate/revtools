@@ -2,6 +2,12 @@ screen_duplicates_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(
+    tag("li",
+      list(
+        class = "dropdown",
+        uiOutput("selector_bar")
+      )
+    ),
     title = plotOutput("header")
   )
 
@@ -90,27 +96,27 @@ screen_duplicates_ui <- function(){
 
   body <- shinydashboard::dashboardBody(
     revtools_css(),
-    fluidRow(
-      column(
-        width = 6,
-        tableOutput("match_summary")
-      ),
-      column(
-        width = 2,
-        uiOutput("selector_previous"),
-        br()
-      ),
-      column(
-        width = 2,
-        uiOutput("selector_none"),
-        br()
-      ),
-      column(
-        width = 2,
-        uiOutput("selector_next"),
-        br()
-      )
-    ),
+    # fluidRow(
+    #   # column(
+    #   #   width = 6,
+    #   #   tableOutput("match_summary")
+    #   # ),
+    #   column(
+    #     width = 2,
+    #     uiOutput("selector_previous"),
+    #     br()
+    #   ),
+    #   column(
+    #     width = 2,
+    #     uiOutput("selector_none"),
+    #     br()
+    #   ),
+    #   column(
+    #     width = 2,
+    #     uiOutput("selector_next"),
+    #     br()
+    #   )
+    # ),
     fluidRow(
       column(
         width = 6,

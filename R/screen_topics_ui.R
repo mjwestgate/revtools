@@ -5,7 +5,14 @@ screen_topics_ui <- function(){
     tag("li",
       list(
         class = "dropdown",
-        textOutput(outputId = "progress_text")
+        div(
+          style = "
+            display: inline-block;
+            vertical-align: top;
+            text-align: right;
+            width: 780px",
+          textOutput(outputId = "progress_text")
+        )
       )
     ),
     title = plotOutput("header")

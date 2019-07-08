@@ -5,7 +5,8 @@ screen_abstracts_ui <- function(){
     tag("li",
       list(
         class = "dropdown",
-        textOutput(outputId = "progress_text")
+        uiOutput("selector_bar")
+        # textOutput(outputId = "progress_text")
       )
     ),
     title = plotOutput("header")
@@ -69,22 +70,24 @@ screen_abstracts_ui <- function(){
   body <- shinydashboard::dashboardBody(
     revtools_css(),
     fluidRow(
+      column(width = 1),
       column(
-        width = 1
-      ),
-      column(
-        width = 8,
-        tableOutput("citation")
-      ),
-      column(
-        width = 1
-      ),
-      column(
-        width = 2,
-        uiOutput(outputId = "selector_buttons"),
+        width = 10,
+        tableOutput("citation"),
+        br(),
+        br(),
+        uiOutput(outputId = "render_notes_toggle"),
         uiOutput(outputId = "render_notes")
-      )
+      ),
+      column(width = 1)
     )
+    # fluidRow(
+    #   column(width = 1),
+    #   column(
+    #     width = 10,
+    #     uiOutput(outputId = "render_notes")
+    #   )
+    # )
   )
 
   return(

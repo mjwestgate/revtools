@@ -137,35 +137,72 @@ screen_abstracts <- function(
     })
 
     # RENDER SELECTION BUTTONS
-    output$selector_buttons <- renderUI({
+    output$selector_bar <- renderUI({
       if(!is.null(data$raw)){
+        text_out <- HTML(
+          paste0(
+            length(which(data$raw$selected == "selected")) +
+            length(which(data$raw$selected == "excluded")),
+            " entries screened | Showing entry ",
+            progress$current,
+            " of ",
+            nrow(data$raw)
+          )
+        )
+
         div(
           list(
-            actionButton(
-              inputId = "select_yes",
-              label = "Select",
-              style = "
-                background-color: #7c93c1;
-                color: #fff;
-                width: 100px"
-            ),
-            br(),
-            br(),
-            actionButton(
-              inputId = "select_no",
-              label = "Exclude",
-              style = "
-                background-color: #c17c7c;
-                color: #fff;
-                width: 100px"
-            ),
-            br(),
-            br(),
             div(
               style = "
                 display: inline-block;
                 vertical-align: top;
-                width: 55px",
+                text-align: right;
+                width: 400px",
+              renderText({text_out})
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                text-align: right;
+                width: 20px",
+              renderText(" ")
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                text-align: right;
+                width: 100px",
+              actionButton(
+                inputId = "select_yes",
+                label = "Select",
+                style = "
+                  background-color: #7c93c1;
+                  color: #fff;
+                  width: 100px"
+              )
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                text-align: right;
+                width: 100px",
+              actionButton(
+                inputId = "select_no",
+                label = "Exclude",
+                style = "
+                  background-color: #c17c7c;
+                  color: #fff;
+                  width: 100px"
+              )
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                width: 45px",
               actionButton(
                 inputId = "abstract_previous",
                 label = "<",
@@ -184,35 +221,21 @@ screen_abstracts <- function(
                 width = "45px",
                 style = "background-color: #6b6b6b;"
               )
-            ),
-            br(),
-            br(),
-            actionButton(
-              inputId = "notes_toggle",
-              label = "Notes",
-              style = "
-                background-color: #adadad;
-                color: #fff;
-                width: 100px"
-            ),
-            br()
+            )
           )
         )
       }
     })
 
-    ## show progress in the header
-    output$progress_text <- renderText({
+    output$render_notes_toggle <- renderUI({
       if(!is.null(data$raw)){
-        HTML(
-          paste0(
-            length(which(data$raw$selected == "selected")) +
-            length(which(data$raw$selected == "excluded")),
-            " entries screened | Showing entry ",
-            progress$current,
-            " of ",
-            nrow(data$raw)
-          )
+        actionButton(
+          inputId = "notes_toggle",
+          label = "Show notes window",
+          style = "
+            background-color: #adadad;
+            color: #fff;
+            width: 200px"
         )
       }
     })
@@ -232,8 +255,8 @@ screen_abstracts <- function(
               inputId = "abstract_notes",
               label = NULL,
               value = data$raw$notes[progress$row],
-              resize = "vertical",
-              width = "100%",
+              resize = "both",
+              width = "400px",
               height = "150px"
             ),
             actionButton(

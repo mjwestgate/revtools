@@ -5,7 +5,7 @@ screen_titles_ui <- function(){
     tag("li",
       list(
         class = "dropdown",
-        textOutput(outputId = "progress_text")
+        uiOutput("progress_text")
       )
     ),
     title = plotOutput("header")
