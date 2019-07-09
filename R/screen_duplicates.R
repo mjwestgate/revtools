@@ -399,7 +399,7 @@ screen_duplicates <- function(
                   display: inline-block;
                   vertical-align: top;
                   text-align: right;
-                  width: 476px",
+                  width: 556px",
                 renderText({text_out})
               ),
               div(
@@ -415,11 +415,11 @@ screen_duplicates <- function(
                   display: inline-block;
                   vertical-align: top;
                   text-align: right;
-                  width: 80px",
+                  width: 40px",
                 actionButton(
                   inputId = "selected_previous",
-                  label = "Previous",
-                  width = "80px",
+                  label = "<",
+                  width = "40px",
                   style = "background-color: #6b6b6b;"
                 )
               ),
@@ -441,11 +441,11 @@ screen_duplicates <- function(
                   display: inline-block;
                   vertical-align: top;
                   text-align: right;
-                  width: 80px",
+                  width: 40px",
                 actionButton(
                   inputId = "selected_next",
-                  label = "Next",
-                  width = "80px",
+                  label = ">",
+                  width = "40px",
                   style = "background-color: #6b6b6b;"
                 )
               )

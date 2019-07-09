@@ -59,7 +59,8 @@ get_clean_reviewers <- function(
 }
 
 
-# function for clean rounding; original available at http://biostatmatt.com/archives/2902
+# function for rounding while preserving sum of original vector
+# original code from http://biostatmatt.com/archives/2902
 round_preserve_sum <- function(x, digits = 0) {
   up <- 10 ^ digits
   x <- x * up

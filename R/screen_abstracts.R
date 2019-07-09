@@ -157,7 +157,7 @@ screen_abstracts <- function(
                 display: inline-block;
                 vertical-align: top;
                 text-align: right;
-                width: 400px",
+                width: 350px",
               renderText({text_out})
             ),
             div(
@@ -167,6 +167,30 @@ screen_abstracts <- function(
                 text-align: right;
                 width: 20px",
               renderText(" ")
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                width: 40px",
+              actionButton(
+                inputId = "abstract_10previous",
+                label = "<<",
+                width = "40px",
+                style = "background-color: #6b6b6b;"
+              )
+            ),
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                width: 40px",
+              actionButton(
+                inputId = "abstract_previous",
+                label = "<",
+                width = "40px",
+                style = "background-color: #6b6b6b;"
+              )
             ),
             div(
               style = "
@@ -202,11 +226,11 @@ screen_abstracts <- function(
               style = "
                 display: inline-block;
                 vertical-align: top;
-                width: 45px",
+                width: 40px",
               actionButton(
-                inputId = "abstract_previous",
-                label = "<",
-                width = "45px",
+                inputId = "abstract_next",
+                label = ">",
+                width = "40px",
                 style = "background-color: #6b6b6b;"
               )
             ),
@@ -214,11 +238,11 @@ screen_abstracts <- function(
               style = "
                 display: inline-block;
                 vertical-align: top;
-                width: 45px",
+                width: 40px",
               actionButton(
-                inputId = "abstract_next",
-                label = ">",
-                width = "45px",
+                inputId = "abstract_10next",
+                label = ">>",
+                width = "40px",
                 style = "background-color: #6b6b6b;"
               )
             )
@@ -303,6 +327,22 @@ screen_abstracts <- function(
         progress$row <- which(data$raw[, input$order] == progress$current)
       }
     })
+
+    observeEvent(input$abstract_10previous, {
+      if((progress$current - 10) > 0){
+        progress$current <- progress$current - 10
+      }else{
+        progress$current <- 1
+      }
+      progress$row <- which(data$raw[, input$order] == progress$current)
+    })
+
+    observeEvent(input$abstract_10next, {
+      new_row <- min(c(progress$current + 10, max(data$raw[, input$order])))
+      progress$current <- new_row
+      progress$row <- which(data$raw[, input$order] == new_row)
+    })
+
 
     # SAVE OPTIONS
     observeEvent(input$save_data, {
