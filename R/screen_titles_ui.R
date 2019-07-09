@@ -55,8 +55,15 @@ screen_titles_ui <- function(){
           choices = list(
             "Input" = "order_initial",
             "Random" = "order_random",
-            "Alphabetical" = "order_alphabetical"
+            "Alphabetical" = "order_alphabetical",
+            "User-defined" = "order_selected"
           )
+        ),
+        uiOutput("column_selector"),
+        actionButton(
+          inputId = "order_result_go",
+          label = "Re-order",
+          width = "85%"
         ),
         selectInput("hide_names",
           label = "Hide identifying information?",

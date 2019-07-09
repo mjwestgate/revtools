@@ -37,7 +37,8 @@ screen_titles <- function(
       yes = NULL,
       no = NULL,
       maybe = NULL,
-      page = data_in$click_values$page
+      page = data_in$click_values$page,
+      column = "label"
     )
     selector <- reactiveValues(
       yes = data_in$selector$yes,
@@ -239,9 +240,35 @@ screen_titles <- function(
       }
     })
 
+
+    # ensure decisions about selected columns are retained
+    observeEvent(input$order_result, {
+      click_values$column <- input$order_result
+    })
+
+
+
+    # allow user to select order
+    output$column_selector <- renderUI({
+      if(input$order == "order_selected"){
+        available_colnames <- colnames(data$raw)
+        available_colnames <- available_colnames[
+          !available_colnames %in% c(
+            "notes", "selected", "color", "order"
+          )]
+        selectInput(
+          inputId = "order_result",
+          label = "Select variable to order by:",
+          choices = available_colnames,
+          selected = click_values$column
+        )
+      }
+    })
+
     observeEvent({
       input$n_citations
-      input$order
+      # input$order
+      input$order_result_go
       }, {
       if(!is.null(data$raw)){
         page_values <- calc_pages(
@@ -250,13 +277,21 @@ screen_titles <- function(
         )
         data$raw$order <- switch(input$order,
           "order_initial" = {seq_len(nrow(data$raw))},
-          "order_alphabetical" = {rank(data$raw$title)},
-          "order_random" = {order(rnorm(length(page_values)))}
+          "order_alphabetical" = {rank(
+            data$raw$title,
+            ties.method = "random"
+          )},
+          "order_random" = {order(rnorm(length(page_values)))},
+          "order_selected" = {rank(
+            data$raw[[input$order_result]],
+            ties.method = "random"
+          )}
         )
         data$raw$page <- switch(input$order,
           "order_initial" = {page_values},
           "order_alphabetical" = {page_values[data$raw$order]},
-          "order_random" = {page_values[order(rnorm(length(page_values)))]}
+          "order_random" = {page_values[order(rnorm(length(page_values)))]},
+          "order_selected" = {page_values[data$raw$order]},
         )
         data$current <- which(data$raw$page == click_values$page)
         data$n_current <- min(
@@ -394,7 +429,7 @@ screen_titles <- function(
         )
       }
     })
-    
+
 
     # SAVE OR CLEAR DATA
     observeEvent(input$save_data, {
