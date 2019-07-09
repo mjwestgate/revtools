@@ -23,6 +23,7 @@ load_abstract_data <- function(data){
     )
 
     data <- add_abstract_columns(data)
+    colnames(data) <- tolower(colnames(data))
     x$data$raw <- data
     x$progress$row <- which(data[, "order_random"] == 1)
 

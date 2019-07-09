@@ -114,7 +114,7 @@ screen_titles <- function(
         )
       )
       data$current <- seq_len(data$n_current)
-      data$raw$page <- calc_pages(
+      data$raw$screening_page <- calc_pages(
         n = nrow(data$raw),
         each = input$n_citations
       )
@@ -192,11 +192,11 @@ screen_titles <- function(
 
     # PAGE NAVIGATION
     # render navigation buttons
-    output$navigation_buttons <- renderUI({
-      if(!is.null(data$raw)){
-        navigation_buttons()
-      }
-    })
+    # output$navigation_buttons <- renderUI({
+    #   if(!is.null(data$raw)){
+    #     navigation_buttons()
+    #   }
+    # })
 
     # set page navigation functionality
     observeEvent(input$page_first, {
@@ -210,13 +210,13 @@ screen_titles <- function(
       }
     })
     observeEvent(input$page_next, {
-      if(input$page_next > 0 & (click_values$page < max(data$raw$page))){
+      if(input$page_next > 0 & (click_values$page < max(data$raw$screening_page))){
         click_values$page <- click_values$page + 1
       }
     })
     observeEvent(input$page_last, {
       if(input$page_last > 0){
-        click_values$page <- max(data$raw$page)
+        click_values$page <- max(data$raw$screening_page)
       }
     })
 
@@ -254,7 +254,7 @@ screen_titles <- function(
         available_colnames <- colnames(data$raw)
         available_colnames <- available_colnames[
           !available_colnames %in% c(
-            "notes", "selected", "color", "order"
+            "notes", "selected", "color", "order", "screening_page"
           )]
         selectInput(
           inputId = "order_result",
@@ -287,13 +287,13 @@ screen_titles <- function(
             ties.method = "random"
           )}
         )
-        data$raw$page <- switch(input$order,
+        data$raw$screening_page <- switch(input$order,
           "order_initial" = {page_values},
           "order_alphabetical" = {page_values[data$raw$order]},
           "order_random" = {page_values[order(rnorm(length(page_values)))]},
           "order_selected" = {page_values[data$raw$order]},
         )
-        data$current <- which(data$raw$page == click_values$page)
+        data$current <- which(data$raw$screening_page == click_values$page)
         data$n_current <- min(
           c(
             length(data$current),
@@ -306,7 +306,7 @@ screen_titles <- function(
     observe({
       if(!is.null(data$raw)){
         # id selected text
-        selected_rows <- which(data$raw$page == click_values$page)
+        selected_rows <- which(data$raw$screening_page == click_values$page)
         data$current <- selected_rows[order(data$raw$order[selected_rows])]
         data$n_current <- length(data$current)
 
@@ -408,24 +408,29 @@ screen_titles <- function(
         n_progress <- length(which(is.na(data$raw$selected) == FALSE))
         n_total <- nrow(data$raw)
         div(
-          style = "
-            display: inline-block;
-            vertical-align: top;
-            text-align: right;
-            width: 780px",
-          renderText({
-            HTML(
-              paste0(
-                n_progress,
-                " of ",
-                n_total,
-                " entries screened | Showing page ",
-                click_values$page,
-                " of ",
-                max(data$raw$page)
-              )
-            )
-          })
+          list(
+            div(
+              style = "
+                display: inline-block;
+                vertical-align: top;
+                text-align: right;
+                width: 580px",
+              renderText({
+                HTML(
+                  paste0(
+                    n_progress,
+                    " of ",
+                    n_total,
+                    " entries screened | Showing page ",
+                    click_values$page,
+                    " of ",
+                    max(data$raw$screening_page)
+                  )
+                )
+              })
+            ),
+            navigation_buttons()
+          )
         )
       }
     })

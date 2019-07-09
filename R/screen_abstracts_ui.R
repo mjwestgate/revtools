@@ -6,7 +6,6 @@ screen_abstracts_ui <- function(){
       list(
         class = "dropdown",
         uiOutput("selector_bar")
-        # textOutput(outputId = "progress_text")
       )
     ),
     title = plotOutput("header")

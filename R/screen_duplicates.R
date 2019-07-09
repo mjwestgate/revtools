@@ -26,11 +26,10 @@ screen_duplicates <- function(
     accepted_inputs <- c("bibliography", "data.frame")
     if(any(accepted_inputs == class(x)) == FALSE){
       stop("only classes 'bibliography' or 'data.frame' accepted by screen_duplicates")}
-
-    switch(class(x),
-      "bibliography" = {x <- as.data.frame(x)},
-      "data.frame" = {x <- x}
-    )
+    if(class(x) == "bibliography"){
+      x <- as.data.frame(x)
+    }
+    colnames(x) <- tolower(colnames(x))
     input_data$columns <- colnames(x)
 
   }
