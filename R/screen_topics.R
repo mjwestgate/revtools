@@ -260,7 +260,9 @@ server <- function(input, output, session){
       )
       data$dtm <- make_dtm(
         x = data$grouped$text,
-        stop_words = data$stopwords
+        stop_words = data$stopwords,
+        min_freq = input$min_freq * 0.01,
+        max_freq = input$max_freq * 0.01
       )
 
       if(input$response_variable != data$columns[1]){
