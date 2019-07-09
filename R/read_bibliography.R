@@ -58,6 +58,7 @@ read_bibliography_internal <- function(
   }else{
     # import x
     invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
+    on.exit(invisible(Sys.setlocale("LC_ALL", "")))
     z <- tryCatch(
       {
         scan(filename,
