@@ -1,20 +1,25 @@
 # function to take a data.frame with bibliographic information, extract useful information, and make a DTM
 make_DTM <- function(
   x, # a vector
-	stop_words
+	stop_words,
+  min_freq = 0.01,
+  max_freq = 0.85
 ){
-  make_dtm(x, stop_words)
+  make_dtm(x, stop_words, min_freq, max_freq)
 }
 
 make_dtm <- function(
 	x,
-	stop_words
+	stop_words,
+  min_freq = 0.01,
+  max_freq = 0.85
 ){
 
   # check format
   if(class(x) != "character"){
 	  stop("make_dtm only accepts arguments of class 'character'")
 	}
+  n <- length(x)
 
 	# sort out stop words
 	if(missing(stop_words)){
@@ -33,55 +38,46 @@ make_dtm <- function(
   x <- tm::removeNumbers(x)
   x_stem <- stemDocument(x) # requires SnowballC
 
-	# create a lookup data.frame
-	term <- unlist(lapply(x, function(a){
-		result <- strsplit(a, " ")[[1]]
-		result <- gsub("^\\s+|\\s+$", "", result)
-		return(result[which(result != c(""))])
-		}))
-	word_freq <- as.data.frame(
-    xtabs(~ term),
+	# calculate how rare and common terms should be treated
+  bound_values <- c(
+    max(c(ceiling(n * min_freq), 3)),
+    floor(n * max_freq)
+  )
+  # apply to dataset
+	dtm <- tm::DocumentTermMatrix(
+    x = tm::Corpus(tm::VectorSource(x_stem)),
+    control = list(
+      wordLengths = c(3, Inf), # default
+      bounds = list(global = bound_values)
+    )
+  )
+
+  # create a lookup data.frame for words and their stems
+  term <- NLP::words(x)
+  word_freq <- as.data.frame(
+    table(term),
     stringsAsFactors = FALSE
   )
-	word_freq$stem <- tm::stemDocument(word_freq$term)
+  word_freq$nchar <- nchar(word_freq$term)
+  word_freq_list <- split(word_freq, tm::stemDocument(word_freq$term))
 
-	# use control in DTM code to do remaining work
-	dtm.control <- list(
-		wordLengths = c(3, Inf),
-		minDocFreq = 5,
-		weighting = weightTf
-  )
-	dtm <- tm::DocumentTermMatrix(
-    x = tm::Corpus(
-      tm::VectorSource(x_stem)
-    ),
-    control = dtm.control
-  )
-	dtm <- tm::removeSparseTerms(
-    x = dtm,
-    sparse = 0.99
-  )
-	output <- as.matrix(dtm) # convert back to matrix
-	rownames(output) <- paste0(
+  # replace stemmed version with most common full word
+  dtm$dimnames$Terms <- unlist(lapply(
+    dtm$dimnames$Terms,
+    function(a, lookup){
+      z <- lookup[[a]]
+      z <- z[order(z$nchar), ]
+      z <- z[order(z$Freq, decreasing = TRUE), ]
+      return(z$term[order(z$Freq, z$nchar, decreasing = TRUE)[1]])
+    },
+    lookup = word_freq_list
+  ))
+
+  output <- as.matrix(dtm) # convert back to matrix
+  rownames(output) <- paste0(
     "V",
     seq_len(nrow(output))
   )
-
-	# replace stemmed version with most common full word
-	term_vec <- unlist(lapply(
-    colnames(output),
-    function(a, check){
-  		if(any(check$stem == a)){
-  			rows <- which(check$stem == a)
-  			row <- rows[which.max(check$Freq[rows])]
-  			return(check$term[row])
-  		}else{
-        return(a)
-      }
-		},
-    check = word_freq
-  ))
-	colnames(output) <- term_vec
 
 	return(output)
 }
