@@ -30,6 +30,9 @@ read_bibliography <- function(
         },
         data = result_list
       ))
+      if(any(colnames(result) == "label")){
+        result$label <- make.unique(result$label)
+      }
       return(result)
     }else{
       result <- do.call(c, result_list)
