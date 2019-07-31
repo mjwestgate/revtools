@@ -6,6 +6,9 @@ read_bibliography <- function(
   return_df = TRUE
 	){
 
+  invisible(Sys.setlocale("LC_ALL", "C"))
+  on.exit(invisible(Sys.setlocale("LC_ALL", "")))
+  
   if(missing(filename)){
     stop("filename is missing with no default")
   }
@@ -60,8 +63,6 @@ read_bibliography_internal <- function(
     }
   }else{
     # import x
-    invisible(Sys.setlocale("LC_ALL", "C")) # gets around errors in import with special characters
-    on.exit(invisible(Sys.setlocale("LC_ALL", "")))
     z <- tryCatch(
       {
         scan(filename,
