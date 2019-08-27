@@ -59,7 +59,7 @@ screen_duplicates_ui <- function(){
             "fuzzdist" = "fuzzdist",
             "exact" = "exact"
           ),
-          selected = "stringdist"
+          selected = "exact"
         ),
         uiOutput("algorithm_selector"),
         uiOutput("threshold_selector"),

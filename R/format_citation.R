@@ -161,11 +161,14 @@ add_line_breaks <- function(data){
     if(length(a) == 0){
       return("")
     }else{
-    	result <- data.frame(
-    		text = a,
-    		nchars = nchar(a),
-    		stringsAsFactors = FALSE
+      result <- data.frame(
+        text = a,
+        nchars = nchar(a, allowNA = TRUE, keepNA = TRUE),
+        stringsAsFactors = FALSE
       )
+      if(any(is.na(result$nchars))){
+        result$nchars[which(is.na(result$nchars))] <- 2
+      }
     	result$sum <- cumsum(result$nchars)
     	result$group <- cut(result$sum,
     		breaks = seq(0, max(result$sum)+49, 50),

@@ -32,6 +32,13 @@ screen_duplicates <- function(
     colnames(x) <- tolower(colnames(x))
     input_data$columns <- colnames(x)
 
+    # make sure added data has a unique column called 'label'
+    if(!any(colnames(x) == "label")){
+      x$label <- create_index("ref", nrow(x))
+      x <- x[, c(ncol(x), seq_len(ncol(x)-1))]
+    }else{
+      x$label <- make.unique(x$label, sep = "_")
+    }
   }
   input_data$raw <- x
 
@@ -161,17 +168,11 @@ screen_duplicates <- function(
     # i.e. possible matches can only be found in subsets defined by these columns
     output$group_selector <- renderUI({
       if(!is.null(data$columns) & !display$data_present){
-        lookup <- data$columns %in% c("journal", "year")
-        if(any(lookup)){
-          selected <- data$columns[which(lookup)]
-        }else{
-          data$columns[1] # unclear that this is a good idea
-        }
         checkboxGroupInput(
           inputId = "group_selector_result",
           label = "Select grouping variable(s)",
           choices = data$columns,
-          selected = selected
+          selected = NULL
         )
       }
     })

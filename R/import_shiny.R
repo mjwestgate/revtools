@@ -3,7 +3,6 @@ import_shiny <- function(
   source, # input$data_in
   current_data = NULL # existing data
   ){
-  # is_csv <- grepl(".csv$", source$name)
   if(is.null(current_data)){
     if(is.null(source)){
       result <- NULL
