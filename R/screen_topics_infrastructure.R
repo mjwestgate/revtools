@@ -94,11 +94,10 @@ build_plot_data <- function(info, dtm, model, hide_names){
 
   # add citation in correctly formatted way
   x_df$caption <- paste0(
-    add_line_breaks(
-      format_citation(
-        data = x_df,
-        details = (hide_names == FALSE)
-      )
+    format_citation(
+      data = x_df,
+      details = (hide_names == FALSE),
+      line_breaks = TRUE
     ),
     "<br>[Topic #",
     x_df$topic,
@@ -223,8 +222,8 @@ add_required_columns <- function(data){
 get_topic_colnames <- function(data){
   colnames(data)[
     which(
-      (colnames(data) %in%
-      c("selected", "topic", "display", "notes")) == FALSE
+      !(colnames(data) %in%
+      c("selected", "topic", "display", "notes"))
     )
   ]
 }
@@ -248,7 +247,7 @@ build_appearance <- function(plot_data, palette){
 update_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
     rows <- which(
-      (a$color %in% c("#000000", "#CCCCCC")) == FALSE
+      !(a$color %in% c("#000000", "#CCCCCC"))
     )
     a$color[rows] <- colours[a$topic[rows]]
     return(a)
