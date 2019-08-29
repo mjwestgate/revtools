@@ -1,17 +1,17 @@
 year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)
 
+bibentry(bibtype = "Article",
+  title = "revtools: An R package to support article screening for evidence synthesis",
+  author = person(c("Martin", "J."), "Westgate"),
+  year = "2019",
+  journal = "Research Synthesis Methods",
+  doi="10.1002/jrsm.1374"
+)
 bibentry(bibtype = "Manual",
   title = "{revtools}: Tools to Support Evidence Synthesis",
   author = person(c("Martin", "J."), "Westgate"),
   year = year,
   note = note,
   url = "https://CRAN.R-project.org/package=revtools"
-)
-bibentry(bibtype = "Article",
-  title = "revtools: bibliographic data visualization for evidence synthesis in R",
-  author = person(c("Martin", "J."), "Westgate"),
-  year = "2018",
-  journal = "bioArXiv",
-  doi="10.1101/262881"
 )
