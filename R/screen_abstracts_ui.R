@@ -41,14 +41,25 @@ screen_abstracts_ui <- function(){
       ),
       menuItem("Appearance",
         icon = icon("paint-brush"),
+        selectInput("hide_names",
+          label = "Hide identifying information?",
+          choices = c("Yes" = "TRUE", "No" = "FALSE"),
+          multiple = FALSE
+        ),
+        selectInput(
+          inputId = "hide_screened",
+          label = "Hide screened entries?",
+          choices = c("Yes" = "TRUE", "No" = "FALSE"),
+          multiple = FALSE
+        ),
         selectInput(
           inputId = "order",
           label = "Order citations by:",
           choices = list(
-            "Random" = "order_random",
-            "Input" = "order_initial",
-            "Alphabetical" = "order_alphabetical",
-            "User-defined" = "order_selected"
+            "Random" = "random",
+            "Input" = "initial",
+            "Alphabetical" = "alphabetical",
+            "User-defined" = "user_defined"
           )
         ),
         uiOutput("column_selector"),
@@ -57,11 +68,7 @@ screen_abstracts_ui <- function(){
           label = "Re-order",
           width = "85%"
         ),
-        selectInput("hide_names",
-          label = "Hide identifying information?",
-          choices = c("TRUE", "FALSE"),
-          multiple = FALSE
-        )
+        br()
       )
     )
   )
@@ -80,13 +87,6 @@ screen_abstracts_ui <- function(){
       ),
       column(width = 1)
     )
-    # fluidRow(
-    #   column(width = 1),
-    #   column(
-    #     width = 10,
-    #     uiOutput(outputId = "render_notes")
-    #   )
-    # )
   )
 
   return(

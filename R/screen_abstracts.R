@@ -11,7 +11,9 @@ screen_abstracts <- function(
   }
 
   # load data
-  data_in <- load_abstract_data(data = x)
+  data_in <- load_abstract_data(
+    data = x
+  )
 
   # create ui
   ui_data <- screen_abstracts_ui()
@@ -31,8 +33,11 @@ screen_abstracts <- function(
       raw = data_in$data$raw
     )
     progress <- reactiveValues(
+      order = data_in$progress$order,
+      available = data_in$progress$available,
       current = data_in$progress$current,
-      row = data_in$progress$row
+      row = data_in$progress$row,
+      max_n = data_in$progress$max_n
     )
     display <- reactiveValues(
       notes = FALSE,
@@ -60,18 +65,32 @@ screen_abstracts <- function(
 
       # export to reactiveValues
       data$raw <- import_result
-      progress$row <- which(data$raw[, input$order] == progress$current)
+
+      # set progress values
+      progress$order <- set_row_order(
+        data$raw,
+        input$order,
+        input$order_result
+      )
+      if(is.null(progress$current) | progress$current < 1){
+        progress$current <- 1
+      }
+      if(input$hide_screened){
+        progress$available <- which(is.na(data$raw$selected_abstracts))
+        progress$max_n <- length(progress$available)
+      }else{
+        progress$max_n <- nrow(data$raw)
+        progress$available <- seq_len(progress$max_n)
+      }
+      progress$row <- choose_abstract_row(
+        progress$order, progress$available, progress$current
+      )
     })
 
     # allow user to select order
     output$column_selector <- renderUI({
-      if(input$order == "order_selected"){
+      if(input$order == "user_defined"){
         available_colnames <- colnames(data$raw)
-        available_colnames <- available_colnames[
-          !available_colnames %in% c(
-            "order_initial", "order_alphabetical", "order_random", "order_selected",
-            "notes", "selected", "color"
-          )]
         selectInput(
           inputId = "order_result",
           label = "Select variable to order by:",
@@ -89,14 +108,15 @@ screen_abstracts <- function(
     # ABSTRACT SCREENING
     # change order of articles as necessary
     observeEvent(input$order_result_go, {
-      if(input$order == "order_selected"){
-        data$raw$order_selected <- rank(
-          data$raw[, input$order_result],
-          ties.method = "random"
-        )
-      }
+      progress$order <- set_row_order(
+        data$raw,
+        input$order,
+        input$order_result
+      )
       progress$current <- 1
-      progress$row <- which(data$raw[, input$order] == progress$current)
+      progress$row <- choose_abstract_row(
+        progress$order, progress$available, progress$current
+      )
     })
 
     # display text for the current entry
@@ -106,16 +126,31 @@ screen_abstracts <- function(
         validate(
           need(data$raw, "Import data to begin")
         )
+        validate(
+          need(progress$max_n > 0,
+            "No unscreened data remaining\nAdd more data, or save and exit to continue")
+        )
         if(any(colnames(data$raw) == "abstract")){
           abstract_text <- data$raw$abstract[progress$row]
         }else{
           abstract_text <- "<em>No abstract available</em>"
         }
+        current_status <- data$raw$selected_abstracts[progress$row]
+        if(is.na(current_status)){
+          text_color <- "black"
+          text_label <- ""
+        }else{
+          if(current_status == "excluded"){
+            text_color <- "'#993f3f'"
+            text_label <- "Status: Excluded"
+          }else{
+            text_color <- "'#405d99'"
+            text_label <- "Status: Selected"
+          }
+        }
         cat(
           paste0(
-            "<font color =",
-            data$raw$color[progress$row],
-            ">",
+            "<font color =", text_color, ">",
             format_citation(
               data$raw[progress$row, ],
               abstract = FALSE,
@@ -123,11 +158,7 @@ screen_abstracts <- function(
               add_html = TRUE
             ),
             "<br>",
-            switch(as.character(data$raw$color[progress$row]),
-              "#000000" = "",
-              "#405d99" = "<em>Status: Selected</em>",
-              "#993f3f" = "<em>Status: Excluded</em>"
-            ),
+            text_label,
             "<br><br>",
            abstract_text,
            "</font>"
@@ -141,12 +172,11 @@ screen_abstracts <- function(
       if(!is.null(data$raw)){
         text_out <- HTML(
           paste0(
-            length(which(data$raw$selected == "selected")) +
-            length(which(data$raw$selected == "excluded")),
+            nrow(data$raw) - length(which(is.na(data$raw$selected_abstracts))),
             " entries screened | Showing entry ",
             progress$current,
             " of ",
-            nrow(data$raw)
+            progress$max_n
           )
         )
 
@@ -253,17 +283,20 @@ screen_abstracts <- function(
 
     output$render_notes_toggle <- renderUI({
       if(!is.null(data$raw)){
-        actionButton(
-          inputId = "notes_toggle",
-          label = "Show notes window",
-          style = "
-            background-color: #adadad;
-            color: #fff;
-            width: 200px"
-        )
+        if(progress$max_n > 0){
+          actionButton(
+            inputId = "notes_toggle",
+            label = "Show notes window",
+            style = "
+              background-color: #adadad;
+              color: #fff;
+              width: 200px"
+          )
+        }
       }
     })
 
+    # NOTES
     # when toggle is triggered, invert display status of notes
     observeEvent(input$notes_toggle, {
       display$notes <- !display$notes
@@ -299,32 +332,48 @@ screen_abstracts <- function(
       data$raw$notes[progress$row] <- input$abstract_notes
     })
 
-    # record & respond to user inputs
+
+    # SELECTION & NAVIGATION
     observeEvent(input$select_yes, {
-      data$raw$selected[progress$row] <- "selected"
-      data$raw$color[progress$row] <- "#405d99"
-      # if(display$notes){
-      #   data$raw$notes[progress$row] <- input$abstract_notes
-      # }
+      data$raw$selected_abstracts[progress$row] <- "selected"
+      if(input$hide_screened){ # progress$current remains the same and progress$available changes
+        progress$available <- which(is.na(data$raw$selected_abstracts))
+        progress$max_n <- length(progress$available)
+        if(progress$current > progress$max_n){
+          progress$current <- progress$max_n
+        }
+      }else{ # i.e. if screened elements are visible, then current is used for navigation
+        if(progress$current < progress$max_n){
+          progress$current <- progress$current + 1
+        }
+      }
     })
 
     observeEvent(input$select_no, {
-      data$raw$selected[progress$row] <- "excluded"
-      data$raw$color[progress$row] <- "#993f3f"
+      data$raw$selected_abstracts[progress$row] <- "excluded"
+      if(input$hide_screened){ # progress$current remains the same and progress$available changes
+        progress$available <- which(is.na(data$raw$selected_abstracts))
+        progress$max_n <- length(progress$available)
+        if(progress$current > progress$max_n){
+          progress$current <- progress$max_n
+        }
+      }else{ # i.e. if screened elements are visible, then current is used for navigation
+        if(progress$current < progress$max_n){
+          progress$current <- progress$current + 1
+        }
+      }
     })
 
     observeEvent(input$abstract_next, {
-      test_add <- which(data$raw[, input$order] == progress$current + 1)
+      test_add <- any(progress$order[progress$available] > progress$current)
       if(length(test_add) > 0){
         progress$current <- progress$current + 1
-        progress$row <- which(data$raw[, input$order] == progress$current)
       }
     })
 
     observeEvent(input$abstract_previous, {
       if((progress$current - 1) > 0){
         progress$current <- progress$current - 1
-        progress$row <- which(data$raw[, input$order] == progress$current)
       }
     })
 
@@ -334,15 +383,89 @@ screen_abstracts <- function(
       }else{
         progress$current <- 1
       }
-      progress$row <- which(data$raw[, input$order] == progress$current)
     })
 
     observeEvent(input$abstract_10next, {
-      new_row <- min(c(progress$current + 10, max(data$raw[, input$order])))
-      progress$current <- new_row
-      progress$row <- which(data$raw[, input$order] == new_row)
+      if((progress$current + 10) > progress$max_n){
+        progress$current <- progress$max_n
+      }else{
+        progress$current <- progress$current + 10
+      }
     })
 
+    # choose then row of the next entry when progress$current is updated
+    observeEvent(progress$current, {
+      if(!is.null(data$raw)){
+        progress$row <- choose_abstract_row(
+          progress$order, progress$available, progress$current
+        )
+      }
+    })
+
+    # ditto if progress$available is pinged
+    observeEvent(progress$available, {
+      if(!is.null(data$raw)){
+        progress$row <- choose_abstract_row(
+          progress$order, progress$available, progress$current
+        )
+        progress$max_n <- length(progress$available)
+      }
+    })
+
+    observeEvent(input$hide_screened, {
+      if(!is.null(data$raw)){
+        if(input$hide_screened){ # i.e. text were shown but are now hidden
+          # ensure that - if the currently viewed row is not selected - then it stays displayed
+          if(is.na(data$raw$selected_abstracts[progress$row])){
+            progress$current <- choose_abstract_current(
+              progress$order,
+              which(is.na(data$raw$selected_abstracts)),
+              progress$row
+            )
+            # this doesn't work at present
+          }
+          progress$available <- which(is.na(data$raw$selected_abstracts))
+        }else{
+          if(progress$current < 1){
+            progress$current <- 1
+          }
+          progress$available <- seq_len(nrow(data$raw))
+        }
+      }
+    })
+
+    observeEvent(progress$max_n, {
+      if(!is.null(data$raw) & progress$max_n < 1){
+        showModal(
+          modalDialog(
+            HTML(
+              "All articles have been screened. Would you like to save your progess?<br><br>
+              <i>If you have specified an object in your workspace and click 'Exit App',
+              your progress will be invisibly saved to that object.</i><br><br>"
+            ),
+            textInput("save_filename",
+              label = "File Name"
+            ),
+            selectInput("save_data_filetype",
+              label = "File Type",
+              choices = c("csv", "rds")
+            ),
+            actionButton(
+              inputId = "save_data_execute",
+              label = "Save to File"
+            ),
+            actionButton(
+              inputId = "exit_app_confirmed",
+              label = "Exit App"
+            ),
+            modalButton("Cancel"),
+            title = "Save As",
+            footer = NULL,
+            easyClose = FALSE
+          )
+        )
+      }
+    })
 
     # SAVE OPTIONS
     observeEvent(input$save_data, {

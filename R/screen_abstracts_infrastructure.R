@@ -5,8 +5,11 @@ load_abstract_data <- function(data){
       raw = NULL
     ),
     progress = list(
+      order = NULL,
+      available = 1,
       current = 1,
-      row = NULL
+      row = NULL,
+      max_n = NULL
     )
   )
 
@@ -25,7 +28,20 @@ load_abstract_data <- function(data){
     data <- add_abstract_columns(data)
     colnames(data) <- tolower(colnames(data))
     x$data$raw <- data
-    x$progress$row <- which(data[, "order_random"] == 1)
+
+    # set order assuming randomness and hide_screened == TRUE
+    x$progress$order <- base::rank(
+      rnorm(nrow(data)),
+      ties.method = "random"
+    )
+    x$progress$available <- which(is.na(data$selected))
+    x$progress$max_n <- length(x$progress$available)
+    x$progress$row <- x$progress$available[
+      which.min(
+        x$progress$order[x$progress$available]
+      )
+    ]
+
 
   } # end if is.null
 
@@ -36,38 +52,79 @@ load_abstract_data <- function(data){
 
 add_abstract_columns <- function(df){
 
-  # set order columns
-  if(!any(colnames(df) == "order_initial")){
-    df$order_initial <- seq_len(nrow(df))
-  }
-  if(!any(colnames(df) == "order_alphabetical")){
-    if(any(colnames(df) == "title")){
-      df$order_alphabetical <- base::rank(
-        df$title,
-        ties.method = "random"
-      )
-    }else{
-      df$order_alphabetical <- df$order_initial
-    }
-  }
-  if(!any(colnames(df) == "order_random")){
-    df$order_random <- base::rank(
-      rnorm(nrow(df)),
-      ties.method = "random"
-    )
-  }
-  if(!any(colnames(df) == "order_selected")){
-    df$order_selected <- df$order_random
-  }
-
   # set display/save columns
-  df$color <- "#000000"
-  if(!any(colnames(df) == "selected")){
-    df$selected <- NA
+  # if(!any(colnames(df) == "color")){
+  #   df$color <- "#000000"
+  # }
+
+  if(!any(colnames(df) == "label")){
+    df$label <- generate_bibliographic_names(df)
+    df <- df[, c(ncol(df), c(1:(ncol(df)-1)))]
+  }
+  if(!any(colnames(df) == "selected_abstracts")){
+    df$selected_abstract <- NA
   }
   if(!any(colnames(df) == "notes")){
     df$notes <- ""
   }
 
   return(df)
+}
+
+
+set_row_order <- function(
+  df,
+  order_by, # options are: random, initial, alphabetical, user_defined
+  user_column # if order_by = "user_defined", this is the column name of the user selection
+){
+  switch(order_by,
+    "random" = {
+      base::rank(
+        rnorm(nrow(df)),
+        ties.method = "random"
+      )
+    },
+    "initial" = {
+      seq_len(nrow(df))
+    },
+    "alphabetical" = {
+      if(any(colnames(df) == "title")){
+        base::rank(
+          df$title,
+          ties.method = "random"
+        )
+      }else{
+        seq_len(nrow(df))
+      }
+    },
+    "user_defined" = {
+      base::rank(
+        df[, user_column],
+        ties.method = "random"
+      )
+    }
+  )
+} # end function
+
+# set progress$row when other inputs are known
+choose_abstract_row <- function(
+  order_vec, # vector giving order of rows (numeric). progress$order
+  available_vec, # vector showing which are available (numeric). progress$available
+  current # currently selected row # progress$current
+){
+  ordered_vals <- order_vec[available_vec]
+  selected_val <- ordered_vals[order(ordered_vals)][current]
+  return(which(order_vec == selected_val))
+}
+
+# set progress$current when other inputs are known
+choose_abstract_current <- function(
+  order_vec, # progress$order
+  available_vec, # vector showing which are available (numeric). which(is.na(data$raw$selected))
+  row # currently selected row # progress$row
+){
+  order_current <- order_vec[row]
+  ordered_vals <- order_vec[available_vec]
+  result <- which(order_vec[order(order_vec)] == order_current)
+  return(result)
 }
