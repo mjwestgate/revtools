@@ -351,13 +351,13 @@ screen_abstracts <- function(
 
     observeEvent(input$select_no, {
       data$raw$selected_abstracts[progress$row] <- "excluded"
-      if(input$hide_screened){ # progress$current remains the same and progress$available changes
+      if(input$hide_screened){
         progress$available <- which(is.na(data$raw$selected_abstracts))
         progress$max_n <- length(progress$available)
         if(progress$current > progress$max_n){
           progress$current <- progress$max_n
         }
-      }else{ # i.e. if screened elements are visible, then current is used for navigation
+      }else{
         if(progress$current < progress$max_n){
           progress$current <- progress$current + 1
         }
@@ -365,8 +365,9 @@ screen_abstracts <- function(
     })
 
     observeEvent(input$abstract_next, {
-      test_add <- any(progress$order[progress$available] > progress$current)
-      if(length(test_add) > 0){
+      if((progress$current + 1) > progress$max_n){
+        progress$current <- progress$max_n
+      }else{
         progress$current <- progress$current + 1
       }
     })
