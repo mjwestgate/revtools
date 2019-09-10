@@ -34,7 +34,7 @@ load_abstract_data <- function(data){
       rnorm(nrow(data)),
       ties.method = "random"
     )
-    x$progress$available <- which(is.na(data$selected))
+    x$progress$available <- which(is.na(data$selected_abstracts))
     x$progress$max_n <- length(x$progress$available)
     x$progress$row <- x$progress$available[
       which.min(
@@ -62,7 +62,7 @@ add_abstract_columns <- function(df){
     df <- df[, c(ncol(df), c(1:(ncol(df)-1)))]
   }
   if(!any(colnames(df) == "selected_abstracts")){
-    df$selected_abstract <- NA
+    df$selected_abstracts <- NA
   }
   if(!any(colnames(df) == "notes")){
     df$notes <- ""
@@ -120,7 +120,7 @@ choose_abstract_row <- function(
 # set progress$current when other inputs are known
 choose_abstract_current <- function(
   order_vec, # progress$order
-  available_vec, # vector showing which are available (numeric). which(is.na(data$raw$selected))
+  available_vec, # vector showing which are available (numeric). which(is.na(data$raw$selected_abstracts))
   row # currently selected row # progress$row
 ){
   order_current <- order_vec[row]

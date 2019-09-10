@@ -503,7 +503,7 @@ screen_abstracts <- function(
 
     observeEvent(input$save_data_execute, {
       if(nchar(input$save_filename) == 0){
-        filename <- "revtools_title_screening"
+        filename <- "revtools_abstract_screening"
       }else{
         if(grepl("\\.[[:lower:]]{3}$", input$save_filename)){
           filename <- substr(
