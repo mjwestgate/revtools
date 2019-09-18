@@ -1,11 +1,11 @@
 find_duplicates <- function(
   data,
-  match_variable = "title",
-  group_variables = NULL,
-  match_function = "fuzzdist", # "stringdist", "exact"),
-  method = "fuzz_m_ratio",
-  threshold = 0.1,
-  to_lower = TRUE,
+  match_variable, # = "title",
+  group_variables, # = NULL,
+  match_function, # = c("stringdist", # "fuzzdist", "exact"),
+  method, # = "osa",
+  threshold, # = 5,
+  to_lower = FALSE,
   remove_punctuation = FALSE
 ){
 
@@ -14,23 +14,41 @@ find_duplicates <- function(
   if(missing(data)){
     stop("'data' is missing: Please provide a data.frame")
   }
+  if(missing(group_variables)){
+    group_variables <- NULL
+  }else{
+    if(!all(group_variables %in% colnames(data))){
+      group_variables <- NULL
+    }
+  }
 
   # match variable
-  if(!any(colnames(data) == match_variable)){
-    stop(
-      paste0(
+  if(missing(match_variable)){
+    if(any(colnames(data) == "doi")){
+      match_variable <- "doi"
+      if(missing(match_function)){match_function <- "exact"}
+    }else{
+      if(any(colnames(data) == "title")){
+        match_variable <- "title"
+      }else{
+        stop("match_variable is missing, with no default;
+          please specify which column should be searched for duplicates"
+        )
+      }
+    }
+  }else{
+    if(!any(colnames(data) == match_variable)){
+      stop(paste0(
         match_variable,
         " is not a valid column name in ",
         data,
         ": Please specify which column should be searched for duplicates"
-      )
-    )
+      ))
+    }
   }
 
-  # match function
-  if(missing(match_function)){
-    match_function <- "fuzzdist"
-  }
+  # methods
+  if(missing(match_function)){match_function <- "stringdist"}
   if(!any(c("fuzzdist", "stringdist", "exact") == match_function)){
     stop(
       paste0(
@@ -39,9 +57,18 @@ find_duplicates <- function(
       )
     )
   }
-
-  # method
-  if(match_function != "exact"){
+  if(missing(method)){
+    if(match_function == "stringdist"){method <- "osa"}
+    if(match_function == "fuzzdist"){method <- "fuzz_m_ratio"}
+  }
+  if(missing(threshold)){
+    if(match_function == "stringdist"){threshold <- 5}
+    if(match_function == "fuzzdist"){threshold <- 0.1}
+  }
+  if(match_function == "exact"){
+    method <- NA
+    threshold <- NA
+  }else{
     valid_methods <- eval(formals(match_function)$method)
     if(!any(valid_methods == method)){
       stop(paste0("'",
@@ -136,5 +163,17 @@ find_duplicates <- function(
     } # end if(length(remaining_rows) == 1)
     progress <- progress + 1
   } # end while loop
-  return(data$group)
+
+  # add attributes
+  result <- data$group
+  attr(result, "match_variable") <- match_variable
+  if(is.null(group_variables)){
+    attr(result, "group_variables") <- NA
+  }else{
+    attr(result, "group_variables") <- group_variables
+  }
+  attr(result, "match_function") <- match_function
+  attr(result, "method") <- method
+  attr(result, "threshold") <- threshold
+  return(result)
 }

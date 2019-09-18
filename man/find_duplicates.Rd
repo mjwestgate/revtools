@@ -3,18 +3,18 @@
 \title{Locate duplicated information within a data.frame}
 \description{Identify potential duplicates within a \code{data.frame}.}
 \usage{
-find_duplicates(data, match_variable = "title", group_variables = NULL,
-  match_function = "fuzzdist", method = "fuzz_m_ratio", threshold = 0.1,
-  to_lower = TRUE, remove_punctuation = FALSE)
+find_duplicates(data, match_variable, group_variables,
+  match_function, method, threshold,
+  to_lower = FALSE, remove_punctuation = FALSE)
 }
 \arguments{
   \item{data}{a \code{data.frame} containing data to be matched}
-  \item{match_variable}{a length-1 integer or string listing the column in which duplicates should be sought}
+  \item{match_variable}{a length-1 integer or string listing the column in which duplicates should be sought. Defaults to doi where available, followed by title. If neither are found the function will fail.}
   \item{group_variables}{an optional vector listing the columns to use as grouping variables; that is, categories withing which duplicates should be sought (see 'note'). Optionally NULL to compare all entries against one another.}
-  \item{match_function}{a function to calculate dissimilarity between strings. Defaults to \code{fuzzdist}.}
-  \item{method}{the required 'method' option that corresponds with match_function. Defaults to \code{fuzz_m_ratio}.}
-  \item{threshold}{an upper limit above which similar articles are not recognized as duplicates. Defaults to 0.1.}
-  \item{to_lower}{logical: should text be made lower case prior to searching? Defaults to TRUE.}
+  \item{match_function}{a function to calculate dissimilarity between strings. Defaults to "exact" if doi's are available or "stringdist" otherwise.}
+  \item{method}{the required 'method' option that corresponds with \code{match_function}. Defaults to NULL if \code{match_function} is "exact", "osa" for match_function == "stringdist", or "fuzz_m_ratio" for match_function == "fuzzdist".}
+  \item{threshold}{an upper limit above which similar articles are not recognized as duplicates. Defaults to 5 for stringdist and 0.1 for fuzzdist. Ignored if \code{match_function} == "exact".}
+  \item{to_lower}{logical: should text be made lower case prior to searching? Defaults to FALSE.}
   \item{remove_punctuation}{logical: should punctuation be removed prior to searching? Defaults to FALSE.}
 }
 \value{

@@ -1,7 +1,7 @@
 \name{screen_abstracts}
 \alias{screen_abstracts}
 \title{Shiny app for screening articles by their abstracts}
-\description{This is a simple app for displaying bibliographic data one entry at a time, and manually selecting or excluding them. Articles can be ordered as in the input dataset, alphabetically by title, or in random order (the default).
+\description{This is a simple app for displaying bibliographic data one entry at a time, and manually selecting or excluding them. Articles can be ordered by a user-specified column, or or in one of three automated ways: as in the input dataset, alphabetically by title, or in random order (the default).
 }
 \usage{
 screen_abstracts(x, max_file_size)

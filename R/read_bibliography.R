@@ -8,7 +8,7 @@ read_bibliography <- function(
 
   invisible(Sys.setlocale("LC_ALL", "C"))
   on.exit(invisible(Sys.setlocale("LC_ALL", "")))
-  
+
   if(missing(filename)){
     stop("filename is missing with no default")
   }
@@ -153,43 +153,42 @@ prep_ris <- function(
   delimiter
 ){
 	# detect tags
-	zlist <- as.list(z)
-	zlist <- lapply(zlist, function(a){
-		if(a == ""){
-      return(a)
-		}else{
-			caps_present <- gregexpr(
-        "^[[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1}",
-        a
-      )[[1]]
-			if(any(caps_present == 1)){
-				end_caps <- attr(caps_present, "match.length")[1]
-				tag <- substr(a, 1, end_caps)
-				content <- gsub(
-          "^\\s+|\\s+$", "",
-          substr(a, (end_caps+1), nchar(a))
-        )
-				content <- gsub("^-|:", "", content)
-				content <- gsub("^\\s+|\\s+$", "", content)
-				return(
-          c(tag, content)
-        )
-			}else{
-        return(
-          c("", gsub("^\\s+|\\s+$", "", a))
-        )
-      }
-		}
-		})
-	z_dframe <- as.data.frame(
-    do.call(rbind, zlist),
+  tags <- regexpr(
+    "^([[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1})\\s{1,}-\\s{0,}",
+    perl = TRUE,
+    z
+  )
+  z_dframe <- data.frame(
+    text = z,
+    row = seq_along(z),
+    match_length = attr(tags, "match.length"),
     stringsAsFactors = FALSE
   )
-	colnames(z_dframe) <- c("ris", "text")
-	z_dframe$row_order <- seq_len(nrow(z_dframe))
+  z_list <- split(z_dframe, z_dframe$match_length)
+  z_list <- lapply(z_list, function(a){
+    n <- a$match_length[1]
+    if(n < 0){
+      result <- data.frame(
+        ris = "",
+        text = a$text,
+        row_order = a$row,
+        stringsAsFactors = FALSE
+      )
+    }else{
+      result <- data.frame(
+        ris = sub("\\s{1,}-\\s{0,}", "", substr(a$text, 1, n)),
+        text = gsub("^\\s+|\\s+$", "", substr(a$text, n+1, nchar(a$text))),
+        row_order = a$row,
+        stringsAsFactors = FALSE
+      )
+    }
+    return(result)
+  })
+  z_dframe <- do.call(rbind, z_list)
+  z_dframe <- z_dframe[order(z_dframe$row), ]
 
 	# replace tag information for delimiter == character | space
-	if(delimiter == "character"){
+	if(delimiter == "character"){ # i.e. a single character repeated many times
 		z_dframe$ris[which(
 			unlist(lapply(
         strsplit(z, ""),
@@ -197,17 +196,18 @@ prep_ris <- function(
           length(unique(a)) == 1 & length(a > 6)
         }
       ))
-		)]<-"ER"
+		)] <- "ER"
   }
 	if(delimiter == "space"){
-		z_dframe$ris[which(
-			unlist(lapply(
-        strsplit(z, ""),
-        function(a){
-          all(a == "" | a == " ")
-        }
-      ))
-    )] <- "ER"
+    z_dframe$ris[which(z_dframe$ris == "" & z_dframe$text == "")] <- "ER"
+		# z_df$ris[which(
+		# 	unlist(lapply(
+    #     strsplit(z, ""),
+    #     function(a){
+    #       all(a == "" | a == " ")
+    #     }
+    #   ))
+    # )] <- "ER"
 		# ensure multiple consecutive empty rows are removed
 		z_rollsum <- rollingsum(z_dframe$ris == "ER")
 		if(any(z_rollsum > 1)){
@@ -257,7 +257,7 @@ prep_ris <- function(
 	z_split <- split(z_dframe, z_dframe$ref)
 	z_split <- lapply(z_split, function(a){
 		if(a$ris[1] == ""){
-      a$ris[1]<-"ZZ"
+      a$ris[1] <- "ZZ"
     }
 		accum_ris <- Reduce(c, a$ris, accumulate = TRUE)
 		a$ris <- unlist(lapply(
@@ -268,10 +268,10 @@ prep_ris <- function(
 			}))
 		return(a)
   })
-
 	z_dframe <- as.data.frame(
     do.call(rbind, z_split)
   )
+
   return(z_dframe)
 }
 
@@ -394,19 +394,31 @@ read_ris <- function(x){
 	}
 
 	# method to systematically search for year data
-	year_check <- regexpr("\\d{4}", x.merge$text)
-	if(any(year_check > 0)){
-		check_rows <- which(year_check > 0)
-		year_strings <- as.numeric(substr(
-      x = x.merge$text[check_rows],
-			start = year_check[check_rows],
-      stop = year_check[check_rows]+3
-    ))
+  year_check <- regexpr("^\\d{4}$", x.merge$text)
+  if(any(year_check > 0)){
+    check_rows <- which(year_check > 0)
+    year_strings <- as.numeric(x.merge$text[check_rows])
+
+    # for entries with a bib entry labelled year, check that there arent multiple years
 		if(any(x.merge$bib[check_rows] == "year", na.rm = TRUE)){
-			year_rows <- which(x.merge$bib[check_rows] == "year")
-			x.merge$text[check_rows[year_rows]] <- year_strings[year_rows]
+      # check for repeated year information
+      year_freq <- xtabs(~ ref, data = x.merge[which(x.merge$bib == "year"), ])
+      if(any(year_freq > 1)){
+        year_df <- x.merge[which(x.merge$bib == "year"), ]
+        year_list <- split(nchar(year_df$text), year_df$ris)
+        year_4 <- sqrt((4 - unlist(lapply(year_list, mean))) ^ 2)
+        # rename bib entries that have >4 characters to 'year_additional'
+        incorrect_rows <- which(
+          x.merge$ris != names(which.min(year_4)) &
+          x.merge$bib == "year"
+        )
+        x.merge$bib[incorrect_rows] <- "year_additional"
+      }
 		}else{
-			possible_rows <- which(year_strings > 1850 & year_strings <= as.numeric(format(Sys.Date(), "%Y")))
+			possible_rows <- which(
+        year_strings > 0 &
+        year_strings <= as.numeric(format(Sys.Date(), "%Y")) + 1
+      )
 			tag_frequencies <- as.data.frame(
 				xtabs(~ x.merge$ris[check_rows[possible_rows]]),
 				stringsAsFactors = FALSE
@@ -420,11 +432,12 @@ read_ris <- function(x){
 				rows.tr <- which(x.merge$ris == year_tag)
 				x.merge$bib[rows.tr] <- "year"
 				x.merge$order[rows.tr] <- 3
-				x.merge$text[rows.tr] <- substr(
-          x = x.merge$text[rows.tr],
-          start = year_check[rows.tr],
-          stop = year_check[rows.tr]+3
-        )
+        # the following code was necessary when string >4 characters long were detected
+				# x.merge$text[rows.tr] <- substr(
+        #   x = x.merge$text[rows.tr],
+        #   start = year_check[rows.tr],
+        #   stop = year_check[rows.tr]+3
+        # )
 			}
 		}
 	}
@@ -432,17 +445,17 @@ read_ris <- function(x){
 	# use code from blog.datacite.org for doi detection
 	# then return a consistent format - i.e. no www.dx.doi.org/ etc.
 	# regexpr("/^10.d{4,9}/[-._;()/:A-Z0-9]+$/i", test) # original code
-	doi_check <- regexpr("/10.\\d{4,9}/", x.merge$text) # my version
-	if(any(doi_check > 0)){
-		check_rows <- which(doi_check > 0)
-		x.merge$bib[check_rows] <- "doi"
-		x.merge$order[check_rows] <- 11
-		x.merge$text[check_rows] <- substr(
-      x = x.merge$text[check_rows],
-			start = doi_check[check_rows]+1,
-			stop = nchar(x.merge$text[check_rows])
-    )
-	}
+	# doi_check <- regexpr("/10.\\d{4,9}/", x.merge$text) # my version
+	# if(any(doi_check > 0)){
+	# 	check_rows <- which(doi_check > 0)
+	# 	x.merge$bib[check_rows] <- "doi"
+	# 	x.merge$order[check_rows] <- 11
+	# 	x.merge$text[check_rows] <- substr(
+  #     x = x.merge$text[check_rows],
+	# 		start = doi_check[check_rows]+1,
+	# 		stop = nchar(x.merge$text[check_rows])
+  #   )
+	# }
 
 	# ensure author data from a single ris tag
 	if(any(x.merge$bib == "author")){

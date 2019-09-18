@@ -1,8 +1,7 @@
 \name{screen_duplicates}
 \alias{screen_duplicates}
 \title{Shiny app for locating and excluding duplicated entries in a dataset}
-\description{In development
-}
+\description{This is a simple app for calculating, displaying and screening potential duplicates in bibliographic data}
 \usage{
 screen_duplicates(x, max_file_size)
 }
