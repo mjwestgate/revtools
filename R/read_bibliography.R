@@ -200,14 +200,6 @@ prep_ris <- function(
   }
 	if(delimiter == "space"){
     z_dframe$ris[which(z_dframe$ris == "" & z_dframe$text == "")] <- "ER"
-		# z_df$ris[which(
-		# 	unlist(lapply(
-    #     strsplit(z, ""),
-    #     function(a){
-    #       all(a == "" | a == " ")
-    #     }
-    #   ))
-    # )] <- "ER"
 		# ensure multiple consecutive empty rows are removed
 		z_rollsum <- rollingsum(z_dframe$ris == "ER")
 		if(any(z_rollsum > 1)){
@@ -329,7 +321,7 @@ generate_bibliographic_names <- function(x){
 			name_vector[1] <- strsplit(a$author[1], ",")[[1]][1]
     }
 		if(any(names(a) == "year")){
-      name_vector[2] <- a$year
+      name_vector[2] <- a$year[1]
     }
 		if(any(names(a) == "journal")){
 			journal_info <- strsplit(a$journal, " ")[[1]]
@@ -345,7 +337,7 @@ generate_bibliographic_names <- function(x){
     }
 	}))
 
-	# where this is not possible, give a 'ref1' style result only as a last resort.
+	# where this is not possible, give a 'ref1' style result
 	if(any(nonunique_names == "ref")){
 		rows_tr <- which(nonunique_names == "ref")
 		nonunique_names[rows_tr] <- create_index("ref", length(rows_tr))
@@ -353,16 +345,7 @@ generate_bibliographic_names <- function(x){
 
 	# ensure names are unique
 	if(length(unique(nonunique_names)) < length(nonunique_names)){
-		name_counts <- xtabs(~ nonunique_names)
-		duplicated_names <- names(which(name_counts > 1))
-		for(i in 1:length(duplicated_names)){
-			rows <- which(nonunique_names == duplicated_names[i])
-			new_names <- paste(
-        nonunique_names[rows],
-        letters[seq_len(length(rows))],
-        sep = "_")
-			nonunique_names[rows] <- new_names
-    }
+    nonunique_names <- make.unique(nonunique_names, sep = "_")
   }
 
 	return(nonunique_names)
@@ -409,7 +392,7 @@ read_ris <- function(x){
         year_4 <- sqrt((4 - unlist(lapply(year_list, mean))) ^ 2)
         # rename bib entries that have >4 characters to 'year_additional'
         incorrect_rows <- which(
-          x.merge$ris != names(which.min(year_4)) &
+          x.merge$ris != names(which.min(year_4)[1]) &
           x.merge$bib == "year"
         )
         x.merge$bib[incorrect_rows] <- "year_additional"
