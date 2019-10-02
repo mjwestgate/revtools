@@ -60,7 +60,12 @@ format_citation.list <- function(
 			result <- paste0(
         author.info,
         " (", data$year, ") ",
-				data$title, ". ", data$journal, " ", data$volume, ": ", data$pages
+				data$title, ". ",
+        tools::toTitleCase(tolower(data$journal)),
+        " ",
+        data$volume,
+        ": ",
+        data$pages
       )
 		}else{
 			result <- paste(
@@ -141,10 +146,11 @@ format_citation.data.frame <- function(
 		}else{
       author_text <- paste0(author_vector[1], " et al.")
     }
+    journal_text <- tools::toTitleCase(tolower(a[[source]]))
     if(add_html){
-      journal_text <- paste0("<i>", a[[source]], "</i>. ")
+      journal_text <- paste0("<i>", journal_text, "</i>. ")
     }else{
-      journal_text <- paste0(a[[source]], ". ")
+      journal_text <- paste0(journal_text, ". ")
     }
 		text_vector <- paste0(
       author_text,
@@ -155,7 +161,7 @@ format_citation.data.frame <- function(
     return(text_vector)
   }))
 	}else{
-    if(details == FALSE){ #} & (names(x)[1] == "label")){
+    if(details == FALSE){
       if(any(names(data) == "title")){
         data_out <- data[["title"]]
       }else{

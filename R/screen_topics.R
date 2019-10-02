@@ -365,7 +365,8 @@ server <- function(input, output, session){
       data$plot_ready$x$caption <- paste0(
         format_citation(
           data = data$plot_ready$x,
-          details = !input$hide_names,
+          details = !as.logical(input$hide_names),
+          add_html = TRUE,
           line_breaks = TRUE
         ),
         "<br>[Topic #",
