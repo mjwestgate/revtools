@@ -258,6 +258,10 @@ server <- function(input, output, session){
         response_variable = input$response_variable,
         text_variables = input$variable_selector
       )
+
+      # ensure all entries have text
+      data$grouped <- data$grouped[nchar(data$grouped$text) > 0, ]
+
       data$dtm <- make_dtm(
         x = data$grouped$text,
         stop_words = data$stopwords,
@@ -271,13 +275,14 @@ server <- function(input, output, session){
         plot_features$common_words <- FALSE
       }
 
+      # this section replaced above
       # check for rows with no words; update to ensure all entries in 'data' match one another
-      dtm_rowsums <- apply(data$dtm, 1, sum)
-      if(any(dtm_rowsums == 0)){
-        keep_rows <- which(dtm_rowsums > 0)
-        data$grouped <- data$grouped[keep_rows, ]
-        data$dtm <- data$dtm[keep_rows, ]
-      }
+      # dtm_rowsums <- apply(data$dtm, 1, sum)
+      # if(any(dtm_rowsums == 0)){
+      #   keep_rows <- which(dtm_rowsums > 0)
+      #   data$grouped <- data$grouped[keep_rows, ]
+      #   data$dtm <- data$dtm[keep_rows, ]
+      # }
 
       # calculate topic model
       data$model <- run_topic_model(

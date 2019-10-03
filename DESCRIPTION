@@ -6,7 +6,7 @@ Authors@R: c(person(c("Martin", "J."), "Westgate", role=c("aut", "cre"),
   email="martinjwestgate@gmail.com"))
 Description: Researchers commonly need to summarize scientific information, a process known as 'evidence synthesis'. The first stage of a synthesis process (such as a systematic review or meta-analysis) is to download a list of references from academic search engines such as 'Web of Knowledge' or 'Scopus'. The traditional approach to systematic review is then to sort these data manually, first by locating and removing duplicated entries, and then screening to remove irrelevant content by viewing titles and abstracts (in that order). 'revtools' provides interfaces for each of these tasks. An alternative approach, however, is to draw on tools from machine learning to visualise patterns in the corpus. In this case, you can use 'revtools' to render ordinations of text drawn from article titles, keywords and abstracts, and interactively select or exclude individual references, words or topics.
 Depends: R (>= 3.5.0)
-Imports: ade4, modeltools, NLP, plotly, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
+Imports: ade4, modeltools, ngram, NLP, plotly, slam, shiny, shinydashboard, SnowballC, stringdist, tm, topicmodels, viridisLite
 License: GPL-3
 URL: https://revtools.net
 BugReports: https://github.com/mjwestgate/revtools/issues

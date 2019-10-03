@@ -17,7 +17,8 @@ run_topic_model <- function(
 	iterations = 2000
 ){
 	LDA_control <- list(
-    iter = iterations
+    iter = iterations,
+    burnin = iterations * 0.1
   )
 	switch(type,
 		"ctm" = {

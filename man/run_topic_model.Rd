@@ -4,7 +4,7 @@
 \title{Calculate a topic model}
 \description{Calculate a topic model using Latent Dirichlet Allocation (\code{LDA}) or Correlated Topic Models (\code{CTM}), using the \code{topicmodels} package.}
 \usage{
-run_topic_model(dtm, type, n_topics, iterations)
+run_topic_model(dtm, type = "lda", n_topics = 5, iterations = 2000)
 }
 \arguments{
   \item{dtm}{a Document Term Matrix (DTM)}

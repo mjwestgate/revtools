@@ -4,13 +4,17 @@
 \title{Construct a document-term matrix (DTM)}
 \description{Takes bibliographic data and converts it to a DTM for passing to topic models.}
 \usage{
-make_dtm(x, stop_words, min_freq, max_freq)
+make_dtm(x, stop_words, min_freq = 0.01, max_freq = 0.85,
+  ngram_check = TRUE, ngram_quantile = 0.8, return_matrix = FALSE)
 }
 \arguments{
   \item{x}{a vector of strings}
   \item{stop_words}{optional vector of strings, listing terms to be removed from the DTM prior to analysis}
   \item{min_freq}{minimum proportion of entries that a term must be found in to be retained in the analysis. Defaults to 0.01.}
   \item{max_freq}{maximum proportion of entries that a term must be found in to be retained in the analysis. Defaults to 0.85.}
+  \item{ngram_check}{logical: should ngrams be searched for?}
+  \item{ngram_quantile}{what quantile of ngrams should be retained. Defaults to 0.8; i.e. the 80th percentile of bigram frequencies after removing all bigrams with frequencies <=2.}
+  \item{return_matrix}{logical: should \code{make_dtm} return a \code{matrix}? Defaults to FALSE, in which case a \code{simple_triplet_matrix} is returned instead.}
 }
 \value{
 An object of class 'matrix', listing the terms (columns) present in each string (rows).
