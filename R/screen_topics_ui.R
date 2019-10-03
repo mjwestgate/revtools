@@ -61,8 +61,8 @@ screen_topics_ui <- function(){
         br()
       ),
       menuItem(
-        text = "Model",
-        icon = icon("calculator"),
+        text = "Processing",
+        icon = shiny::icon("align-left"),
         sliderInput(
           inputId = "min_freq",
           label = "Lower threshold for removing rare terms (%):",
@@ -79,6 +79,19 @@ screen_topics_ui <- function(){
           step = 1,
           value = 85
         ),
+        sliderInput(
+          inputId = "ngram_quantile",
+          label = "Minimum frequency quantile for recognising bigrams (%):",
+          min = 0,
+          max = 100,
+          step = 2,
+          value = 80
+        ),
+        br()
+      ),
+      menuItem(
+        text = "Model",
+        icon = icon("calculator"),
         selectInput(
           inputId = "model_type",
           label = "Model type",
