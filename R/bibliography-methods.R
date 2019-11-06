@@ -138,12 +138,12 @@ as.data.frame.bibliography <- function(x, ...){
   )
 
 	x_dframe <- data.frame(
-		label = make.names(names(x_list), unique=TRUE),
+		label = make.names(names(x_list), unique = TRUE),
 		do.call(rbind, x_list),
 		stringsAsFactors = FALSE
   )
 	rownames(x_dframe) <- NULL
-
+  colnames(x_dframe) <- clean_names(colnames(x_dframe))
 	return(x_dframe)
 }
 

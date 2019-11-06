@@ -29,7 +29,8 @@ tag_lookup <- function(
         "address" = "AD",
         "editor" = "ED",
         "edition" = "ED",
-        "language" = "LA"
+        "language" = "LA",
+        "eppi_id" = "U1"
       )
     },
     "ris_write" = {
@@ -57,6 +58,7 @@ tag_lookup <- function(
         "editor" = "ED",
         "edition" = "ET",
         "language" = "LA",
+        "eppi_id" = "U1",
         "end" = "ER"
       )
     },
