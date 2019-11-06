@@ -11,7 +11,7 @@
     \item \code{\link{screen_abstracts}} Screen articles by abstract
 		\item \code{\link{screen_topics}} Screen data by topic
   }
-	\strong{Data manipulation}
+	\strong{Bibliographic methods}
 	\itemize{
 		\item \code{\link{read_bibliography}} Import bibliographic data
 		\item \code{\link{write_bibliography}} Export bibliographic data
@@ -19,6 +19,8 @@
 		\item \code{\link{bibliography-methods}} Print, summary, as.bibliography, as.data.frame and [ methods for class 'bibliography'
     \item \code{\link{tag_lookup}} Lookup table for ris tag transformations
     \item \code{\link{merge_columns}} rbind two data.frames with different numbers of columns
+    \item \code{\link{format_citation}} Return a clean citation from a bibliography or data.frame
+    \item \code{\link{add_line_breaks}} Set a maximum character width for strings in a vector
   }
   \strong{Distributing tasks among a team}
   \itemize{
@@ -30,7 +32,7 @@
 	\itemize{
     \item \code{\link{fuzz_functions}} Fuzzy string matching
 		\item \code{\link{find_duplicates}} Locate potentially duplicated references
-		\item \code{\link{extract_unique_references}} return a data.frame with only 'unique' references
+		\item \code{\link{extract_unique_references}} Return a data.frame with only 'unique' references
 		\item \code{\link{screen_duplicates}} Screen for duplicates
 	}
 	\strong{Text mining}

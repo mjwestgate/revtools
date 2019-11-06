@@ -1,7 +1,7 @@
 export(read_bibliography, write_bibliography,
 as.bibliography, summary.bibliography, print.bibliography, '[.bibliography', c.bibliography,
 tag_lookup,
-format_citation,
+add_line_breaks, format_citation,
 format_citation.bibliography, format_citation.data.frame, format_citation.list,
 allocate_effort, distribute_tasks, aggregate_tasks,
 fuzzdist,
