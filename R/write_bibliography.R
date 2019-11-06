@@ -61,18 +61,19 @@ write_bibliography <- function(x, filename, format = "ris"){
 
   		# page information needs to be treated separately
   		if(any(b$tag == "pages")){
-  			page.row <- which(b$tag == "pages")
-  			page.sep <- strsplit(b$entry[page.row], "-")[[1]]
-  			if(length(page.sep) > 1){
-  				new.rows <- data.frame(
+  			page_row <- which(b$tag == "pages")
+  			page_sep <- strsplit(b$entry[page_row], "-")[[1]]
+        page_sep <- page_sep[grepl("^[[:digit:]]+$", page_sep)]
+  			if(length(page_sep) > 1){
+  				new_rows <- data.frame(
             tag = c("startpage", "endpage"),
-  					entry = page.sep,
+  					entry = page_sep[1:2],
             stringsAsFactors = FALSE
           )
   				b <- as.data.frame(rbind(
-  					b[c(1:(page.row-1)), ],
-  					new.rows,
-  					b[c((page.row+1):nrow(b)), ])
+  					b[c(1:(page_row-1)), ],
+  					new_rows,
+  					b[c((page_row+1):nrow(b)), ])
           )
   			}}
   		b$order <- seq_len(nrow(b))
