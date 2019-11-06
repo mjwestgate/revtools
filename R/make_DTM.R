@@ -6,6 +6,7 @@ make_DTM <- function(
   max_freq = 0.85,
   ngram_check = TRUE,
   ngram_quantile = 0.8,
+  retain_empty_rows = FALSE,
   return_matrix = FALSE
 ){
   make_dtm(x, stop_words,
@@ -22,6 +23,7 @@ make_dtm <- function(
   max_freq = 0.85,
   ngram_check = TRUE,
   ngram_quantile = 0.8,
+  retain_empty_rows = FALSE,
   return_matrix = FALSE
 ){
 
@@ -50,35 +52,44 @@ make_dtm <- function(
 
   # ngrams
   if(ngram_check){
-    ngrams <- ngram::get.phrasetable(ngram::ngram(x))
-    ngrams <- ngrams[ngrams$freq > 2, ]
-    ngrams <- ngrams[ngrams$freq > stats::quantile(ngrams$freq, ngram_quantile), ]
 
-    if(nrow(ngrams) > 0){
-      # split into pairs
-      ngram_list <- strsplit(ngrams$ngrams, " ")
-      ngram_df <- as.data.frame(
-        do.call(rbind, ngram_list),
-        stringsAsFactors = FALSE
-      )
+    # avoid errors in ngram calculation
+    ngram_x <- x[!is.na(x)]
+    ngram_x <- ngram_x[unlist(lapply(ngram_x, ngram::wordcount)) > 1]
 
-      # remove small & stop words
-      keep_rows <- apply(ngram_df[, 1:2], 1, function(a, sw){
-        all(nchar(a) > 4) & !any(a %in% sw)
-      }, sw = stop_words)
-      if(any(keep_rows)){
-        ngram_df <- ngram_df[keep_rows, ]
+    # calculate ngrams
+    if(length(ngram_x) > 0){
+      ngrams <- ngram::get.phrasetable(ngram::ngram(ngram_x))
+      ngrams <- ngrams[ngrams$freq > 2, ]
+      ngrams <- ngrams[ngrams$freq > stats::quantile(ngrams$freq, ngram_quantile), ]
 
-        source_text <- apply(ngram_df, 1, function(a){paste(a, collapse = " ")})
-        replacement_text <- apply(ngram_df, 1, function(a){paste(a, collapse = "_")})
+      if(nrow(ngrams) > 0){
+        # split into pairs
+        ngram_list <- strsplit(ngrams$ngrams, " ")
+        ngram_df <- as.data.frame(
+          do.call(rbind, ngram_list),
+          stringsAsFactors = FALSE
+        )
 
-        # replace in a loop
-        for(i in seq_along(source_text)){
-          x <- gsub(source_text[i], replacement_text[i], x)
-        }
+        # remove small & stop words
+        keep_rows <- apply(ngram_df[, 1:2], 1, function(a, sw){
+          all(nchar(a) > 4) & !any(a %in% sw)
+        }, sw = stop_words)
+        if(any(keep_rows)){
+          ngram_df <- ngram_df[keep_rows, ]
 
-      } # end if any kept ngrams
-    } # end if >0 ngrams
+          source_text <- apply(ngram_df, 1, function(a){paste(a, collapse = " ")})
+          replacement_text <- apply(ngram_df, 1, function(a){paste(a, collapse = "_")})
+
+          # replace in a loop
+          for(i in seq_along(source_text)){
+            x <- gsub(source_text[i], replacement_text[i], x)
+          }
+
+        } # end if any kept ngrams
+      } # end if >0 ngrams
+    } # end if >0 strings containing 2 or more words
+
   } # end if ngram_check
 
   # continue tm
@@ -137,7 +148,6 @@ make_dtm <- function(
       )
     lookup$final_n <- text_match$final_n[order(text_match$initial_n)]
 
-
     # create new dtm_df that ranks by stemmed words
     dtm_df$j_new <- lookup$final_n[dtm_df$j]
     dtm_list <- split(dtm_df[c("j_new", "v")], dtm_df$i)
@@ -163,15 +173,28 @@ make_dtm <- function(
     lookup2$end[unique_j] <- seq_along(unique_j)
 
     # use to create simple_triplet_matrix
-    dtm2 <- slam::simple_triplet_matrix(
-      i = dtm_df2$i,
-      j = lookup2$end[dtm_df2$j],
-      v = dtm_df2$v,
-      dimnames = list(
-        "Docs" = as.character(seq_along(unique(dtm_df2$i))),
-        "Terms" = lookup$initial[sort(unique(lookup$final_n))]
+    if(retain_empty_rows){
+      name_lookup <- as.numeric(names(dtm_list))
+      dtm2 <- slam::simple_triplet_matrix(
+        i = name_lookup[dtm_df2$i],
+        j = lookup2$end[dtm_df2$j],
+        v = dtm_df2$v,
+        dimnames = list(
+          "Docs" = as.character(seq_len(max(name_lookup))),
+          "Terms" = lookup$initial[sort(unique(lookup$final_n))]
+        )
       )
-    )
+    }else{
+      dtm2 <- slam::simple_triplet_matrix(
+        i = dtm_df2$i,
+        j = lookup2$end[dtm_df2$j],
+        v = dtm_df2$v,
+        dimnames = list(
+          "Docs" = names(dtm_list),
+          "Terms" = lookup$initial[sort(unique(lookup$final_n))]
+        )
+      )
+    }
 
   }else{
     dtm2 <- dtm
@@ -180,10 +203,7 @@ make_dtm <- function(
   # optionally return a traditional matrix
   if(return_matrix){
     output <- as.matrix(dtm2) # convert back to matrix
-    rownames(output) <- paste0(
-      "V",
-      seq_len(nrow(output))
-    )
+    rownames(output) <- dtm2$dimnames$Docs
     return(output)
   }else{
     return(dtm2)
