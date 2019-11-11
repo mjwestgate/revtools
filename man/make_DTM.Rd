@@ -1,6 +1,5 @@
 \name{make_dtm}
 \alias{make_dtm}
-\alias{make_DTM}
 \title{Construct a document-term matrix (DTM)}
 \description{Takes bibliographic data and converts it to a DTM for passing to topic models.}
 \usage{
@@ -26,8 +25,6 @@ This is primarily intended to be called internally by \code{screen_topics}, but 
 This function uses some standard tools like stemming, converting words to lower case, and removal of numbers or punctuation. It also replaces stemmed words with the shortest version of all terms that share the same stem, which doesn't affect the calculations, but makes the resulting analyses easier to interpret. It doesn't use part-of-speech tagging.
 
 Words that occur in 2 entries or fewer are always removed by \code{make_dtm}, so values of \code{min_freq} that result in a threshold below this will not affect the result. Arguments to \code{max_freq} are passed as is. Similarly words consisting of three letters or fewer are removed.
-
-This function is synonymous with the earlier function \code{make_DTM}, which will be removed from future versions of \code{revtools}.
 
 If \code{retain_empty_rows} is FALSE (the default) and the object returned is named \code{z}, then \code{as.numeric(z$dimnames$Docs)} provides an index to which entries have been retained from the input vector (\code{x}).
 }

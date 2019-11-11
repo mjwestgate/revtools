@@ -20,7 +20,7 @@ file_location <- system.file(
 x <- read_bibliography(file_location)
 
 # construct a document-term matrix
-x_DTM <- make_DTM(x$title,
+x_dtm <- make_dtm(x$title,
   stop_words = revwords())
-# Note that make_DTM calls revwords by default, so this is technically redundant
+# Note that make_dtm calls revwords by default, so this is technically redundant
 }

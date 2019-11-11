@@ -1,6 +1,5 @@
 \name{run_topic_model}
 \alias{run_topic_model}
-\alias{run_LDA}
 \title{Calculate a topic model}
 \description{Calculate a topic model using Latent Dirichlet Allocation (\code{LDA}) or Correlated Topic Models (\code{CTM}), using the \code{topicmodels} package.}
 \usage{
@@ -16,7 +15,7 @@ run_topic_model(dtm, type = "lda", n_topics = 5, iterations = 2000)
 A topic model with the specified parameters.
 }
 \note{
-This is a basic wrapper function designed to allow consistent specification of model parameters within \code{shiny} apps. \code{run_LDA} is a synonym for \code{run_topic_model} and will be removed from future versions.
+This is a basic wrapper function designed to allow consistent specification of model parameters within \code{shiny} apps.
 }
 \seealso{
 	\code{\link{make_dtm}} for constructing data to pass to this function; \code{\link{screen_topics}} for interactive visualisation of topic model results.

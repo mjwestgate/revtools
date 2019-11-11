@@ -1,20 +1,4 @@
 # function to take a data.frame with bibliographic information, extract useful information, and make a DTM
-make_DTM <- function(
-  x, # a vector
-	stop_words,
-  min_freq = 0.01,
-  max_freq = 0.85,
-  ngram_check = TRUE,
-  ngram_quantile = 0.8,
-  retain_empty_rows = FALSE
-){
-  make_dtm(x, stop_words,
-    min_freq, max_freq,
-    ngram_check, ngram_quantile,
-    return_matrix
-  )
-}
-
 make_dtm <- function(
 	x,
 	stop_words,

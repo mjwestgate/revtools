@@ -9,8 +9,8 @@ Class 'screen_topics_progress' has seven slots containing the following informat
     \item \strong{stopwords} vector of words excluded from the dtm
     \item \strong{columns} vector of column names in the original dataset
     \item \strong{grouped} a data.frame showing grouped data as specified by the user
-		\item \strong{dtm} document-term matrix, created by \code{make_DTM}
-		\item \strong{model} most recent topic model, created by \code{run_LDA}
+		\item \strong{dtm} document-term matrix, created by \code{make_dtm}
+		\item \strong{model} most recent topic model, created by \code{run_topic_model}
     \item \strong{plot_ready} data needed for the main plot (coordinates etc.)
 	}
 }

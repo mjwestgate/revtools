@@ -7,7 +7,7 @@ allocate_effort, distribute_tasks, aggregate_tasks,
 fuzzdist,
 fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
-merge_columns, make_dtm, make_DTM, run_LDA, run_topic_model, revwords,
+merge_columns, make_dtm, run_topic_model, revwords,
 start_review_window,
 screen_duplicates, screen_titles, screen_abstracts,
 screen_topics)
