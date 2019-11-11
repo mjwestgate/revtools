@@ -6,7 +6,7 @@
 \usage{
 make_dtm(x, stop_words, min_freq = 0.01, max_freq = 0.85,
   ngram_check = TRUE, ngram_quantile = 0.8,
-  retain_empty_rows = FALSE, return_matrix = FALSE)
+  retain_empty_rows = FALSE)
 }
 \arguments{
   \item{x}{a vector of strings}
@@ -16,10 +16,9 @@ make_dtm(x, stop_words, min_freq = 0.01, max_freq = 0.85,
   \item{ngram_check}{logical: should ngrams be searched for?}
   \item{ngram_quantile}{what quantile of ngrams should be retained. Defaults to 0.8; i.e. the 80th percentile of bigram frequencies after removing all bigrams with frequencies <=2.}
   \item{retain_empty_rows}{logical: should the function return an object with the same length as the input string (TRUE), or remove rows that contain no text after filtering rare & common words etc? (FALSE, the default). The latter is the default because this is required by \code{run_topic_model}.}
-  \item{return_matrix}{logical: should \code{make_dtm} return a \code{matrix}? Defaults to FALSE, in which case a \code{simple_triplet_matrix} is returned instead.}
 }
 \value{
-An object of class 'matrix', listing the terms (columns) present in each string (rows).
+An object of class \code{simple_triplet_matrix}, listing the terms (columns) present in each string (rows).
 }
 \details{
 This is primarily intended to be called internally by \code{screen_topics}, but is made available for users to generate their own topic models with the same properties as those in revtools.
@@ -46,10 +45,9 @@ x <- read_bibliography(file_location)
 # construct a document-term matrix
 # note: this can take a long time to run for large datasets
 x_dtm <- make_dtm(x$title)
-class(x_dtm) # simple_triplet_matrix is the default
 
 # to return a matrix where length(output) == nrow(x)
-x_dtm <- make_dtm(x$title, retain_empty_rows = TRUE, return_matrix = TRUE)
-class(x_dtm) # matrix
+x_dtm <- make_dtm(x$title, retain_empty_rows = TRUE)
+x_dtm <- as.matrix(x_dtm) # to convert to class 'matrix'
 dim(x_dtm) # 20 articles, 10 words
 }

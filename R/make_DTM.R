@@ -6,8 +6,7 @@ make_DTM <- function(
   max_freq = 0.85,
   ngram_check = TRUE,
   ngram_quantile = 0.8,
-  retain_empty_rows = FALSE,
-  return_matrix = FALSE
+  retain_empty_rows = FALSE
 ){
   make_dtm(x, stop_words,
     min_freq, max_freq,
@@ -23,8 +22,7 @@ make_dtm <- function(
   max_freq = 0.85,
   ngram_check = TRUE,
   ngram_quantile = 0.8,
-  retain_empty_rows = FALSE,
-  return_matrix = FALSE
+  retain_empty_rows = FALSE
 ){
 
   # check format
@@ -200,13 +198,5 @@ make_dtm <- function(
     dtm2 <- dtm
   } # end if duplicated
 
-  # optionally return a traditional matrix
-  if(return_matrix){
-    output <- as.matrix(dtm2) # convert back to matrix
-    rownames(output) <- dtm2$dimnames$Docs
-    return(output)
-  }else{
-    return(dtm2)
-  }
-
+  return(dtm2)
 }
