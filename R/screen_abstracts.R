@@ -76,7 +76,14 @@ screen_abstracts <- function(
         progress$current <- 1
       }
       if(input$hide_screened){
-        progress$available <- which(is.na(data$raw$selected_abstracts))
+        # if(length(progress$screen_cols) > 1){
+        #   progress$available <- which(
+        #     apply(data$raw[, progress$screen_cols], 1, function(a){all(is.na(a))})
+        #   )
+        # }else{
+        #   progress$available <- which(is.na(data$raw[, progress$screen_cols]))
+        # }
+        progress$available <- which(is.na(data$raw$screened_abstracts))
         progress$max_n <- length(progress$available)
       }else{
         progress$max_n <- nrow(data$raw)
@@ -135,7 +142,7 @@ screen_abstracts <- function(
         }else{
           abstract_text <- "<em>No abstract available</em>"
         }
-        current_status <- data$raw$selected_abstracts[progress$row]
+        current_status <- data$raw$screened_abstracts[progress$row]
         if(is.na(current_status)){
           text_color <- "black"
           text_label <- ""
@@ -172,7 +179,7 @@ screen_abstracts <- function(
       if(!is.null(data$raw)){
         text_out <- HTML(
           paste0(
-            nrow(data$raw) - length(which(is.na(data$raw$selected_abstracts))),
+            nrow(data$raw) - length(which(is.na(data$raw$screened_abstracts))),
             " entries screened | Showing entry ",
             progress$current,
             " of ",
@@ -335,9 +342,9 @@ screen_abstracts <- function(
 
     # SELECTION & NAVIGATION
     observeEvent(input$select_yes, {
-      data$raw$selected_abstracts[progress$row] <- "selected"
+      data$raw$screened_abstracts[progress$row] <- "selected"
       if(input$hide_screened){ # progress$current remains the same and progress$available changes
-        progress$available <- which(is.na(data$raw$selected_abstracts))
+        progress$available <- which(is.na(data$raw$screened_abstracts))
         progress$max_n <- length(progress$available)
         if(progress$current > progress$max_n){
           progress$current <- progress$max_n
@@ -350,9 +357,9 @@ screen_abstracts <- function(
     })
 
     observeEvent(input$select_no, {
-      data$raw$selected_abstracts[progress$row] <- "excluded"
+      data$raw$screened_abstracts[progress$row] <- "excluded"
       if(input$hide_screened){
-        progress$available <- which(is.na(data$raw$selected_abstracts))
+        progress$available <- which(is.na(data$raw$screened_abstracts))
         progress$max_n <- length(progress$available)
         if(progress$current > progress$max_n){
           progress$current <- progress$max_n
@@ -417,15 +424,16 @@ screen_abstracts <- function(
       if(!is.null(data$raw)){
         if(input$hide_screened){ # i.e. text were shown but are now hidden
           # ensure that - if the currently viewed row is not selected - then it stays displayed
-          if(is.na(data$raw$selected_abstracts[progress$row])){
+          # if(is.na(data$raw$screened_abstracts[progress$row])){
+          if(progress$row %in% progress$available){
             progress$current <- choose_abstract_current(
               progress$order,
-              which(is.na(data$raw$selected_abstracts)),
+              which(is.na(data$raw$screened_abstracts)),
               progress$row
             )
             # this doesn't work at present
           }
-          progress$available <- which(is.na(data$raw$selected_abstracts))
+          progress$available <- which(is.na(data$raw$screened_abstracts))
         }else{
           if(progress$current < 1){
             progress$current <- 1

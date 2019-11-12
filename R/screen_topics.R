@@ -132,7 +132,7 @@ server <- function(input, output, session){
     if(!is.null(data$raw)){
       HTML(
         paste0(
-          length(which(!is.na(data$raw$selected))),
+          length(which(!is.na(data$raw$screened_topics))),
           " of ",
           nrow(data$raw),
           " entries screened"
@@ -148,7 +148,7 @@ server <- function(input, output, session){
         "Dataset containing ",
         nrow(data$raw),
         " entries | ",
-        length(which(!is.na(data$raw$selected))),
+        length(which(!is.na(data$raw$screened_topics))),
         " screened<br><br>"
       ))
     }
@@ -191,15 +191,15 @@ server <- function(input, output, session){
   output$response_selector <- renderUI({
     if(!is.null(data$columns)){
       if(any(data$columns == "label")){
-        selected <- "label"
+        response_column <- "label"
       }else{
-        selected <- data$columns[1]
+        response_column <- data$columns[1]
       }
       selectInput(
         "response_variable",
         label = "Show one point per:",
         choices = data$columns,
-        selected = selected
+        selected = response_column
       )
     }
   })
@@ -248,8 +248,8 @@ server <- function(input, output, session){
       plot_features$appearance <- NULL
 
       # choose which rows to use for later calculation
-      if(!all(is.na(data$raw$selected))){
-        data$raw$display[which(is.na(data$raw$selected) == FALSE)] <- FALSE
+      if(!all(is.na(data$raw$screened_topics))){
+        data$raw$display[which(is.na(data$raw$screened_topics) == FALSE)] <- FALSE
       }
 
       # create data.frame with only relevant information for topic modelling
@@ -624,7 +624,7 @@ server <- function(input, output, session){
       selected_rows <- display_rows[
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
-      data$raw$selected[selected_rows] <- TRUE
+      data$raw$screened_topics[selected_rows] <- TRUE
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -637,7 +637,7 @@ server <- function(input, output, session){
       # map to data$raw
       display_rows <- which(data$raw$display)
       rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
-      data$raw$selected[rows] <- TRUE
+      data$raw$screened_topics[rows] <- TRUE
     }
   })
 
@@ -650,7 +650,7 @@ server <- function(input, output, session){
       selected_rows <- display_rows[
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
-      data$raw$selected[selected_rows] <- FALSE
+      data$raw$screened_topics[selected_rows] <- FALSE
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -663,7 +663,7 @@ server <- function(input, output, session){
       # map to data$raw
       display_rows <- which(data$raw$display)
       rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
-      data$raw$selected[rows] <- FALSE
+      data$raw$screened_topics[rows] <- FALSE
     }
   })
 

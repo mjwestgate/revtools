@@ -81,7 +81,10 @@ build_plot_data <- function(info, dtm, model, hide_names){
   y_matrix <- t(modeltools::posterior(model)$terms)
 
   # exclude following columns: topic, select, display
-  keep_cols <- which((colnames(info) %in% c("topic", "selected", "display")) == FALSE)
+  keep_cols <- which(
+    !(colnames(info) %in%
+    c("topic", "screened_topics", "display")
+  ))
 
   # build main plot information (x)
   x_df <- cbind(
@@ -199,7 +202,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
 
 add_required_columns <- function(data){
   added_cols <- data.frame(
-    selected = NA,
+    screened_topics = NA,
     display = TRUE,
     topic = NA,
     notes = NA

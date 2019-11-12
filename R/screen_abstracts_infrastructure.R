@@ -34,7 +34,7 @@ load_abstract_data <- function(data){
       rnorm(nrow(data)),
       ties.method = "random"
     )
-    x$progress$available <- which(is.na(data$selected_abstracts))
+    x$progress$available <- which(is.na(data$screened_abstracts))
     x$progress$max_n <- length(x$progress$available)
     x$progress$row <- x$progress$available[
       which.min(
@@ -52,17 +52,12 @@ load_abstract_data <- function(data){
 
 add_abstract_columns <- function(df){
 
-  # set display/save columns
-  # if(!any(colnames(df) == "color")){
-  #   df$color <- "#000000"
-  # }
-
   if(!any(colnames(df) == "label")){
     df$label <- generate_bibliographic_names(df)
-    df <- df[, c(ncol(df), c(1:(ncol(df)-1)))]
+    df <- df[, c(ncol(df), seq_len(ncol(df)-1))]
   }
-  if(!any(colnames(df) == "selected_abstracts")){
-    df$selected_abstracts <- NA
+  if(!any(colnames(df) == "screened_abstracts")){
+    df$screened_abstracts <- NA
   }
   if(!any(colnames(df) == "notes")){
     df$notes <- ""
@@ -120,7 +115,7 @@ choose_abstract_row <- function(
 # set progress$current when other inputs are known
 choose_abstract_current <- function(
   order_vec, # progress$order
-  available_vec, # vector showing which are available (numeric). which(is.na(data$raw$selected_abstracts))
+  available_vec, # vector showing which are available (numeric). which(is.na(data$raw$screened_abstracts))
   row # currently selected row # progress$row
 ){
   order_current <- order_vec[row]
