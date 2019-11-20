@@ -2,18 +2,20 @@ load_title_data <- function(data){
 
   x <- list(
     data = list(
-      raw = NULL,
-      current = NULL,
+      raw = NULL
+    ),
+    progress = list(
+      order = NULL,
+      screening_page = NULL,
+      page = NULL,
       n_current = NULL,
-      n_previous = NULL
+      n_previous = NULL,
+      current = NULL
     ),
     selector = list(
       yes = c(0),
       no = c(0),
       maybe = c(0)
-    ),
-    click_values = list(
-      page = NULL
     )
   )
 
@@ -36,28 +38,29 @@ load_title_data <- function(data){
       )
     }
     # add extra columns as needed
-    if(!any(colnames(data) == "selected")){data$selected <- NA}
+    if(!any(colnames(data) == "screened_titles")){data$screened_titles <- NA}
     if(!any(colnames(data) == "notes")){data$notes <- NA}
-    if(!any(colnames(data) == "color")){data$color <- "#000000"}
-    data$screening_page <- calc_pages(
+    x$data$raw <- data
+
+    # store progress
+    x$progress$order <- seq_len(nrow(data))
+    x$progress$screening_page <- calc_pages(
       n = nrow(data),
       each = 8
     )
-    data$order <- seq_len(nrow(data))
-
-    # save progress
-    x$data$raw <- data
-    x$data$n_current <- min(c(
+    x$progress$page <- 1
+    x$progress$n_previous <- 8
+    x$progress$n_current <- min(c(
       8,
-      length(which(is.na(data$selected)))
+      length(which(is.na(data$screened_titles)))
     ))
-    x$data$current <- seq_len(x$data$n_current)
-    x$data$n_previous <- 8
-    rep_zeroes <- rep(0, x$data$n_current)
+    x$progress$current <- seq_len(x$progress$n_current)
+
+    # save selector info
+    rep_zeroes <- rep(0, x$progress$n_current)
     x$selector$yes <- rep_zeroes
     x$selector$no <- rep_zeroes
     x$selector$maybe <- rep_zeroes
-    x$click_values$page <- 1
 
   }
 
@@ -313,7 +316,7 @@ select_all_buttons <- function(){
 completeness_check <- function(
   x # data$raw
 ){
-  if(all(!is.na(x$selected))){
+  if(all(!is.na(x$screened_titles))){
     save_modal(
       x = x,
       title = "Screening Complete: Save results?"

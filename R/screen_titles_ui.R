@@ -43,7 +43,7 @@ screen_titles_ui <- function(){
         icon = icon("paint-brush"),
         sliderInput(
           inputId = "n_citations",
-          label = "Number of articles shown",
+          label = "Number of articles shown:",
           min = 2,
           max = 20,
           value = 8,
@@ -62,7 +62,7 @@ screen_titles_ui <- function(){
         uiOutput("column_selector"),
         actionButton(
           inputId = "order_result_go",
-          label = "Re-order",
+          label = "Apply changes",
           width = "85%"
         ),
         selectInput("hide_names",
@@ -78,6 +78,7 @@ screen_titles_ui <- function(){
     revtools_css(),
     fluidRow(
       div(id = "placeholder"),
+      # tableOutput("pages_text"),
       div(
         style = "
           display: inline-block;

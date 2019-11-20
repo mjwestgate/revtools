@@ -28,16 +28,21 @@ screen_titles <- function(
     # APP SETUP
     # build reactive values
     data <- reactiveValues(
-      raw = data_in$data$raw,
-      current = data_in$data$current,
-      n_current = data_in$data$n_current,
-      n_previous = data_in$data$n_previous
+      raw = data_in$data$raw
+    )
+    progress <- reactiveValues(
+      order = data_in$progress$order,
+      screening_page = data_in$progress$screening_page,
+      page = data_in$progress$page,
+      current = data_in$progress$current,
+      n_current = data_in$progress$n_current,
+      n_previous = data_in$progress$n_previous
     )
     click_values <- reactiveValues(
       yes = NULL,
       no = NULL,
       maybe = NULL,
-      page = data_in$click_values$page,
+      # page = data_in$progress$page,
       column = "label"
     )
     selector <- reactiveValues(
@@ -95,65 +100,64 @@ screen_titles <- function(
       )
 
       # add extra columns as needed
-      if(!any(colnames(import_result) == "selected")){
-        import_result$selected <- NA
+      if(!any(colnames(import_result) == "screened_titles")){
+        import_result$screened_titles <- NA
       }
       if(!any(colnames(import_result) == "notes")){
         import_result$notes <- NA
       }
-      if(!any(colnames(import_result) == "color")){
-        import_result$color <- "#000000"
-      }
 
       # save progress
       data$raw <- import_result
-      data$n_current <- min(
+      progress$n_current <- min(
         c(
           input$n_citations,
-          length(which(is.na(import_result$selected)))
+          length(which(is.na(import_result$screened_titles)))
         )
       )
-      data$current <- seq_len(data$n_current)
-      data$raw$screening_page <- calc_pages(
+      progress$current <- seq_len(progress$n_current)
+      progress$screening_page <- calc_pages(
         n = nrow(data$raw),
         each = input$n_citations
       )
-      data$raw$order <- seq_len(nrow(data$raw))
-      click_values$page <- 1
-      selector$yes <- rep(0, data$n_current)
-      selector$no <- rep(0, data$n_current)
-      selector$maybe <- rep(0, data$n_current)
+      progress$order <- seq_len(nrow(data$raw))
+      progress$page <- 1
+
+      # update selectors
+      selector$yes <- rep(0, progress$n_current)
+      selector$no <- rep(0, progress$n_current)
+      selector$maybe <- rep(0, progress$n_current)
     })
 
 
     # PLACEHOLDERS
     # determine whether to add or subtract placeholders
     observeEvent({
-      data$current
+      progress$current
       data$raw
     }, {
       if(!is.null(data$raw)){
-        if(is.null(data$n_previous)){
+        if(is.null(progress$n_previous)){
           update$add_logical <- TRUE
-          update$add_values <- seq_len(data$n_current)
+          update$add_values <- seq_len(progress$n_current)
           update$remove_logical <- FALSE
           update$remove_values <- NULL
         }else{
-          if(data$n_previous > data$n_current){
+          if(progress$n_previous > progress$n_current){
             update$add_logical <- FALSE
             update$add_values <- NULL
             update$remove_logical <- TRUE
-            update$remove_values <- seq_len(data$n_previous)[-seq_len(data$n_current)]
+            update$remove_values <- seq_len(progress$n_previous)[-seq_len(progress$n_current)]
           }
-          if(data$n_previous == data$n_current){
+          if(progress$n_previous == progress$n_current){
             update$add_logical <- FALSE
             update$add_values <- NULL
             update$remove_logical <- FALSE
             update$remove_values <- NULL
           }
-          if(data$n_previous < data$n_current){
+          if(progress$n_previous < progress$n_current){
             update$add_logical <- TRUE
-            update$add_values <- seq_len(data$n_current)[-seq_len(data$n_previous)]
+            update$add_values <- seq_len(progress$n_current)[-seq_len(progress$n_previous)]
             update$remove_logical <- FALSE
             update$remove_values <- NULL
           }
@@ -170,10 +174,10 @@ screen_titles <- function(
           )
         })
         update$add_logical <- FALSE
-        data$n_previous <- data$n_current
-        selector$yes <- rep(0, data$n_previous)
-        selector$no <- rep(0, data$n_previous)
-        selector$maybe <- rep(0, data$n_previous)
+        progress$n_previous <- progress$n_current
+        selector$yes <- rep(0, progress$n_previous)
+        selector$no <- rep(0, progress$n_previous)
+        selector$maybe <- rep(0, progress$n_previous)
       }
     })
 
@@ -185,38 +189,31 @@ screen_titles <- function(
           )
         })
         update$remove_logical <- FALSE
-        data$n_previous <- data$n_current
+        progress$n_previous <- progress$n_current
       }
     })
 
 
     # PAGE NAVIGATION
-    # render navigation buttons
-    # output$navigation_buttons <- renderUI({
-    #   if(!is.null(data$raw)){
-    #     navigation_buttons()
-    #   }
-    # })
-
     # set page navigation functionality
     observeEvent(input$page_first, {
       if(input$page_first > 0){
-        click_values$page <- 1
+        progress$page <- 1
       }
     })
     observeEvent(input$page_back, {
-      if(input$page_back > 0 & (click_values$page > 1)){
-        click_values$page <- click_values$page - 1
+      if(input$page_back > 0 & (progress$page > 1)){
+        progress$page <- progress$page - 1
       }
     })
     observeEvent(input$page_next, {
-      if(input$page_next > 0 & (click_values$page < max(data$raw$screening_page))){
-        click_values$page <- click_values$page + 1
+      if(input$page_next > 0 & (progress$page < max(progress$screening_page))){
+        progress$page <- progress$page + 1
       }
     })
     observeEvent(input$page_last, {
       if(input$page_last > 0){
-        click_values$page <- max(data$raw$screening_page)
+        progress$page <- max(progress$screening_page)
       }
     })
 
@@ -234,7 +231,7 @@ screen_titles <- function(
       if(!is.null(data$raw)){
         data$raw$citation <- format_citation(
           data = data$raw,
-          details = (input$hide_names == FALSE),
+          details = !as.logical(input$hide_names),
           add_html = TRUE
         )
       }
@@ -253,9 +250,7 @@ screen_titles <- function(
       if(input$order == "order_selected"){
         available_colnames <- colnames(data$raw)
         available_colnames <- available_colnames[
-          !available_colnames %in% c(
-            "notes", "selected", "color", "order", "screening_page"
-          )]
+          !available_colnames %in% c("notes", "screened_titles")]
         selectInput(
           inputId = "order_result",
           label = "Select variable to order by:",
@@ -266,8 +261,7 @@ screen_titles <- function(
     })
 
     observeEvent({
-      input$n_citations
-      # input$order
+      # input$n_citations
       input$order_result_go
       }, {
       if(!is.null(data$raw)){
@@ -275,7 +269,7 @@ screen_titles <- function(
           n = nrow(data$raw),
           each = input$n_citations
         )
-        data$raw$order <- switch(input$order,
+        progress$order <- switch(input$order,
           "order_initial" = {seq_len(nrow(data$raw))},
           "order_alphabetical" = {rank(
             data$raw$title,
@@ -287,16 +281,16 @@ screen_titles <- function(
             ties.method = "random"
           )}
         )
-        data$raw$screening_page <- switch(input$order,
+        progress$screening_page <- switch(input$order,
           "order_initial" = {page_values},
-          "order_alphabetical" = {page_values[data$raw$order]},
+          "order_alphabetical" = {page_values[progress$order]},
           "order_random" = {page_values[order(rnorm(length(page_values)))]},
-          "order_selected" = {page_values[data$raw$order]},
+          "order_selected" = {page_values[progress$order]},
         )
-        data$current <- which(data$raw$screening_page == click_values$page)
-        data$n_current <- min(
+        progress$current <- which(progress$screening_page == progress$page)
+        progress$n_current <- min(
           c(
-            length(data$current),
+            length(progress$current),
             input$n_citations
           )
         )
@@ -306,31 +300,46 @@ screen_titles <- function(
     observe({
       if(!is.null(data$raw)){
         # id selected text
-        selected_rows <- which(data$raw$screening_page == click_values$page)
-        data$current <- selected_rows[order(data$raw$order[selected_rows])]
-        data$n_current <- length(data$current)
+        selected_rows <- which(progress$screening_page == progress$page)
+        progress$current <- selected_rows[order(progress$order[selected_rows])]
+        progress$n_current <- length(progress$current)
 
         # render text for each reference
-        lapply(seq_len(data$n_current), function(a, df){
-          output[[paste0(
-            "citation_",
-            a,
-            "_render"
-          )]] <- renderPrint({
+        lapply(seq_len(progress$n_current), function(a, rows, df){
+          if(is.na(df$screened_titles[rows[a]])){
+            color_tr <- "#000000"
+          }else{
+            color_tr <- switch(df$screened_titles[rows[a]],
+              "selected" = "#405d99",
+              "excluded" = "#993f3f",
+              "unknown" = "#6d6d6d"
+            )
+          }
+          output[[paste0("citation_", a, "_render")]] <- renderPrint({ # this was the error
+            # a has to be an index from 1:n, not the row number
             cat(paste0(
               "<font color = ",
-              df$color[a],
+              color_tr,
               ">",
-              df$citation[a],
+              df$citation[rows[a]],
               "</font><br><br>"
             ))
           })
         },
-        df = data$raw[data$current, ]
+        df = data$raw,
+        rows = progress$current
         )
 
       }
     })
+
+    # testing purposes only
+    # output$pages_text <- renderPrint({
+    #   paste(
+    #     data$raw$citation[progress$current],
+    #     collapse = "<br>"
+    #   )
+    # })
 
 
     # SCREENING
@@ -345,10 +354,17 @@ screen_titles <- function(
       if(nrow(click_values$yes) == length(selector$yes)){
         update_check <- (click_values$yes$value > selector$yes)
         if(any(update_check)){
-          data$raw$selected[data$current[which(update_check)]] <- "selected"
-          data$raw$color[data$current[which(update_check)]] <- "#405d99"
+          data$raw$screened_titles[progress$current[which(update_check)]] <- "selected"
           selector$yes <- click_values$yes$value
         }
+        # attempt to move to next page once last value is selected
+        # currently moves to last screen after hanging - might be an infitite loop
+        # if(all(click_values$yes$value > 0)){
+        #   if(progress$page < max(progress$screening_page)){
+        #     progress$page <- progress$page + 1
+        #     click_values$yes$value <- 0
+        #   }
+        # }
       }
 
       # duplicate for 'no'
@@ -359,8 +375,7 @@ screen_titles <- function(
       if(nrow(click_values$no) == length(selector$no)){
         update_check <- (click_values$no$value > selector$no)
         if(any(update_check)){
-          data$raw$selected[data$current[which(update_check)]] <- "excluded"
-          data$raw$color[data$current[which(update_check)]] <- "#993f3f"
+          data$raw$screened_titles[progress$current[which(update_check)]] <- "excluded"
           selector$no <- click_values$no$value
         }
       }
@@ -373,8 +388,7 @@ screen_titles <- function(
       if(nrow(click_values$maybe) == length(selector$maybe)){
         update_check <- (click_values$maybe$value > selector$maybe)
         if(any(update_check)){
-          data$raw$selected[data$current[which(update_check)]] <- "unknown"
-          data$raw$color[data$current[which(update_check)]] <- "#6d6d6d"
+          data$raw$screened_titles[progress$current[which(update_check)]] <- "unknown"
           selector$maybe <- click_values$maybe$value
         }
       }
@@ -387,25 +401,31 @@ screen_titles <- function(
 
     # track 'select all' buttons
     observeEvent(input$all_yes, {
-      data$raw$selected[data$current] <- "selected"
-      data$raw$color[data$current] <- "#405d99"
+      data$raw$screened_titles[progress$current] <- "selected"
+      if(progress$page < max(progress$screening_page)){
+        progress$page <- progress$page + 1
+      }
       completeness_check(data$raw)
     })
     observeEvent(input$all_no, {
-      data$raw$selected[data$current] <- "excluded"
-      data$raw$color[data$current] <- "#993f3f"
+      data$raw$screened_titles[progress$current] <- "excluded"
+      if(progress$page < max(progress$screening_page)){
+        progress$page <- progress$page + 1
+      }
       completeness_check(data$raw)
     })
     observeEvent(input$all_maybe, {
-      data$raw$selected[data$current] <- "unknown"
-      data$raw$color[data$current] <- "#6d6d6d"
+      data$raw$screened_titles[progress$current] <- "unknown"
+      if(progress$page < max(progress$screening_page)){
+        progress$page <- progress$page + 1
+      }
       completeness_check(data$raw)
     })
 
     # add progress indicator
     output$progress_text <- renderUI({
       if(!is.null(data$raw)){
-        n_progress <- length(which(is.na(data$raw$selected) == FALSE))
+        n_progress <- length(which(is.na(data$raw$screened_titles) == FALSE))
         n_total <- nrow(data$raw)
         div(
           list(
@@ -422,9 +442,9 @@ screen_titles <- function(
                     " of ",
                     n_total,
                     " entries screened | Showing page ",
-                    click_values$page,
+                    progress$page,
                     " of ",
-                    max(data$raw$screening_page)
+                    max(progress$screening_page)
                   )
                 )
               })
@@ -471,16 +491,16 @@ screen_titles <- function(
     })
 
     observeEvent(input$clear_data_confirmed, {
-      lapply(seq_len(data$n_current), function(a){
+      lapply(progress$current, function(a){
         removeUI(
           selector = paste0("#citation_", a)
         )
       })
       # reset all default reactiveValues
       data$raw <- NULL
-      data$current <- NULL
-      data$n_current <- NULL
-      data$n_previous <- NULL
+      progress$current <- NULL
+      progress$n_current <- NULL
+      progress$n_previous <- NULL
       click_values$yes <- NULL
       click_values$no <- NULL
       click_values$maybe <- NULL
@@ -504,6 +524,7 @@ screen_titles <- function(
 
   } # end server
 
-  print(shinyApp(ui, server))
+  print(shinyApp(ui, server)) # default
+  # runApp(appDir = list(ui, server)) #fails
 
 }
