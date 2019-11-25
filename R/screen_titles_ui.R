@@ -78,7 +78,6 @@ screen_titles_ui <- function(){
     revtools_css(),
     fluidRow(
       div(id = "placeholder"),
-      # tableOutput("pages_text"),
       div(
         style = "
           display: inline-block;

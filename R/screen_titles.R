@@ -333,14 +333,6 @@ screen_titles <- function(
       }
     })
 
-    # testing purposes only
-    # output$pages_text <- renderPrint({
-    #   paste(
-    #     data$raw$citation[progress$current],
-    #     collapse = "<br>"
-    #   )
-    # })
-
 
     # SCREENING
     # track article selections
