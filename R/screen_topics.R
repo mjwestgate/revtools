@@ -1,8 +1,4 @@
 # function to launch a shiny app for topic model visualisation & article/word (de)selection
-start_review_window <- function(x, remove_words, max_file_size){
-  screen_topics(x, remove_words, max_file_size)
-}
-
 screen_topics <- function(
   x = NULL,
   remove_words = NULL,
@@ -352,6 +348,7 @@ server <- function(input, output, session){
       end = input$color_hue[2],
       option = input$palette
     )
+
     plot_features$appearance <- update_appearance(
       plot_data = plot_features$appearance,
       palette = plot_features$palette
@@ -624,7 +621,7 @@ server <- function(input, output, session){
       selected_rows <- display_rows[
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
-      data$raw$screened_topics[selected_rows] <- TRUE
+      data$raw$screened_topics[selected_rows] <- "selected"
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -637,7 +634,7 @@ server <- function(input, output, session){
       # map to data$raw
       display_rows <- which(data$raw$display)
       rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
-      data$raw$screened_topics[rows] <- TRUE
+      data$raw$screened_topics[rows] <- "selected"
     }
   })
 
@@ -650,7 +647,7 @@ server <- function(input, output, session){
       selected_rows <- display_rows[
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
-      data$raw$screened_topics[selected_rows] <- FALSE
+      data$raw$screened_topics[selected_rows] <- "excluded"
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -663,7 +660,7 @@ server <- function(input, output, session){
       # map to data$raw
       display_rows <- which(data$raw$display)
       rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
-      data$raw$screened_topics[rows] <- FALSE
+      data$raw$screened_topics[rows] <- "excluded"
     }
   })
 

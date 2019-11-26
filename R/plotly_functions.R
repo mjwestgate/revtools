@@ -44,7 +44,7 @@ plot_3D <- function(input_info, color, pointsize = 6){ #, height = 400){
       bgcolor = grey(0.9),
       bordercolor = grey(0.9),
       namelength = 200,
-      font = list(color="black")
+      font = list(color = "black")
     ),
     text = ~ caption,
     source = "main_plot"

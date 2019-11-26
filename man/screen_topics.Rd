@@ -1,6 +1,5 @@
 \name{screen_topics}
 \alias{screen_topics}
-\alias{start_review_window}
 \title{Shiny app for screening bibliographies using topic models}
 \description{Screening is usually achieved by manually sorting titles or abstracts one at a time. \code{screen_topics} offers an alternative by allowing the user to group data by any column in the input dataset, and running a topic model on the resulting data. This allows a great deal of flexibility to locate patterns in journals, years, or authors, rather than just articles. Data points can be selected or excluded individually, or by topic.
 }
