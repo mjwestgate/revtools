@@ -435,6 +435,24 @@ server <- function(input, output, session){
     click_data$main <- c()
   })
 
+  # if a topic is selected, highlight points with that topic in the main plot
+  observeEvent(click_data$topic, {
+    if(length(click_data$topic) > 0){
+      current_topic_colors <- rep("#d1d1d1", nrow(data$plot_ready$x))
+      current_topic_colors[
+        which(data$plot_ready$x$topic == click_data$topic)
+        ] <- plot_features$palette[click_data$topic]
+      current_topic_colors[plot_features$appearance$x$color == "#000000"] <- "#000000"
+      current_topic_colors[plot_features$appearance$x$color == "#CCCCCC"] <- "#CCCCCC"
+      plot_features$appearance$x$color <- current_topic_colors
+    }else{
+      plot_features$appearance <- update_appearance(
+        plot_data = plot_features$appearance,
+        palette = plot_features$palette
+      )
+    }
+  })
+
   # SHOW INFO ON CLICKED POINTS
   # show selected entry
   output$selector_text <- renderPrint({
@@ -458,7 +476,6 @@ server <- function(input, output, session){
       cat(paste0(
         "<br><font color =",
         plot_features$appearance$x$text_color[click_data$main],
-        # data$plot_ready$x$text_color[click_data$main], # previous
         ">",
         display_text,
         "</font><br><br>"
@@ -469,8 +486,8 @@ server <- function(input, output, session){
           paste0(
             "<br><font color =",
             plot_features$appearance$x$text_color[click_data$main],
-            #"black", # data$plot_ready$topic$text_color[click_data$topic],
-            "><b>Topic: ", click_data$topic,
+            "><b>Topic: ",
+            click_data$topic,
             "</b><br>",
     				data$plot_ready$topic$caption_full[click_data$topic],
             "</font><br><br>"
