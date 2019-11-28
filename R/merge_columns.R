@@ -22,8 +22,21 @@ merge_columns <- function(
     }
   }
 
-  col_names_all <- unique(unlist(lapply(x, colnames)))
+  # get unique colnames
+  col_list <- lapply(x, colnames)
+  col_names_all <- unique(unlist(col_list))
 
+  # ensure order col_names_all is related to their order in x
+  col_lookup <- as.data.frame(lapply(col_list, function(a, lookup){
+    unlist(lapply(lookup, function(b){if(any(a == b)){which(a == b)}else{NA}}))
+  },
+  lookup = col_names_all
+  ))
+  colnames(col_lookup) <- seq_along(col_list)
+  col_order <- apply(col_lookup, 1, function(a){mean(a, na.rm = TRUE)})
+  col_names_all <- col_names_all[order(col_order)]
+
+  # merge data in this order
   result_list <- lapply(x, function(a, cn){
     missing_names <- !(cn %in% colnames(a))
     if(any(missing_names)){

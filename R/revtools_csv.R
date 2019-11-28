@@ -55,7 +55,7 @@ create_index <- function(string, n, sep = "_"){
   )
 }
 
-# csv files without messy column names
+# clean up column names
 clean_names <- function(
   x # colnames
 ){
@@ -63,8 +63,10 @@ clean_names <- function(
   x <- sub("^[[:punct:]]*", "", x) # leading punctuation
   x <- sub("[[:punct:]]*$", "", x) # trailing punctuation
   x <- gsub("\\.+", "_", x) # replace 1 or more dots with underscore
-  x <- tolower(x)
+  # for ris tags consisting only of upper case letters, keep upper case. Otherwise lower.
+  not_tags <- !grepl("^[[:upper:]]{2,4}$", x)
+  x[not_tags] <- tolower(x[not_tags])
   x <- sub("authors", "author", x) # remove plural authors
-  x <- make.unique(x, sep = "_")
+  x <- make.unique(x, sep = "_") # ensure uniqueness
   return(x)
 }
