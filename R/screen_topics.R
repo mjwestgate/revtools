@@ -438,7 +438,7 @@ server <- function(input, output, session){
   # if a topic is selected, highlight points with that topic in the main plot
   observeEvent(click_data$topic, {
     if(length(click_data$topic) > 0){
-      current_topic_colors <- rep("#d1d1d1", nrow(data$plot_ready$x))
+      current_topic_colors <- rep("#d1d1d180", nrow(data$plot_ready$x))
       current_topic_colors[
         which(data$plot_ready$x$topic == click_data$topic)
         ] <- plot_features$palette[click_data$topic]
