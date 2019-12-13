@@ -371,12 +371,12 @@ read_ris <- function(x, tag_type = "ris"){
 	if(any(is.na(x_merge$bib))){
 		rows_tr <- which(is.na(x_merge$bib))
     x_merge$bib[rows_tr] <- x_merge$ris[rows_tr]
-    if(all(is.na(x_merge$order))){
+    if(all(is.na(x_merge$row_order))){
       start_val <- 0
     }else{
-      start_val <- max(x_merge$order, na.rm = TRUE)
+      start_val <- max(x_merge$row_order, na.rm = TRUE)
     }
-    x_merge$order[rows_tr] <- as.numeric(
+    x_merge$row_order[rows_tr] <- as.numeric(
       as.factor(x_merge$ris[rows_tr])
     ) + start_val
 	}
@@ -419,7 +419,7 @@ read_ris <- function(x, tag_type = "ris"){
 				year_tag <- tag_frequencies$tag[which.max(tag_frequencies$prop)]
 				rows.tr <- which(x_merge$ris == year_tag)
 				x_merge$bib[rows.tr] <- "year"
-				x_merge$order[rows.tr] <- 3
+				x_merge$row_order[rows.tr] <- 3
         # the following code was necessary when string >4 characters long were detected
 				# x_merge$text[rows.tr] <- substr(
         #   x = x_merge$text[rows.tr],
@@ -437,7 +437,7 @@ read_ris <- function(x, tag_type = "ris"){
 	# if(any(doi_check > 0)){
 	# 	check_rows <- which(doi_check > 0)
 	# 	x_merge$bib[check_rows] <- "doi"
-	# 	x_merge$order[check_rows] <- 11
+	# 	x_merge$row_order[check_rows] <- 11
 	# 	x_merge$text[check_rows] <- substr(
   #     x = x_merge$text[check_rows],
 	# 		start = doi_check[check_rows]+1,
@@ -452,12 +452,12 @@ read_ris <- function(x, tag_type = "ris"){
       replace_tags <- names(which(lookup.tags < max(lookup.tags)))
       replace_rows <- which(x_merge$ris %in% replace_tags)
       x_merge$bib[replace_rows] <- x_merge$ris[replace_rows]
-      if(all(is.na(x_merge$order))){
+      if(all(is.na(x_merge$row_order))){
         start_val <- 0
       }else{
-        start_val <- max(x_merge$order, na.rm = TRUE)
+        start_val <- max(x_merge$row_order, na.rm = TRUE)
       }
-      x_merge$order[replace_rows] <- start_val + as.numeric(
+      x_merge$row_order[replace_rows] <- start_val + as.numeric(
         as.factor(x_merge$ris[replace_rows])
       )
 		}

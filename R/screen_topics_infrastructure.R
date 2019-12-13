@@ -80,15 +80,9 @@ build_plot_data <- function(info, dtm, model, hide_names){
   x_matrix <- modeltools::posterior(model)$topics # article x topic
   y_matrix <- t(modeltools::posterior(model)$terms)
 
-  # exclude following columns: topic, select, display
-  # keep_cols <- which(
-  #   !(colnames(info) %in%
-  #   c("topic", "screened_topics", "display")
-  # ))
-
   # build main plot information (x)
   x_df <- cbind(
-    info, #[, keep_cols],
+    info,
     data.frame(
       ade4::dudi.coa(x_matrix, scannf = FALSE, nf=3)$li
     )
@@ -115,10 +109,9 @@ build_plot_data <- function(info, dtm, model, hide_names){
 
   # restrict to useful columns
   x_df <- x_df[, colnames(x_df) %in% c(
-    "label", "author", "title", "journal", "pages", "abstract",
+    "label", "author", "year", "title", "journal", "pages", "abstract",
     "Axis1", "Axis2", "topic", "caption", "common_words")
   ]
-
 
   # build word plot information (y)
   y_df <- data.frame(

@@ -130,47 +130,69 @@ format_citation.data.frame <- function(
     if(any(source_check)){
       source <- names(data)[which(source_check)[1]]
     }else{
-      source <- "NA"
+      source <- NA
     }
   }
 
-  if(
-    all(c("author", "year", source, "title") %in% names(data)) &
-    (details == TRUE)
-  ){
-	data_list <- split(data, seq_len(nrow(data)))
+  # this section should be made more flexible to use any available information
+  # if(details){
+  data_list <- split(data, seq_len(nrow(data)))
   data_out <- unlist(lapply(data_list, function(a){
-		author_vector <- strsplit(a[['author']], " and ")[[1]]
-		if(length(author_vector) == 1){
-      author_text <- a[['author']]
-		}else{
-      author_text <- paste0(author_vector[1], " et al.")
-    }
-    journal_text <- tools::toTitleCase(tolower(a[[source]]))
-    if(add_html){
-      journal_text <- paste0("<i>", journal_text, "</i>. ")
-    }else{
-      journal_text <- paste0(journal_text, ". ")
-    }
-		text_vector <- paste0(
-      author_text,
-      " (", a[['year']], ") ",
-      a[['title']], ". ",
-      journal_text
-    )
-    return(text_vector)
-  }))
-	}else{
-    if(details == FALSE){
-      if(any(names(data) == "title")){
-        data_out <- data[["title"]]
-      }else{
-        data_out <- data[, 1]
+    cols_tr <- names(a)
+    text_list <- as.list(rep(NA, 4))
+    names(text_list) <- c("author", "year", "title", "journal")
+    # title
+    if(any(cols_tr == "title")){
+      title_text <- tools::toTitleCase(tolower(a$title))
+      if(!grepl("[[:punct:]]$", title_text)){
+        text_list$title <- paste0(title_text, ".")
       }
     }else{
-      data_out <- data[, 1]
+      text_list$title <- ""
     }
-	}
+    if(details){
+      # year
+      if(any(cols_tr == "year")){
+        text_list$year <- paste0("(", a$year, ") ")
+      }else{
+        text_list$year <- NA
+      }
+      # journal
+      if(!is.na(a[[source]])){
+        journal_text <- tools::toTitleCase(tolower(a[[source]]))
+        if(add_html){
+          text_list$journal <- paste0("<i>", journal_text, "</i>. ")
+        }else{
+          text_list$journal <- paste0(journal_text, ". ")
+        }
+      }else{
+        text_list$journal <- NA
+      }
+      # authors
+      if(any(cols_tr == "author")){
+        author_vector <- strsplit(a[['author']], " and ")[[1]]
+        if(length(author_vector) == 1){
+          text_list$author <- a[['author']]
+        }else{
+          text_list$author <- paste0(author_vector[1], " et al.")
+        }
+      }else{
+        if(!all(is.na(text_list))){
+          text_list$author <- "Anon."
+        }
+      }
+    } # end if(details)
+    text_vec <- unlist(text_list)
+    if(all(is.na(text_vec))){
+      return(a[1])
+    }else{
+      return(
+        paste(text_vec[!is.na(text_vec)], collapse = " ")
+      )
+    }
+  }))
+
+  # add line breaks if required
   if(is.logical(line_breaks)){
     if(line_breaks){
       data_out <- add_line_breaks(data_out)
