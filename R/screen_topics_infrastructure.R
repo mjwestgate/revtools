@@ -84,7 +84,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
   x_df <- cbind(
     info,
     data.frame(
-      ade4::dudi.coa(x_matrix, scannf = FALSE, nf=3)$li
+      ade4::dudi.coa(x_matrix, scannf = FALSE, nf = 3)$li
     )
   )
   x_df$topic <- apply(x_matrix, 1, which.max)
@@ -110,7 +110,7 @@ build_plot_data <- function(info, dtm, model, hide_names){
   # restrict to useful columns
   x_df <- x_df[, colnames(x_df) %in% c(
     "label", "author", "year", "title", "journal", "pages", "abstract",
-    "Axis1", "Axis2", "topic", "caption", "common_words")
+    "Axis1", "Axis2", "Axis3", "topic", "caption", "common_words")
   ]
 
   # build word plot information (y)
