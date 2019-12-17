@@ -1,10 +1,10 @@
-<img align="left" height="120" src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png"><b>revtools v0.4.0.9999</b>
+<img align="left" height="120" src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png"><b>revtools v0.4.1</b>
 
 Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
 
 ---
 
-For a complete introduction to revtools you can check out the [user manual](https://revtools.net/user_manual/1_introduction.html); but to get started now you can download revtools either from this site (development version) or CRAN (stable version) as follows:
+For a complete introduction to revtools you can check out the [website](https://revtools.net/); but to get started now you can download revtools either from this site (development version) or CRAN (stable version) as follows:
 ```
 install.packages("revtools") # install from CRAN
 devtools::install_github("mjwestgate/revtools") # install from GitHub
