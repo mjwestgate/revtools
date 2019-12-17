@@ -144,7 +144,9 @@ format_citation.data.frame <- function(
     # title
     if(any(cols_tr == "title")){
       title_text <- tools::toTitleCase(tolower(a$title))
-      if(!grepl("[[:punct:]]$", title_text)){
+      if(grepl("[[:punct:]]$", title_text)){
+        text_list$title <- title_text
+      }else{
         text_list$title <- paste0(title_text, ".")
       }
     }else{
@@ -153,7 +155,7 @@ format_citation.data.frame <- function(
     if(details){
       # year
       if(any(cols_tr == "year")){
-        text_list$year <- paste0("(", a$year, ") ")
+        text_list$year <- paste0("(", a$year, ")")
       }else{
         text_list$year <- NA
       }
