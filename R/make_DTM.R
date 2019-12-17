@@ -4,15 +4,18 @@ make_dtm <- function(
 	stop_words,
   min_freq = 0.01,
   max_freq = 0.85,
-  ngram_check = TRUE,
-  ngram_quantile = 0.8,
+  bigram_check = TRUE,
+  bigram_quantile = 0.8,
   retain_empty_rows = FALSE
 ){
 
   # check format
-  if(class(x) != "character"){
-	  stop("make_dtm only accepts arguments of class 'character'")
+  if(!(class(x) %in% c("character", "data.frame"))){
+	  stop("make_dtm only accepts arguments of class 'data.frame' or 'character'")
 	}
+  if(class(x) == "data.frame"){
+    x <- apply(x, 1, function(a){paste(a, collapse = " ")})
+  }
   n <- length(x)
 
 	# sort out stop words
@@ -32,8 +35,8 @@ make_dtm <- function(
     preserve_intra_word_dashes = TRUE
   )
 
-  # ngrams
-  if(ngram_check){
+  # bigrams
+  if(bigram_check){
 
     # avoid errors in ngram calculation
     ngram_x <- x[!is.na(x)]
@@ -43,7 +46,7 @@ make_dtm <- function(
     if(length(ngram_x) > 0){
       ngrams <- ngram::get.phrasetable(ngram::ngram(ngram_x))
       ngrams <- ngrams[ngrams$freq > 2, ]
-      ngrams <- ngrams[ngrams$freq > stats::quantile(ngrams$freq, ngram_quantile), ]
+      ngrams <- ngrams[ngrams$freq > stats::quantile(ngrams$freq, bigram_quantile), ]
 
       if(nrow(ngrams) > 0){
         # split into pairs
@@ -72,7 +75,7 @@ make_dtm <- function(
       } # end if >0 ngrams
     } # end if >0 strings containing 2 or more words
 
-  } # end if ngram_check
+  } # end if bigram_check
 
   # continue tm
   x <- tm::removeWords(x, stop_words)
@@ -103,15 +106,16 @@ make_dtm <- function(
     stringsAsFactors = FALSE
   )
 
+  # convert dtm to a df
+  dtm_df <- data.frame(
+    i = dtm$i, # articles
+    j = dtm$j, # words
+    v = dtm$v  # counts
+  )
+
   # does this contain duplicates?
   if(base::anyDuplicated(lookup$stemmed) > 0){
 
-    # convert dtm to a df
-    dtm_df <- data.frame(
-      i = dtm$i, # articles
-      j = dtm$j, # words
-      v = dtm$v  # counts
-    )
     # more efficient to use the shortest word, not the most common term
     lookup$n <- nchar(lookup$initial)
 
@@ -179,7 +183,20 @@ make_dtm <- function(
     }
 
   }else{
-    dtm2 <- dtm
+    if(retain_empty_rows){
+      dtm2 <- dtm
+    }else{
+      dtm2 <- slam::simple_triplet_matrix(
+        i = as.numeric(as.factor(dtm_df$i)),
+        j = dtm_df$j,
+        v = dtm$v,
+        dimnames = list(
+          "Docs" = as.character(sort(unique(dtm_df$i))),
+          "Terms" = dtm$dimnames$Terms
+        )
+      )
+    }
+
   } # end if duplicated
 
   return(dtm2)
