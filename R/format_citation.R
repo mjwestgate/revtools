@@ -160,15 +160,17 @@ format_citation.data.frame <- function(
         text_list$year <- NA
       }
       # journal
-      if(!is.na(a[[source]])){
-        journal_text <- tools::toTitleCase(tolower(a[[source]]))
-        if(add_html){
-          text_list$journal <- paste0("<i>", journal_text, "</i>. ")
+      if(!is.na(source)){
+        if(!is.na(a[[source]])){
+          journal_text <- tools::toTitleCase(tolower(a[[source]]))
+          if(add_html){
+            text_list$journal <- paste0("<i>", journal_text, "</i>. ")
+          }else{
+            text_list$journal <- paste0(journal_text, ". ")
+          }
         }else{
-          text_list$journal <- paste0(journal_text, ". ")
+          text_list$journal <- NA
         }
-      }else{
-        text_list$journal <- NA
       }
       # authors
       if(any(cols_tr == "author")){

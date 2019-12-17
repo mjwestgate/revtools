@@ -260,7 +260,7 @@ server <- function(input, output, session){
         stop_words = data$stopwords,
         min_freq = input$min_freq * 0.01,
         max_freq = input$max_freq * 0.01,
-        ngram_quantile = input$ngram_quantile * 0.01
+        bigram_quantile = input$bigram_quantile * 0.01
       )
 
       if(input$response_variable != data$columns[1]){

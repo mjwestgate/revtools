@@ -80,7 +80,7 @@ screen_topics_ui <- function(){
           value = 85
         ),
         sliderInput(
-          inputId = "ngram_quantile",
+          inputId = "bigram_quantile",
           label = "Minimum frequency quantile for recognising bigrams (%):",
           min = 0,
           max = 100,
