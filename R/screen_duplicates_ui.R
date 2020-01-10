@@ -32,18 +32,18 @@ screen_duplicates_ui <- function(){
         ),
         br(),
         actionButton(
-          inputId = "save_data",
-          label = "Save Data",
-          width = "85%"
-        ),
-        actionButton(
           inputId = "clear_data",
           label = "Clear Data",
           width = "85%"
         ),
         actionButton(
           inputId = "exit_app",
-          label = "Exit App",
+          label = "Save to Workspace",
+          width = "85%"
+        ),
+        actionButton(
+          inputId = "save_data",
+          label = "Save to File",
           width = "85%"
         ),
         br()
