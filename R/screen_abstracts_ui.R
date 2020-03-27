@@ -1,7 +1,7 @@
 screen_abstracts_ui <- function(){
 
   # build user interface
-  header <- shinydashboard::dashboardHeader(
+  header <- dashboardHeader(
     tag("li",
       list(
         class = "dropdown",
@@ -69,6 +69,28 @@ screen_abstracts_ui <- function(){
           width = "85%"
         ),
         br()
+      ),
+      menuItem("Add fields",
+        icon = shiny::icon("plus"),
+        br(),
+        actionButton(
+          inputId = "add_dropdown",
+          label = "Add dropdown",
+          width = "85%"
+        ),
+        br(),
+        actionButton(
+          inputId = "add_button",
+          label = "Add button",
+          width = "85%"
+        ),
+        br(),
+        actionButton(
+          inputId = "add_text",
+          label = "Add text",
+          width = "85%"
+        ),
+        br()
       )
     )
   )
@@ -83,7 +105,16 @@ screen_abstracts_ui <- function(){
         br(),
         br(),
         uiOutput(outputId = "render_notes_toggle"),
-        uiOutput(outputId = "render_notes")
+        uiOutput(outputId = "render_notes"),
+        # shinyjqui::jqui_draggable(
+        # # shinyjqui::jqui_resizable( # appears impossible to both resize and drag
+        #   selectInput(
+        #     inputId = "test",
+        #     label = "test input",
+        #     choices = c("yes", "no"),
+        #     width = "200px"
+        #   )
+        # )
       ),
       column(width = 1)
     )

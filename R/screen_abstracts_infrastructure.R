@@ -123,3 +123,104 @@ choose_abstract_current <- function(
   result <- which(order_vec[order(order_vec)] == order_current)
   return(result)
 }
+
+abstract_selector_buttons <- function(text){
+  div(
+    list(
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          text-align: right;
+          width: 350px",
+        renderText({text})
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          text-align: right;
+          width: 20px",
+        renderText(" ")
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 40px",
+        actionButton(
+          inputId = "abstract_10previous",
+          label = "<<",
+          width = "40px",
+          style = "background-color: #6b6b6b;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 40px",
+        actionButton(
+          inputId = "abstract_previous",
+          label = "<",
+          width = "40px",
+          style = "background-color: #6b6b6b;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          text-align: right;
+          width: 100px",
+        actionButton(
+          inputId = "select_yes",
+          label = "Select",
+          style = "
+            background-color: #7c93c1;
+            color: #fff;
+            width: 100px"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          text-align: right;
+          width: 100px",
+        actionButton(
+          inputId = "select_no",
+          label = "Exclude",
+          style = "
+            background-color: #c17c7c;
+            color: #fff;
+            width: 100px"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 40px",
+        actionButton(
+          inputId = "abstract_next",
+          label = ">",
+          width = "40px",
+          style = "background-color: #6b6b6b;"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 40px",
+        actionButton(
+          inputId = "abstract_10next",
+          label = ">>",
+          width = "40px",
+          style = "background-color: #6b6b6b;"
+        )
+      )
+    )
+  )
+}

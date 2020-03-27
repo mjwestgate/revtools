@@ -14,7 +14,11 @@ make_dtm <- function(
 	  stop("make_dtm only accepts arguments of class 'data.frame' or 'character'")
 	}
   if(class(x) == "data.frame"){
-    x <- apply(x, 1, function(a){paste(a, collapse = " ")})
+    if(ncol(x) < 2){
+      x <- as.character(x[, 1])
+    }else{
+      x <- apply(x, 1, function(a){paste(a, collapse = " ")})
+    }  
   }
   n <- length(x)
 

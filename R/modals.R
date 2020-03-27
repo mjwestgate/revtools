@@ -1,43 +1,46 @@
 save_modal <- function(
-  x, # typically data$raw
-  title = "Save As"
+  x # typically data$raw
+  # title = "Save As"
   ){
   if(is.null(x)){
-    showModal(
-      modalDialog(
-        HTML(
-          "Import some data to begin<br><br>
-          <em>Click anywhere to exit</em>"
-        ),
-        title = "Error: No data to save",
-        footer = NULL,
-        easyClose = TRUE
-      )
-    )
+    save_error_modal()
   }else{
-    showModal(
-      modalDialog(
-        selectInput(
-          inputId = "save_type",
-          label = "Save As",
-          choices = c("csv", "rds"),
-          multiple = FALSE
-        ),
-        textInput(
-          inputId = "save_filename",
-          label = "File Name"
-        ),
-        actionButton(
-          inputId = "save_data_execute",
-          label = "Save"
-        ),
-        modalButton("Cancel"),
-        title = title,
-        footer = NULL,
-        easyClose = FALSE
-      )
-    )
+    save_proceed_modal()
   }
+}
+#
+
+save_proceed_modal <- function(){
+  showModal(
+    modalDialog(
+      textInput("save_filename",
+        label = "File Name"
+      ),
+      selectInput("save_data_filetype",
+        label = "File Type",
+        choices = c("csv", "rds")
+      ),
+      actionButton("save_data_execute", "Save"),
+      modalButton("Cancel"),
+      title = "Save As",
+      footer = NULL,
+      easyClose = FALSE
+    )
+  )
+}
+
+save_error_modal <- function(){
+  showModal(
+    modalDialog(
+      HTML(
+        "Import some data to begin<br><br>
+        <em>Click anywhere to exit</em>"
+      ),
+      title = "Error: No data to save",
+      footer = NULL,
+      easyClose = TRUE
+    )
+  )
 }
 
 error_modal <- function(text){
@@ -105,6 +108,37 @@ exit_modal <- function(){
         label = "Confirm"),
       modalButton("Cancel"),
       title = "Exit App",
+      footer = NULL,
+      easyClose = FALSE
+    )
+  )
+}
+
+abstract_complete_modal <- function(){
+  showModal(
+    modalDialog(
+      HTML(
+        "All articles have been screened. Would you like to save your progess?<br><br>
+        <i>If you have specified an object in your workspace and click 'Exit App',
+        your progress will be invisibly saved to that object.</i><br><br>"
+      ),
+      textInput("save_filename",
+        label = "File Name"
+      ),
+      selectInput("save_data_filetype",
+        label = "File Type",
+        choices = c("csv", "rds")
+      ),
+      actionButton(
+        inputId = "save_data_execute",
+        label = "Save to File"
+      ),
+      actionButton(
+        inputId = "exit_app_confirmed",
+        label = "Save to Workspace"
+      ),
+      modalButton("Cancel"),
+      title = "Save As",
       footer = NULL,
       easyClose = FALSE
     )

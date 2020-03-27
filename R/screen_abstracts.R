@@ -186,105 +186,7 @@ screen_abstracts <- function(
             progress$max_n
           )
         )
-
-        div(
-          list(
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                text-align: right;
-                width: 350px",
-              renderText({text_out})
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                text-align: right;
-                width: 20px",
-              renderText(" ")
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 40px",
-              actionButton(
-                inputId = "abstract_10previous",
-                label = "<<",
-                width = "40px",
-                style = "background-color: #6b6b6b;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 40px",
-              actionButton(
-                inputId = "abstract_previous",
-                label = "<",
-                width = "40px",
-                style = "background-color: #6b6b6b;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                text-align: right;
-                width: 100px",
-              actionButton(
-                inputId = "select_yes",
-                label = "Select",
-                style = "
-                  background-color: #7c93c1;
-                  color: #fff;
-                  width: 100px"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                text-align: right;
-                width: 100px",
-              actionButton(
-                inputId = "select_no",
-                label = "Exclude",
-                style = "
-                  background-color: #c17c7c;
-                  color: #fff;
-                  width: 100px"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 40px",
-              actionButton(
-                inputId = "abstract_next",
-                label = ">",
-                width = "40px",
-                style = "background-color: #6b6b6b;"
-              )
-            ),
-            div(
-              style = "
-                display: inline-block;
-                vertical-align: top;
-                width: 40px",
-              actionButton(
-                inputId = "abstract_10next",
-                label = ">>",
-                width = "40px",
-                style = "background-color: #6b6b6b;"
-              )
-            )
-          )
-        )
+        abstract_selector_buttons(text_out)
       }
     })
 
@@ -339,6 +241,22 @@ screen_abstracts <- function(
       data$raw$notes[progress$row] <- input$abstract_notes
     })
 
+
+    # ADD ITEMS ON REQUEST
+    observeEvent(input$add_button, {
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          width: 40px",
+        actionButton(
+          inputId = "abstract_10previous",
+          label = "<<",
+          width = "40px",
+          style = "background-color: #6b6b6b;"
+        )
+      )
+    })
 
     # SELECTION & NAVIGATION
     observeEvent(input$select_yes, {
@@ -445,69 +363,13 @@ screen_abstracts <- function(
 
     observeEvent(progress$max_n, {
       if(!is.null(data$raw) & progress$max_n < 1){
-        showModal(
-          modalDialog(
-            HTML(
-              "All articles have been screened. Would you like to save your progess?<br><br>
-              <i>If you have specified an object in your workspace and click 'Exit App',
-              your progress will be invisibly saved to that object.</i><br><br>"
-            ),
-            textInput("save_filename",
-              label = "File Name"
-            ),
-            selectInput("save_data_filetype",
-              label = "File Type",
-              choices = c("csv", "rds")
-            ),
-            actionButton(
-              inputId = "save_data_execute",
-              label = "Save to File"
-            ),
-            actionButton(
-              inputId = "exit_app_confirmed",
-              label = "Exit App"
-            ),
-            modalButton("Cancel"),
-            title = "Save As",
-            footer = NULL,
-            easyClose = FALSE
-          )
-        )
+        abstract_complete_modal()
       }
     })
 
     # SAVE OPTIONS
     observeEvent(input$save_data, {
-      if(is.null(data$raw)){
-        showModal(
-          modalDialog(
-            HTML(
-              "Import some data to begin<br><br>
-              <em>Click anywhere to exit</em>"
-            ),
-            title = "Error: no data to save",
-            footer = NULL,
-            easyClose = TRUE
-          )
-        )
-      }else{
-        showModal(
-          modalDialog(
-            textInput("save_filename",
-              label = "File Name"
-            ),
-            selectInput("save_data_filetype",
-              label = "File Type",
-              choices = c("csv", "rds")
-            ),
-            actionButton("save_data_execute", "Save"),
-            modalButton("Cancel"),
-            title = "Save As",
-            footer = NULL,
-            easyClose = FALSE
-          )
-        )
-      }
+      save_modal(data$raw)
     })
 
     observeEvent(input$save_data_execute, {
