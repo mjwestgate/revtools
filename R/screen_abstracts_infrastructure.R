@@ -42,6 +42,51 @@ load_abstract_data <- function(data){
       )
     ]
 
+  } # end if is.null
+
+  return(x)
+
+}
+
+
+load_abstract_data_remote <- function(
+  data,
+  time_responses = TRUE
+){
+
+  x <- list(
+    data = list(
+      raw = NULL
+    ),
+    progress = list(
+      row = NULL
+    )
+  )
+
+  if(!is.null(data)){
+
+    # throw a warning if a known file type isn't given
+    accepted_inputs <- c("bibliography", "data.frame")
+    if(any(accepted_inputs == class(data)) == FALSE){
+      stop("only classes 'bibliography' or 'data.frame' accepted by screen_abstracts")}
+
+    switch(class(data),
+      "bibliography" = {data <- as.data.frame(data)},
+      "data.frame" = {data <- data}
+    )
+
+    colnames(data) <- tolower(colnames(data))
+    if(!any(colnames(data) == "screened_abstracts")){
+      data$screened_abstracts <- NA
+    }
+    if(!any(colnames(data) == "notes")){
+      data$notes <- ""
+    }
+    if(time_responses & !any(colnames(data) == "time")){
+      data$time <- ""
+    }
+    x$data$raw <- data
+    x$progress$row <- min(which(is.na(data$screened_abstracts)))
 
   } # end if is.null
 
@@ -70,9 +115,18 @@ add_abstract_columns <- function(df){
 set_row_order <- function(
   df,
   order_by, # options are: random, initial, alphabetical, user_defined
-  user_column # if order_by = "user_defined", this is the column name of the user selection
+  user_column, # if order_by = "user_defined", this is the column name of the user selection
+  keywords # optional keywords if ranking by relevance
 ){
-  switch(order_by,
+  if(order_by == "relevance"){
+    if(missing(keywords)){
+      stop("ranking by relevance only works if keywords are supplied")
+    }else if(sum(nchar(keywords)) < 1){
+      stop("ranking by relevance only works if keywords are supplied")
+    }
+  }
+
+  return(switch(order_by,
     "random" = {
       base::rank(
         rnorm(nrow(df)),
@@ -92,13 +146,26 @@ set_row_order <- function(
         seq_len(nrow(df))
       }
     },
+    "relevance" = {
+      term_lookup <- gregexpr(
+        paste(keywords, collapse = "|"),
+        apply(
+          data[, colnames(data) %in% c("title", "abstract", "keywords")],
+          1,
+          function(a){paste(a, collapse = " ")}
+        )
+      )
+      term_count <- unlist(lapply(term_lookup, length))
+      ranking <- order(term_count, decreasing = TRUE)
+      return(ranking)
+    },
     "user_defined" = {
       base::rank(
         df[, user_column],
         ties.method = "random"
       )
     }
-  )
+  ))
 } # end function
 
 # set progress$row when other inputs are known
@@ -124,15 +191,18 @@ choose_abstract_current <- function(
   return(result)
 }
 
-abstract_selector_buttons <- function(text){
+abstract_selector_buttons <- function(text, text_width = "600px"){
   div(
     list(
       div(
-        style = "
+        style = paste0("
           display: inline-block;
           vertical-align: top;
           text-align: right;
-          width: 350px",
+          width: ",
+          text_width,
+          ";"
+        ),
         renderText({text})
       ),
       div(
@@ -172,14 +242,14 @@ abstract_selector_buttons <- function(text){
           display: inline-block;
           vertical-align: top;
           text-align: right;
-          width: 100px",
+          width: 80px",
         actionButton(
           inputId = "select_yes",
           label = "Select",
           style = "
             background-color: #7c93c1;
             color: #fff;
-            width: 100px"
+            width: 80px"
         )
       ),
       div(
@@ -187,14 +257,29 @@ abstract_selector_buttons <- function(text){
           display: inline-block;
           vertical-align: top;
           text-align: right;
-          width: 100px",
+          width: 80px",
+        actionButton(
+          inputId = "select_unknown",
+          label = "Unknown",
+          style = "
+            background-color: #9c9c9c;
+            color: #fff;
+            width: 80px"
+        )
+      ),
+      div(
+        style = "
+          display: inline-block;
+          vertical-align: top;
+          text-align: right;
+          width: 80px",
         actionButton(
           inputId = "select_no",
           label = "Exclude",
           style = "
             background-color: #c17c7c;
             color: #fff;
-            width: 100px"
+            width: 80px"
         )
       ),
       div(

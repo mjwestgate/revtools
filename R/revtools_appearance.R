@@ -1,11 +1,18 @@
 # add custom css
-revtools_css <- function(){
-  shiny::tag("style", shiny::HTML("
-    .navbar-custom-menu {
-      width: 800px;
+revtools_css <- function(
+  navbar_size = "800px"
+){
+  shiny::tag("style", shiny::HTML(
+    paste0(
+    ".navbar-custom-menu {
+      width: ",
+    navbar_size,
+    ";
     }
     .navbar-nav {
-      width: 800px;
+      width: ",
+    navbar_size,
+    ";
     }
     .content-wrapper,
       .right-side {
@@ -62,7 +69,8 @@ revtools_css <- function(){
         color: white;
         background: #4a3384;
       }
-  "))
+  ")
+))
 }
 
 # add a logo with optional added text

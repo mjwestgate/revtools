@@ -8,8 +8,8 @@ fuzzdist,
 fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
 merge_columns, make_dtm, run_topic_model, revwords,
-screen_duplicates, screen_titles, screen_abstracts,
-screen_topics)
+screen_duplicates, screen_titles, screen_abstracts, screen_topics,
+preload_screen_abstracts, preload_screen_abstracts_build)
 S3method(summary, screen_topics_progress)
 S3method(format_citation, bibliography)
 S3method(format_citation, list)
@@ -28,7 +28,7 @@ importFrom(plotly,
 event_data, "%>%", plotlyOutput,
 renderPlotly, plotlyProxy, plotlyProxyInvoke)
 importFrom(shiny,
-br, div, HTML, tag,
+br, hr, div, HTML, tag,
 fluidRow, column, icon,
 checkboxInput, checkboxGroupInput,
 fileInput, sliderInput, selectInput, textInput, textAreaInput,
