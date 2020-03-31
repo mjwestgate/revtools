@@ -8,6 +8,11 @@ preload_screen_abstracts_build <- function(
     app_control <- validate_app_control()
   }
 
+  # set timing options
+  # digit_store <- options("digits.secs")
+  # options("digits.secs" = 4)
+  # on.exit(options("digits.secs" = digit_store))
+
   # load data
   data_in <- load_abstract_data_remote(
     data = x[
@@ -31,7 +36,8 @@ preload_screen_abstracts_build <- function(
       raw = data_in$data$raw
     )
     progress <- reactiveValues(
-      row = data_in$progress$row
+      row = data_in$progress$row,
+      time = Sys.time()
     )
 
     # DISPLAY TEXT
@@ -91,6 +97,7 @@ preload_screen_abstracts_build <- function(
           }
         }
         cat(text_tr) # print
+        progress$time <- Sys.time()
       })
     })
 
@@ -131,10 +138,11 @@ preload_screen_abstracts_build <- function(
 
     # SELECTION & NAVIGATION
     observeEvent(input$select_yes, {
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
       data$raw$screened_abstracts[progress$row] <- "selected"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){
-        data$raw$time[progress$row] <- as.character(Sys.time())
+        data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
       if(progress$row > nrow(data$raw)){
         progress$row <- nrow(data$raw)
@@ -144,10 +152,11 @@ preload_screen_abstracts_build <- function(
     })
 
     observeEvent(input$select_unknown, {
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
       data$raw$screened_abstracts[progress$row] <- "unknown"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){
-        data$raw$time[progress$row] <- as.character(Sys.time())
+        data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
       if(progress$row > nrow(data$raw)){
         progress$row <- nrow(data$raw)
@@ -157,10 +166,11 @@ preload_screen_abstracts_build <- function(
     })
 
     observeEvent(input$select_no, {
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
       data$raw$screened_abstracts[progress$row] <- "excluded"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){
-        data$raw$time[progress$row] <- as.character(Sys.time())
+        data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
       if(progress$row > nrow(data$raw)){
         progress$row <- nrow(data$raw)
@@ -214,17 +224,25 @@ preload_screen_abstracts_build <- function(
         data$raw,
         app_control_out
       )
+      data <- data$raw
       attr(screen_abstracts_preloaded, "date_last_editted") <- as.character(Sys.time())
-      save(screen_abstracts_preloaded, file = file_out)
+      save(screen_abstracts_preloaded, data, file = file_out)
       showModal(
         modalDialog(
-          HTML("Click anywhere to continue screening, or return to R and hit esc to close the app"),
+          HTML("Your data have been saved to an .RData file in your working directory<br><br>"),
+          modalButton("Continue Screening"),
+          actionButton(
+            inputId = "exit_app",
+            label = "Close App"
+          ),
           title = "Data saved to file",
           footer = NULL,
-          easyClose = TRUE
+          easyClose = FALSE
         )
       )
     })
+
+    observeEvent(input$exit_app, {stopApp()})
 
   } # end server
 

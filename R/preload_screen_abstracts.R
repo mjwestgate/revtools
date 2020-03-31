@@ -23,7 +23,8 @@ preload_screen_abstracts <- function(
           file_out = file_out[a],
           app_control = app_control_clean
         )
-        attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
+        data <- x[a]
+        attr(screen_abstracts_preloaded, data, "date_generated") <- as.character(Sys.time())
         save(screen_abstracts_preloaded, file = file_out[a])
       }))
     }
@@ -33,8 +34,9 @@ preload_screen_abstracts <- function(
       file_out = file_out,
       app_control = app_control_clean
     )
+    data <- x
     attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
-    save(screen_abstracts_preloaded, file = file_out)
+    save(screen_abstracts_preloaded, data, file = file_out)
   }
 }
 
@@ -50,7 +52,7 @@ validate_app_control <- function(app_control_list){
     highlight_color = "red",
     rank_by = "initial", # c("initial", "random", "alphabetical", "relevance")
     keywords = "", # optional list of keywords for ranking or highlighting
-    save_csv = TRUE
+    save_csv = FALSE
   )
 
   if(missing(app_control_list)){
@@ -65,10 +67,10 @@ validate_app_control <- function(app_control_list){
   }
 
   # error checking
-  if(app_control_final$keywords == "" & app_control_final$rank_by == "relevance"){
+  if(all(app_control_final$keywords == "") & app_control_final$rank_by == "relevance"){
     stop("keywords must be specified for rank_by = 'relevance' to work")
   }
-  if(app_control_final$keywords == "" & app_control_final$keyword_highlighting == TRUE){
+  if(all(app_control_final$keywords == "") & app_control_final$keyword_highlighting == TRUE){
     stop("keywords must be specified for keyword_highlighting to work")
   }
 

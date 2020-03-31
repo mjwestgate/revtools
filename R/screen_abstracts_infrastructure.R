@@ -82,8 +82,11 @@ load_abstract_data_remote <- function(
     if(!any(colnames(data) == "notes")){
       data$notes <- ""
     }
-    if(time_responses & !any(colnames(data) == "time")){
-      data$time <- ""
+    if(time_responses & !any(colnames(data) == "date_time")){
+      data$date_time <- ""
+    }
+    if(time_responses & !any(colnames(data) == "time_taken")){
+      data$time_taken <- NA
     }
     x$data$raw <- data
     x$progress$row <- min(which(is.na(data$screened_abstracts)))
