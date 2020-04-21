@@ -159,7 +159,7 @@ prep_ris <- function(
 ){
 	# detect tags
   tags <- regexpr(
-    "^([[:upper:]]{2,4}|[[:upper:]]{1}[[:digit:]]{1})\\s{0,}-{0,2}\\s{0,}",
+    "^([[:upper:]]{2}|[[:upper:]]{1}[[:digit:]]{1})\\s{0,}-{1,2}\\s{0,}",
     perl = TRUE,
     z
   )
@@ -221,13 +221,29 @@ prep_ris <- function(
       split(z_dframe$ris, z_dframe$ref),
       function(a){a[which(a != "")[1]]}
     ))
-    start_tag <- names(which.max(xtabs(~ start_tags )))
 
-    # continue old code
-		row_df <- data.frame(
-			start = which(z_dframe$ris == start_tag),
-			end = which(z_dframe$ris == "ER")
-			)
+    # fix bug where not all entries start with same tag
+    start_tag_xtab <- xtabs(~ start_tags )
+    end_rows <- which(z_dframe$ris == "ER")
+    # previous behavior:
+    if(max(xtabs(~ start_tags)) == length(which(z_dframe$ris == "ER"))){
+      start_tag <- names(which.max(xtabs(~ start_tags)))
+      row_df <- data.frame(
+        start = which(z_dframe$ris == start_tag),
+        end = end_rows
+      )
+    # new option:
+    }else{
+      row_df <- data.frame(
+        start = c(1, end_rows[1:(length(end_rows)-1)] - 1),
+        end = end_rows
+      )
+    }
+    # old code
+		# row_df <- data.frame(
+		# 	start = which(z_dframe$ris == start_tag),
+		# 	end = which(z_dframe$ris == "ER")
+		# 	)
 		z_list <- apply(
       row_df,
       1,
