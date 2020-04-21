@@ -48,7 +48,7 @@ validate_app_control <- function(app_control_list){
   app_control_default <- list(
     show_identifying_info = FALSE,
     time_responses = TRUE,
-    keyword_highlighting = NULL, # FALSE,
+    keyword_highlighting = FALSE,
     keywords = "", # optional list of keywords for ranking or highlighting
     highlight_color = "red",
     rank_by = "initial", # c("initial", "random", "alphabetical", "relevance")
