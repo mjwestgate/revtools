@@ -451,8 +451,8 @@ screen_titles <- function(
     # SAVE OR CLEAR DATA
     observeEvent(input$save_data, {
       save_modal(
-        x = data$raw,
-        title = "Save As"
+        x = data$raw
+        # title = "Save As"
       )
     })
 

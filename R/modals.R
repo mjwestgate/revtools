@@ -1,6 +1,5 @@
 save_modal <- function(
   x # typically data$raw
-  # title = "Save As"
   ){
   if(is.null(x)){
     save_error_modal()

@@ -153,7 +153,7 @@ set_row_order <- function(
       term_lookup <- gregexpr(
         paste(keywords, collapse = "|"),
         apply(
-          data[, colnames(data) %in% c("title", "abstract", "keywords")],
+          df[, colnames(df) %in% c("title", "abstract", "keywords")],
           1,
           function(a){paste(a, collapse = " ")}
         )

@@ -22,11 +22,12 @@
     \item \code{\link{format_citation}} Return a clean citation from a bibliography or data.frame
     \item \code{\link{add_line_breaks}} Set a maximum character width for strings in a vector
   }
-  \strong{Distributing tasks among a team}
+  \strong{Team screening}
   \itemize{
     \item \code{\link{allocate_effort}} Specify how to distribute screening effort among a team of reviewers
     \item \code{\link{distribute_tasks}} Split a dataset among a team of reviewers
     \item \code{\link{aggregate_tasks}} Combine screening results from a team of reviewers
+    \item \code{\link{preload_screen_abstracts}} Pre-package a screening app to forward to reviewers
 	}
 	\strong{Duplicate detection}
 	\itemize{

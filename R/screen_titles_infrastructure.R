@@ -318,8 +318,8 @@ completeness_check <- function(
 ){
   if(all(!is.na(x$screened_titles))){
     save_modal(
-      x = x,
-      title = "Screening Complete: Save results?"
+      x = x
+      # title = "Screening Complete: Save results?"
     )
   }
 }

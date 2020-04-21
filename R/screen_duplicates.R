@@ -486,8 +486,8 @@ screen_duplicates <- function(
         if(length(data$grouped) == 0){
           progress$entry <- NULL
           save_modal(
-            x = data$raw,
-            title = "Screening Complete: Save results?"
+            x = data$raw
+            # title = "Screening Complete: Save results?"
           )
         }else{
           progress$entry <- length(data$grouped)
@@ -503,8 +503,8 @@ screen_duplicates <- function(
         if(length(data$grouped) == 0){
           progress$entry <- NULL
           save_modal(
-            x = data$raw,
-            title = "Screening Complete: Save results?"
+            x = data$raw
+            # title = "Screening Complete: Save results?"
           )
         }else{
           progress$entry <- length(data$grouped)
@@ -520,8 +520,8 @@ screen_duplicates <- function(
         if(length(data$grouped) == 0){
           progress$entry <- NULL
           save_modal(
-            x = data$raw,
-            title = "Screening Complete: Save results?"
+            x = data$raw
+            # title = "Screening Complete: Save results?"
           )
         }else{
           progress$entry <- length(data$grouped)

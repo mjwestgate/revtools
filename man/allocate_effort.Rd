@@ -4,14 +4,16 @@
 \description{This function takes information on the number (and optionally, identity) of reviewers and combines it with data on how it should be allocated to return a data.frame showing the proportion of articles to be assessed by each person.}
 \usage{
 allocate_effort(reviewers, effort, proportion_checked,
-    max_reviewers = 3, precision = 2, quiet = TRUE)
+  min_reviewers = 1, max_reviewers = 3, precision = 2, treatments = 1, quiet = TRUE)
 }
 \arguments{
   \item{reviewers}{Either an integer giving the number of reviewers, or a vector of strings giving reviewer names.}
   \item{effort}{Either a single number giving the proportion of articles to be reviewed by all reviewers, or a numeric vector giving a unique proportion for each reviewer. If the latter must be consistent with number given by 'reviewers' above.}
   \item{proportion_checked}{Numeric value giving the proportion of entries that should be screened by two or more reviewers.}
+  \item{min_reviewers}{the minimum number of reviewers that should screen any single article. Useful for ensuring articles are checked multiple times.}
   \item{max_reviewers}{the maximum number of reviewers that should screen any single article. Useful for avoiding redundancy when working with large teams.}
   \item{precision}{Number of decimal places with which to report results. Defaults to 2.}
+  \item{treatments}{Optional number of treatments that reviewers should be split into. Ensures that the same article is never reviewed twice in the same treatment or by the same reviewer. Currently experimental.}
   \item{quiet}{Logical - should the function return a summary of the proportion of articles allocated to each reviewer? Defaults to TRUE.}
 }
 \value{
@@ -40,10 +42,10 @@ result <- allocate_effort(
   quiet = TRUE
   )
 # most complex - specify uneven effort among reviewers (experimental)
-result <- allocate_effort(
-  reviewers = 4,
-  effort = c(0.9, 0.7, 0.5, 0.3),
-  max_reviewers = 3,
-  quiet = TRUE
-  )
+# result <- allocate_effort(
+#   reviewers = 4,
+#   effort = c(0.9, 0.7, 0.5, 0.3),
+#   max_reviewers = 3,
+#   quiet = TRUE
+#   )
 }

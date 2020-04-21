@@ -24,7 +24,7 @@ preload_screen_abstracts <- function(
           app_control = app_control_clean
         )
         data <- x[a]
-        attr(screen_abstracts_preloaded, data, "date_generated") <- as.character(Sys.time())
+        attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
         save(screen_abstracts_preloaded, file = file_out[a])
       }))
     }
@@ -48,10 +48,10 @@ validate_app_control <- function(app_control_list){
   app_control_default <- list(
     show_identifying_info = FALSE,
     time_responses = TRUE,
-    keyword_highlighting = FALSE,
+    keyword_highlighting = NULL, # FALSE,
+    keywords = "", # optional list of keywords for ranking or highlighting
     highlight_color = "red",
     rank_by = "initial", # c("initial", "random", "alphabetical", "relevance")
-    keywords = "", # optional list of keywords for ranking or highlighting
     save_csv = FALSE
   )
 

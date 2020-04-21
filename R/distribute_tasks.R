@@ -80,9 +80,11 @@ allocate_effort <- function(
     # or a vector of proportions
   proportion_checked,
     # proportion of articles checked by two or more reviewers
+  min_reviewers = 1,
   max_reviewers = 3, # i.e. most people to review a single document
   precision = 2, # number of decimal places to report result to
-  quiet = TRUE
+  treatments = 1,
+  quiet = TRUE # surely this should be 'verbose' and default to FALSE?
 ){
   # catch errors
   if(missing(reviewers)){
@@ -103,30 +105,56 @@ allocate_effort <- function(
 
   # create matrix for calculating sums
   optimize_df <- expand.grid(
-    split(rep(c(0, 1), rev$n), rep(seq_len(rev$n), each = 2))
+    split(rep(c(0, 1), rev$n * treatments), rep(seq_len(rev$n * treatments), each = 2))
   )[-1, ]
-  colnames(optimize_df) <- rev$names
-  optimize_matrix <- t(as.matrix(optimize_df))
+  colnames(optimize_df) <- rep(rev$names, treatments)
+  optimize_matrix <- as.matrix(optimize_df) # used to be transformed with t()
   formula_sums <- rev$effort
 
   if(!missing(max_reviewers)){
-    keep_cols <- apply(optimize_matrix, 2, sum) <= max_reviewers
-    optimize_matrix <- optimize_matrix[, keep_cols]
-    optimize_df <- optimize_df[keep_cols, ]
+    keep_rows <- apply(optimize_matrix, 1, sum) <= max_reviewers
+    optimize_matrix <- optimize_matrix[keep_rows, ]
+    # optimize_df <- optimize_df[keep_rows, ]
   }
-  estimate_n <- ncol(optimize_matrix)
+  # estimate_n <- ncol(optimize_matrix)
+  if(!missing(min_reviewers)){
+    keep_rows <- apply(optimize_matrix, 1, sum) >= min_reviewers
+    optimize_matrix <- optimize_matrix[keep_rows, ]
+    # optimize_df <- optimize_df[keep_rows, ]
+  }
+
+  # remove ineligble rows if treatments > 1
+  if(treatments > 1){
+    # ensure that the same block (reviewer) doesn't get both entries
+    same_block_list <- lapply(seq_len(rev$n), function(a){
+      apply(optimize_matrix[, which(colnames(optimize_matrix) == a)], 1, sum) < 2
+    })
+    optimize_matrix <- optimize_matrix[apply(do.call(cbind, same_block_list), 1, all), ]
+    # ensure that the entries are in different treatments
+    same_treatment_list <- lapply(
+      seq_len(treatments),
+      function(a){
+        apply(optimize_matrix[, which(rep(seq_len(treatments), each = rev$n) == a)], 1, sum) < 2
+      }
+    )
+    optimize_matrix <- optimize_matrix[apply(do.call(cbind, same_treatment_list), 1, all), ]
+  }
+
+  estimate_n <- nrow(optimize_matrix)
 
   # work out exact case if effort is equal
   if(max(rev$effort) - min(rev$effort) < 0.01){
     if(missing(proportion_checked)){ # equal effort
-      optimize_df$proportion <- round_preserve_sum(1 / estimate_n, precision)
+      proportion <- round_preserve_sum(1 / estimate_n, precision)
     }else{
-      multi_rows <- optimize_df$n > 1
-      proportion <- rep(0, nrow(optimize_df))
+      multi_rows <- apply(optimize_matrix, 1, sum) > 1
+      proportion <- rep(0, nrow(optimize_matrix))
       proportion[multi_rows] <- proportion_checked / length(which(multi_rows))
       proportion[!multi_rows] <- (1 - proportion_checked) / length(which(!multi_rows))
-      optimize_df$proportion <- round_preserve_sum(proportion, precision)
+      proportion <- round_preserve_sum(proportion, precision)
     }
+  ## UP TO HERE!!! ###
+  # BELOW HERE NOT UPDATED FOR REMOVAL OF optimize_df
   }else{ # use optim
     if(!missing(proportion_checked)){
       optimize_matrix <- rbind(optimize_matrix,
@@ -190,6 +218,7 @@ allocate_effort <- function(
       )
     )
   }
+  # restrict optimize_df to rows with sum(proportion) > 0.001?
 
   return(optimize_df)
 }
