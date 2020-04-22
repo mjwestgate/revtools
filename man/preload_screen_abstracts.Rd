@@ -11,7 +11,7 @@ preload_screen_abstracts(x, file_out = "screen_abstracts_preloaded.RData", app_c
   \item{app_control}{A list containing additional information to customize UI. See details for what options can be set.}
 }
 \value{
-Returns an \code{.RData} file containing an app with the specified options and data. That file contains two objects: an object named \code{data} that stores the dataset, including any user decisions, notes and timing data; and \code{screen_abstracts_preloaded}, which is a Shiny app that can be run with either \code{runApp()} or \code{print()}, after first calling \code{library(revtools)}.
+Returns an \code{.RData} file containing an app with the specified options and data. That file contains two objects: \code{app}, which is a Shiny app that can be run by calling \code{print(app)}; and \code{data}, which stores the underlying dataset including any user decisions, notes and timing information.
 }
 \details{
 List entries that can be specified within \code{app_control} are as follows:

@@ -18,29 +18,29 @@ preload_screen_abstracts <- function(
       stop("if x is a list, then file_out should be of same length")
     }else{
       invisible(lapply(seq_along(x), function(a){
-        screen_abstracts_preloaded <- preload_screen_abstracts_build(
+        app <- preload_screen_abstracts_build(
           x[a],
           file_out = file_out[a],
           app_control = app_control_clean
         )
         data <- x[a]
-        attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
+        attr(app, "date_generated") <- as.character(Sys.time())
         save(
-          list = c("screen_abstracts_preloaded", "data"),
+          list = c("app", "data"),
           file = file_out[a]
         )
       }))
     }
   }else{ # i.e. if x is a data.frame
-    screen_abstracts_preloaded <- preload_screen_abstracts_build(
+    app <- preload_screen_abstracts_build(
       x,
       file_out = file_out,
       app_control = app_control_clean
     )
     data <- x
-    attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
+    attr(app, "date_generated") <- as.character(Sys.time())
     save(
-      list = c("screen_abstracts_preloaded", "data"),
+      list = c("app", "data"),
       file = file_out
     )
   }

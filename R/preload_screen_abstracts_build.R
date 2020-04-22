@@ -220,15 +220,15 @@ preload_screen_abstracts_build <- function(
       }
       app_control_out <- app_control
       app_control_out$rank_by <- "initial"
-      screen_abstracts_preloaded <- preload_screen_abstracts_build(
+      app <- preload_screen_abstracts_build(
         x = data$raw,
         file_out = file_out,
         app_control = app_control_out
       )
       data <- data$raw
-      attr(screen_abstracts_preloaded, "date_last_editted") <- as.character(Sys.time())
+      attr(app, "date_last_editted") <- as.character(Sys.time())
       save(
-        list = c("screen_abstracts_preloaded", "data"),
+        list = c("app", "data"),
         file = file_out
       )
       showModal(
