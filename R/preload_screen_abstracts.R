@@ -25,7 +25,10 @@ preload_screen_abstracts <- function(
         )
         data <- x[a]
         attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
-        save(screen_abstracts_preloaded, file = file_out[a])
+        save(
+          list = c("screen_abstracts_preloaded", "data"),
+          file = file_out[a]
+        )
       }))
     }
   }else{ # i.e. if x is a data.frame
@@ -36,7 +39,10 @@ preload_screen_abstracts <- function(
     )
     data <- x
     attr(screen_abstracts_preloaded, "date_generated") <- as.character(Sys.time())
-    save(screen_abstracts_preloaded, data, file = file_out)
+    save(
+      list = c("screen_abstracts_preloaded", "data"),
+      file = file_out
+    )
   }
 }
 
