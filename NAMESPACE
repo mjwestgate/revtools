@@ -9,7 +9,7 @@ fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
 find_duplicates, extract_unique_references,
 merge_columns, make_dtm, run_topic_model, revwords,
 screen_duplicates, screen_titles, screen_abstracts, screen_topics,
-preload_screen_abstracts)
+preload_screen_abstracts, run_screening_app)
 S3method(summary, screen_topics_progress)
 S3method(format_citation, bibliography)
 S3method(format_citation, list)

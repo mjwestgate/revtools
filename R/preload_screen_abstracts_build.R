@@ -250,6 +250,30 @@ preload_screen_abstracts_build <- function(
 
   } # end server
 
-  result <- shinyApp(preload_screen_abstracts_ui(), app_server)
+  # result <- shinyApp(preload_screen_abstracts_ui(), app_server)
+  # this fails when transferring to a different machine
+  # potentially fixable by getting the user to build the app themselves
+  result <- list(
+    # data = data,
+    # file_out = "screen_abstracts_preloaded.RData", # possibly not needed?
+    app_control = app_control,
+    ui = preload_screen_abstracts_ui(),
+    server = app_server
+  )
   return(result)
+}
+
+
+run_screening_app <- function(data, app){
+  # load data
+  data_in <- load_abstract_data_remote(
+    data = data[
+      set_row_order(data,
+        order_by = app$app_control$rank_by,
+        keywords = app$app_control$keywords
+      ),
+    ],
+    time_responses = app$app_control$time_responses
+  )
+  print(shinyApp(app$ui, app$server))
 }
