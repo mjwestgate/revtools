@@ -1,4 +1,4 @@
-preload_screen_abstracts_ui <- function(){
+screen_abstracts_preloaded_ui <- function(){
 
   # build user interface
   header <- shinydashboard::dashboardHeader(

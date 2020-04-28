@@ -1,17 +1,18 @@
 \name{preload_screen_abstracts}
 \alias{preload_screen_abstracts}
 \title{Preload an app for screening article abstracts}
-\description{This function takes some data and generates a self-contained app, stored in a .RData file, that can be forwarded to collaborators for screening. A series of options can be pre-set to customize user experience. Once launched, these options cannot be altered by the user.}
+\description{This function takes some data and generates a self-contained app, stored in a .RData file, that can be forwarded to collaborators for screening. A series of options can be pre-set to customize user experience.}
 \usage{
-preload_screen_abstracts(x, file_out = "screen_abstracts_preloaded.RData", app_control)
+preload_screen_abstracts(data, file, app_control, format)
 }
 \arguments{
-  \item{x}{A \code{data.frame} containing bibliographic information.}
-  \item{file_out}{Name of the output \code{RData} file.}
+  \item{data}{A \code{data.frame} containing bibliographic information.}
+  \item{file}{Name of the output \code{RData} file. Defaults to 'screen_abstracts.Rdata'.}
   \item{app_control}{A list containing additional information to customize UI. See details for what options can be set.}
+  \item{format}{What format should the data be saved in? Options are \code{".RData"} (the default), \code{"rds"} to save in RDS, or \code{"none"} to return the object to the workspace  without saving a file.}
 }
 \value{
-Returns an \code{.RData} file containing an app with the specified options and data. That file contains two objects: \code{app}, which is a Shiny app that can be run by calling \code{print(app)}; and \code{data}, which stores the underlying dataset including any user decisions, notes and timing information.
+Returns file or object (as specified by the \code{format} argument) containing the information needed to build an app with the required specifications. Specifically, it returns an S3 object of class \code{screen_abstracts_preloaded} containing three slots: \code{data}, which stores the underlying dataset including any user decisions, notes and timing information; \code{file} which stores the output file name; and \code{app_control}.
 }
 \details{
 List entries that can be specified within \code{app_control} are as follows:

@@ -1,49 +1,39 @@
 # function to build a customized version of screen topics for sharing with a team
-# note that data is saved to .RData rather than .rds so that clicking the file sets the workspace
+# note that this function simply outputs an S3 object with requisite information for app building
+# screen_abstracts then uses this information to build the app on the destination machine
 preload_screen_abstracts <- function(
-  x, # data to include as a data.frame, or list of data.frames
-  file_out = "screen_abstracts_preloaded.RData", # file name and path. must be in .RData format
-  app_control # list containing information on how the app should function
+  data,
+  file,
+  app_control,
+  format = "RData"
 ){
-  if(missing(x)){stop("No data supplied")}
-
+  # error catching
+  if(missing(data)){stop("No data supplied")}
+  if(missing(file)){file <- "screen_abstracts.RData"}
   if(missing(app_control)){
     app_control_clean <- validate_app_control()
   }else{
     app_control_clean <- validate_app_control(app_control)
   }
-
-  if(inherits(x, "list")){
-    if(length(x) != length(file_out)){
-      stop("if x is a list, then file_out should be of same length")
-    }else{
-      invisible(lapply(seq_along(x), function(a){
-        app <- preload_screen_abstracts_build(
-          x[a],
-          file_out = file_out[a],
-          app_control = app_control_clean
-        )
-        data <- x[a]
-        attr(app, "date_generated") <- as.character(Sys.time())
-        save(
-          list = c("app", "data"),
-          file = file_out[a]
-        )
-      }))
-    }
-  }else{ # i.e. if x is a data.frame
-    app <- preload_screen_abstracts_build(
-      x,
-      file_out = file_out,
-      app_control = app_control_clean
-    )
-    data <- x
-    attr(app, "date_generated") <- as.character(Sys.time())
-    save(
-      list = c("app", "data"),
-      file = file_out
-    )
+  if(!any(c("none", "RDS", "RData") == format)){
+    stop("'format' must be one of 'none', 'RDS' or 'RData'")
   }
+
+  # build S3 object of class "screen_abstracts_preloaded"
+  app <- list(
+    data = data,
+    file = file,
+    app_control = app_control_clean
+  )
+  class(app) <- "screen_abstracts_preloaded"
+  attr(app, "date_generated") <- as.character(Sys.time())
+
+  # output in specified format
+  switch(format,
+    "RData" = {save(app, file = file)},
+    "RDS" = {saveRDS(app, file = file)},
+    "none" = {return(app)}
+  )
 }
 
 
