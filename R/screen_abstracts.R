@@ -28,7 +28,7 @@ screen_abstracts <- function(
 
     # server
     source(
-      system.file("R", "screen_abstracts_server.R", package = "revtools"),
+      system.file("/inst/servers/screen_abstracts_server.R", package = "revtools"),
       local = TRUE
     )
 

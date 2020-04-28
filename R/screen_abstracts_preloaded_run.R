@@ -17,7 +17,7 @@ screen_abstracts_preloaded_run <- function(x){
 
   # load server code internally to allow data_in to get called
   source(
-    system.file("R", "screen_abstracts_preloaded_server.R", package = "revtools"),
+    system.file("inst/servers/screen_abstracts_preloaded_server.R", package = "revtools"),
     local = TRUE
   )
 
