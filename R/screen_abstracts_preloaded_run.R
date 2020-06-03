@@ -234,7 +234,7 @@ screen_abstracts_preloaded_run <- function(x){
       # show user that file has been saved
       showModal(
         modalDialog(
-          HTML("Your data have been saved to an .RData file in your working directory<br><br>"),
+          HTML("Your data have been saved to a .rds file in your working directory<br><br>"),
           modalButton("Continue Screening"),
           actionButton(
             inputId = "exit_app",

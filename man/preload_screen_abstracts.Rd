@@ -50,7 +50,7 @@ List entries that can be specified within \code{app_control} are as follows:
    for alphabetical by article title, or \code{"relevance"} for ranking by
    number of matched keywords.
   \item\code{save_csv} - Logical: should the app save a \code{csv} file as
-    well as a \code{.RData} file? Defaults to FALSE.
+    well as a \code{.rds} file? Defaults to FALSE.
 }
 }
 \examples{
