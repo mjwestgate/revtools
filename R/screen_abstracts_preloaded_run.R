@@ -21,7 +21,7 @@ screen_abstracts_preloaded_run <- function(x){
   #   local = TRUE
   # )
   # fails on installed version
-  
+
   # start server
   screen_abstracts_preloaded_server <- function(input, output, session){
 
@@ -35,7 +35,7 @@ screen_abstracts_preloaded_run <- function(x){
     )
     progress <- reactiveValues(
       row = data_in$progress$row,
-      time = Sys.time()
+      time = as.numeric(Sys.time())
     )
 
     # DISPLAY TEXT
@@ -95,7 +95,7 @@ screen_abstracts_preloaded_run <- function(x){
           }
         }
         cat(text_tr) # print
-        progress$time <- Sys.time()
+        progress$time <- as.numeric(Sys.time())
       })
     })
 
@@ -136,7 +136,7 @@ screen_abstracts_preloaded_run <- function(x){
 
     # SELECTION & NAVIGATION
     observeEvent(input$select_yes, {
-      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time()) - progress$time
       data$raw$screened_abstracts[progress$row] <- "selected"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){
@@ -150,7 +150,7 @@ screen_abstracts_preloaded_run <- function(x){
     })
 
     observeEvent(input$select_unknown, {
-      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time()) - progress$time
       data$raw$screened_abstracts[progress$row] <- "unknown"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){
@@ -164,7 +164,7 @@ screen_abstracts_preloaded_run <- function(x){
     })
 
     observeEvent(input$select_no, {
-      data$raw$time_taken[progress$row] <- as.numeric(Sys.time() - progress$time)
+      data$raw$time_taken[progress$row] <- as.numeric(Sys.time()) - progress$time
       data$raw$screened_abstracts[progress$row] <- "excluded"
       data$raw$notes[progress$row] <- input$abstract_notes
       if(app_control$time_responses){

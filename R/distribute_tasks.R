@@ -1,231 +1,50 @@
-# functions for allocating screening tasks among a team
+#' Divide a set of articles among two or more reviewers
+#'
+#' A common task in systematic review is to divide a dataset of articles
+#' located by a search (typically involving >1 databases) and distributing them
+#' amongst a team of reviewers for screening. This function takes a dataset
+#' divides it among the specified number of reviewers, returning the resulting
+#' data.frames either in a list to the workspace, or (by default) as a set of
+#' .csv files in the specified directory. The resulting files can be passed to
+#' any of the screening functions provided by revtools, i.e.
+#' \code{\link{screen_titles}}, \code{\link{screen_abstracts}}, or
+#' \code{\link{screen_topics}}.
+#'
+#' The dataset is allocated each author in the proportion of articles specified
+#' by \code{\link{allocate_effort}}, with the identity of articles passed to
+#' reviewer being chosen by \code{rnorm}. As a result, this function is very
+#' sensitive to the inputs provided to \code{\link{allocate_effort}}, so it is
+#' often worth running that function first and checking the results to be
+#' certain that effort is being distributed in a way that you are happy with.
+#'
+#' @param data a vector of strings
+#' @param reviewers Either a \code{data.frame} as returned by
+#' \code{allocate_effort}, an integer giving the number of reviewers, or a
+#' vector of strings giving reviewer names.
+#' @param write_csv Logical - should the function write a set of csv files (1
+#' per reviewer)? Defaults to TRUE
+#' @param file_name a file path & name showing where .csv files should be
+#' saved. Ignored if \code{write_csv} is FALSE. Defaults to
+#' 'reviewer_[name].csv'.
+#' @param return_data Logical - should a list be (invisibly) returned, in which
+#' each entry is the data sent to a single reviewer? Defaults to FALSE.
+#' @param ... Further arguments passed to \code{allocate_effort}
+#' @return Invisibly returns a list of data.frames, each with same columns as
+#' \code{data} but containing only a subset of rows.
+#' @seealso \code{\link{allocate_effort}} for a detailed description of how the
+#' division among reviewers is accomplished.
+#' @examples
+#'
+#' # import some data
+#' file_location <- system.file(
+#'   "extdata",
+#'   "avian_ecology_bibliography.ris",
+#'   package = "revtools")
+#' x <- read_bibliography(file_location)
+#' result <- distribute_tasks(x, 4, write_csv = FALSE) # split evenly among 4 reviewers
+#'
+#' @export distribute_tasks
 
-# take inputs to allocate_effort and return a clean list of parameters
-get_clean_reviewers <- function(
-  reviewers,
-  effort
-){ # x = input to create_reviewer_matrix
-  if(!(class(reviewers) %in% c("numeric", "integer", "character"))){
-    stop("reviewers must be either a number or a list of names")
-  }
-
-  if(is.numeric(reviewers) | is.integer(reviewers)){
-    if(length(reviewers) > 1){
-      n <- length(reviewers)
-      if(is.null(names(reviewers))){
-        names <- seq_len(length(reviewers))
-      }else{
-        names <- names(reviewers)
-      }
-    }else{ # i.e. length(reviewers) == 1
-      if(reviewers < 2){
-        stop("Effort can only be divided among two or more reviewers")
-      }else{
-        n <- reviewers
-        names <- seq_len(reviewers)
-      }
-    }
-  }
-  if(is.character(reviewers)){
-    n <- length(reviewers)
-    names <- reviewers
-  }
-
-  if(is.null(effort)){
-    effort_out <- rep(1.1 / n, n) # arbitrary
-  }else{
-    if(!(class(effort) %in% c("numeric", "integer"))){
-      stop("effort must be numeric")
-    }
-    if(length(effort) > 1){
-      if(length(effort) != n){
-        stop("length(effort) != length(reviewers)")
-      }else{
-        effort_out <- effort
-      }
-    }else{ # i.e. length(effort) == 1
-      effort_out <- rep(effort, n)
-    }
-  }
-
-  result <- list(
-    n = n,
-    names = names,
-    effort = effort_out,
-    seq = seq_len(n)
-  )
-  class(result) <- "reviewer_info"
-  return(result)
-}
-
-
-# function for rounding while preserving sum of original vector
-# original code from http://biostatmatt.com/archives/2902
-round_preserve_sum <- function(x, digits = 0) {
-  up <- 10 ^ digits
-  x <- x * up
-  y <- floor(x)
-  indices <- tail(order(x-y), round(sum(x)) - sum(y))
-  y[indices] <- y[indices] + 1
-  y / up
-}
-
-
-# function to divide up effort among many reviewers
-allocate_effort <- function(
-  reviewers, # can be one of
-    # single number (of reviewers)
-    # string (their reviewers)
-  effort, # either a single number of the proportion of effort per reviewer,
-    # or a vector of proportions
-  proportion_checked,
-    # proportion of articles checked by two or more reviewers
-  min_reviewers = 1,
-  max_reviewers = 3, # i.e. most people to review a single document
-  precision = 2, # number of decimal places to report result to
-  treatments = 1,
-  quiet = TRUE # surely this should be 'verbose' and default to FALSE?
-){
-  # catch errors
-  if(missing(reviewers)){
-    stop("'reviewers' is missing, with no default")
-  }
-  if(missing(effort)){
-    effort <- NULL
-  }
-  if(!missing(proportion_checked)){
-    if(proportion_checked < 0 | proportion_checked > 1){
-      stop("proportion_checked should be between 0 and 1")
-    }
-    if(proportion_checked < 0.001){
-      max_reviewers <- 1
-    }
-  }
-  rev <- get_clean_reviewers(reviewers, effort)
-
-  # create matrix for calculating sums
-  optimize_df <- expand.grid(
-    split(rep(c(0, 1), rev$n * treatments), rep(seq_len(rev$n * treatments), each = 2))
-  )[-1, ]
-  colnames(optimize_df) <- rep(rev$names, treatments)
-  optimize_matrix <- as.matrix(optimize_df) # used to be transformed with t()
-  formula_sums <- rev$effort
-
-  if(!missing(max_reviewers)){
-    keep_rows <- apply(optimize_matrix, 1, sum) <= max_reviewers
-    optimize_matrix <- optimize_matrix[keep_rows, ]
-    # optimize_df <- optimize_df[keep_rows, ]
-  }
-  # estimate_n <- ncol(optimize_matrix)
-  if(!missing(min_reviewers)){
-    keep_rows <- apply(optimize_matrix, 1, sum) >= min_reviewers
-    optimize_matrix <- optimize_matrix[keep_rows, ]
-    # optimize_df <- optimize_df[keep_rows, ]
-  }
-
-  # remove ineligble rows if treatments > 1
-  if(treatments > 1){
-    # ensure that the same block (reviewer) doesn't get both entries
-    same_block_list <- lapply(seq_len(rev$n), function(a){
-      apply(optimize_matrix[, which(colnames(optimize_matrix) == a)], 1, sum) < 2
-    })
-    optimize_matrix <- optimize_matrix[apply(do.call(cbind, same_block_list), 1, all), ]
-    # ensure that the entries are in different treatments
-    same_treatment_list <- lapply(
-      seq_len(treatments),
-      function(a){
-        apply(optimize_matrix[, which(rep(seq_len(treatments), each = rev$n) == a)], 1, sum) < 2
-      }
-    )
-    optimize_matrix <- optimize_matrix[apply(do.call(cbind, same_treatment_list), 1, all), ]
-  }
-
-  estimate_n <- nrow(optimize_matrix)
-
-  # work out exact case if effort is equal
-  if(max(rev$effort) - min(rev$effort) < 0.01){
-    if(missing(proportion_checked)){ # equal effort
-      proportion <- round_preserve_sum(1 / estimate_n, precision)
-    }else{
-      multi_rows <- apply(optimize_matrix, 1, sum) > 1
-      proportion <- rep(0, nrow(optimize_matrix))
-      proportion[multi_rows] <- proportion_checked / length(which(multi_rows))
-      proportion[!multi_rows] <- (1 - proportion_checked) / length(which(!multi_rows))
-      proportion <- round_preserve_sum(proportion, precision)
-    }
-  ## UP TO HERE!!! ###
-  # BELOW HERE NOT UPDATED FOR REMOVAL OF optimize_df
-  }else{ # use optim
-    if(!missing(proportion_checked)){
-      optimize_matrix <- rbind(optimize_matrix,
-        as.numeric(apply(optimize_df, 1, sum) > 1)
-      )
-      formula_sums <- c(formula_sums, proportion_checked)
-    }
-    # optimize
-    optim_fun <- function(a, x, n, sums){
-      a_bin <- plogis(a)
-      a_sum <- a_bin / sum(a_bin)
-      z <- rep(a_sum, each = nrow(x)) * x
-      row_result <- (sums - apply(z, 1, sum))
-      if(nrow(x) > n){ # add extra weight to proportion_checked row
-        weight_rows <- c((n + 1) : nrow(x))
-        row_result[weight_rows] <- row_result[weight_rows] * n
-      }
-      sum(row_result^2)
-    }
-    result <- stats::optim(
-      par = rep(1, estimate_n),
-      fn = optim_fun,
-      x = optimize_matrix,
-      sums = formula_sums,
-      n = length(rev$seq),
-      method = "L-BFGS-B",
-      lower = -5,
-      upper = 5,
-      control = list(maxit = 10^5)
-    )
-    if(result$convergence > 0){
-      stop("unable to optimize matrix")
-    }
-    par_t <- plogis(result$par)
-    par_f <- par_t / sum(par_t)
-    optimize_df$proportion <- round_preserve_sum(par_f, precision)
-  }
-
-  if(!quiet){
-    nums <- apply(t(optimize_matrix) * optimize_df$proportion, 2, sum)
-    reviewer_count <- apply(optimize_matrix[rev$seq ,], 2, sum)
-    reviewer_prop <- as.data.frame(xtabs(optimize_df$proportion ~ reviewer_count))
-    reviewer_prop$reviewer_count <- paste0(reviewer_prop$reviewer_count, " people")
-    if(any(reviewer_prop$reviewer_count == "1 people")){
-      row <- which(reviewer_prop$reviewer_count == "1 people")
-      reviewer_prop$reviewer_count[row] <- "1 person"
-    }
-    nums <- nums[rev$seq]
-    if(all(rev$names == rev$seq)){
-      name_text <- paste0("reviewer ", names(nums))
-    }else{
-      name_text <- names(nums)
-    }
-    cat(
-      paste0(
-        "Proportion of articles per reviewer:\n",
-        paste(name_text, nums, sep = ": ", collapse = "\n"),
-        "\nProportion of articles reviewed by:\n",
-        paste(reviewer_prop$reviewer_count, reviewer_prop$Freq, sep = ": ", collapse = "\n"),
-        "\n"
-      )
-    )
-  }
-  # restrict optimize_df to rows with sum(proportion) > 0.001?
-
-  return(optimize_df)
-}
-
-
-# function to create_reviewer_matrix to a real dataset
-# and optionally output files
 distribute_tasks <- function(
   data, # a dataset to split
   reviewers, # either a data.frame as returned by create_reviewer_matrix,
@@ -319,6 +138,33 @@ distribute_tasks <- function(
 
 
 # function to bring datasets back together
+
+
+#' Combine (potentially overlapping) article sets generated by screening among
+#' a team of reviewers.
+#'
+#' A common task in systematic review is to divide a dataset of articles
+#' located by a search (typically involving >1 databases) and distributing them
+#' amongst a team of reviewers for screening. This function takes a dataset
+#' divided using \code{link{distribute_tasks}} and recombines them into a
+#' single \code{data.frame}.
+#'
+#'
+#' @param file_names a vector or list of file paths used to locate screened
+#' files. Must be in .csv format.
+#' @param match_column The name of the column used to match identical
+#' references. In revtools this is 'label', which is the default here.
+#' @param selection_column The name of the column used to store 'selection'
+#' data; i.e. which entries have been retained and which excluded. In revtools
+#' this is 'selected', which is the default here.
+#' @param reviewer_names Optional vector of names used to label the 'results'
+#' columns in the resulting \code{data.frame}.
+#' @return Returns a data.frame with one row per unique value of
+#' \code{match_column}, showing the content of \code{selection_column} for each
+#' reviewer.
+#' @seealso \code{\link{distribute_tasks}} for the inverse problem of dividing
+#' a single dataset amongst many reviewers.
+#' @export aggregate_tasks
 aggregate_tasks <- function(
   file_names, # vector or list of file names
   match_column, # column to join data on (unique ID)
