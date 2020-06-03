@@ -23,7 +23,7 @@ exports results as a .ris or .bib file.
 \description{
 Basic function to export bibliographic information for use in other
 programs. \strong{This function has been deprecated and will be removed
-from future versions of \code{revtools}. Please use \code{synthesisr::write_refs()} 
+from future versions of \code{revtools}. Please use \code{synthesisr::write_refs()}
 instead}.
 }
 \examples{

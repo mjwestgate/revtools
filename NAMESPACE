@@ -5,10 +5,13 @@ export(read_bibliography, write_bibliography,
   screen_duplicates, screen_titles, screen_abstracts, screen_topics)
 S3method(summary, screen_topics_progress)
 importFrom(synthesisr,
+  read_refs, write_refs,
   as.bibliography, summary.bibliography, print.bibliography, '[.bibliography', c.bibliography,
   add_line_breaks, format_citation,
   fuzzdist,
   fuzz_m_ratio, fuzz_partial_ratio, fuzz_token_sort_ratio, fuzz_token_set_ratio,
+  string_osa, string_lv, string_dl, string_hamming, string_lcs,
+  string_qgram, string_cosine, string_jaccard, string_jw, string_soundex,
   find_duplicates, extract_unique_references,
   merge_columns)
 importFrom(ade4, dudi.coa)

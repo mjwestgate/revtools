@@ -4,20 +4,18 @@
 \alias{preload_screen_abstracts}
 \title{Preload an app for screening article abstracts}
 \usage{
-preload_screen_abstracts(data, file, app_control, format = "RData")
+preload_screen_abstracts(data, file, write, app_control)
 }
 \arguments{
 \item{data}{A \code{data.frame} containing bibliographic information.}
 
-\item{file}{Name of the output \code{RData} file. Defaults to
-'screen_abstracts.Rdata'.}
+\item{file}{Name of the output \code{rds} file. Defaults to \code{'screen_abstracts.rds'}}
 
-\item{app_control}{A list containing additional information to customize UI.
+\item{write}{Logical; should the specified \code{file} be written? Defaults to TRUE; if FALSE the
+resulting app is returned to the workspace rather than the specified filename.}
+
+\item{app_control}{A list containing additional information to customize the UI.
 See details for what options can be set.}
-
-\item{format}{What format should the data be saved in? Options are
-\code{".RData"} (the default), \code{"rds"} to save in RDS, or \code{"none"}
-to return the object to the workspace without saving a file.}
 }
 \value{
 Returns file or object (as specified by the \code{format} argument)
@@ -30,7 +28,7 @@ information; \code{file} which stores the output file name; and
 }
 \description{
 This function takes some data and generates a self-contained app, stored in
-a .RData file, that can be forwarded to collaborators for screening. A
+a \code{.rds} file, that can be forwarded to collaborators for screening. A
 series of options can be pre-set to customize user experience.
 }
 \details{
@@ -64,7 +62,8 @@ file_location <- system.file(
 x <- read_bibliography(file_location)
 
 \dontrun{
-preload_screen_abstracts(data,
+preload_screen_abstracts(x,
+  file = "screening_app.rds",
   app_control = list(
     keyword_highlighting = TRUE,
     highlight_color = "red",
@@ -72,11 +71,8 @@ preload_screen_abstracts(data,
     save_csv = FALSE
   )
 )
-# after re-loading output .RData file, run by using:
-library(revtools)
-print(screen_abstracts_preloaded)
-runApp(screen_abstracts_preloaded)
-# the above options are equivalent
+# then run the resulting app from file
+screen_abstracts("screening_app.rds")
 }
 
 }

@@ -81,6 +81,6 @@ x <- read_bibliography(file_location)
 }
 \seealso{
 \code{\link{screen_titles}} or \code{\link{screen_abstracts}} for
-manual screening; \code{\link{screen_topics_progress-class}} for saving and
+manual screening; \code{\link{screen_topics_progress}} for saving and
 restoring progress in \code{screen_topics}.
 }

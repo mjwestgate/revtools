@@ -7,9 +7,12 @@
 screen_abstracts(x = NULL, max_file_size)
 }
 \arguments{
-\item{x}{An (optional) object of class \code{data.frame} or
+\item{x}{An (optional) object of class \code{character}, \code{data.frame} or
 \code{bibliography} to open in the browser. If empty, the app will launch
-with no data. Data can be added within the app via the 'import' button.}
+with no data. If a character, \code{screen_abstracts} will assume it is a file
+location and import via \code{readRDS} if there is a \code{.rds} suffix, or
+\code{synthesisr::read_refs} otherwise. If no value is given, data can be added
+within the app via the 'import' button.}
 
 \item{max_file_size}{Optional argument to set the maximum file size (in MB)
 that the app will accept.}

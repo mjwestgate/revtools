@@ -53,15 +53,26 @@ screen_duplicates_ui <- function(){
         startExpanded = FALSE,
         selectInput(
           inputId = "match_function",
-          label = "Select function",
-          choices = c(
-            "stringdist" = "stringdist",
-            "fuzzdist" = "fuzzdist",
-            "exact" = "exact"
-          ),
-          selected = "exact"
+          label = "Select method",
+          choices = list(
+            "exact" = "exact",
+            "stringdist::osa" = "string_osa",
+            "stringdist::lv" = "string_lv",
+            "stringdist::dl" = "string_dl",
+            "stringdist::hamming" = "string_hamming",
+            "stringdist::lcs" = "string_lcs",
+            "stringdist::qgram" = "string_qgram",
+            "stringdist::cosine" = "string_cosine",
+            "stringdist::jaccard" = "string_jaccard",
+            "stringdist::jw" = "string_jw",
+            "stringdist::soundex" = "string_soundex",
+            "M Ratio" = "fuzz_m_ratio",
+            "Partial Ratio" = "fuzz_partial_ratio",
+            "Token Sort Ratio" = "fuzz_token_sort_ratio",
+            "Token Set Ratio" = "fuzz_token_set_ratio"
+          )
         ),
-        uiOutput("algorithm_selector"),
+        # uiOutput("algorithm_selector"),
         uiOutput("threshold_selector"),
         checkboxInput(
           inputId = "match_lower",

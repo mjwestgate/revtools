@@ -28,11 +28,7 @@ Returns an object of class \code{data.frame} if \code{return_df} is
 }
 \description{
 Import standard formats from academic search engines and referencing
-software.
-}
-\details{
-This function aims to import bibliographic data from a range of formats in a
-consistent manner. \strong{This function has been deprecated and will be removed
+software. \strong{This function has been deprecated and will be removed
 from future versions of \code{revtools}. Please use \code{synthesisr::read_refs()}
 instead}.
 }
@@ -48,7 +44,4 @@ x <- read_bibliography(file_location, return_df = FALSE)
 class(x) # = bibliography
 summary(x)
 
-}
-\seealso{
-\code{\link{bibliography-class}}, \code{\link{tag_lookup}}
 }

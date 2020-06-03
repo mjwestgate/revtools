@@ -1,7 +1,7 @@
 #' Preload an app for screening article abstracts
 #'
 #' This function takes some data and generates a self-contained app, stored in
-#' a .RData file, that can be forwarded to collaborators for screening. A
+#' a \code{.rds} file, that can be forwarded to collaborators for screening. A
 #' series of options can be pre-set to customize user experience.
 #'
 #' List entries that can be specified within \code{app_control} are as follows:
@@ -26,13 +26,11 @@
 #' }
 #'
 #' @param data A \code{data.frame} containing bibliographic information.
-#' @param file Name of the output \code{RData} file. Defaults to
-#' 'screen_abstracts.Rdata'.
-#' @param app_control A list containing additional information to customize UI.
+#' @param file Name of the output \code{rds} file. Defaults to \code{'screen_abstracts.rds'}
+#' @param write Logical; should the specified \code{file} be written? Defaults to TRUE; if FALSE the
+#'   resulting app is returned to the workspace rather than the specified filename.
+#' @param app_control A list containing additional information to customize the UI.
 #' See details for what options can be set.
-#' @param format What format should the data be saved in? Options are
-#' \code{".RData"} (the default), \code{"rds"} to save in RDS, or \code{"none"}
-#' to return the object to the workspace without saving a file.
 #' @return Returns file or object (as specified by the \code{format} argument)
 #' containing the information needed to build an app with the required
 #' specifications. Specifically, it returns an S3 object of class
@@ -49,7 +47,8 @@
 #' x <- read_bibliography(file_location)
 #'
 #' \dontrun{
-#' preload_screen_abstracts(data,
+#' preload_screen_abstracts(x,
+#'   file = "screening_app.rds",
 #'   app_control = list(
 #'     keyword_highlighting = TRUE,
 #'     highlight_color = "red",
@@ -57,35 +56,36 @@
 #'     save_csv = FALSE
 #'   )
 #' )
-#' # after re-loading output .RData file, run by using:
-#' library(revtools)
-#' print(screen_abstracts_preloaded)
-#' runApp(screen_abstracts_preloaded)
-#' # the above options are equivalent
+#' # then run the resulting app from file
+#' screen_abstracts("screening_app.rds")
 #' }
 #'
 #' @export preload_screen_abstracts
 
-# NEXT TASK IS TO MAKE THIS ONLY OUTPUT A .RDS FILE
-# THEN MAKE SCREEN_ABSTRACTS() ACCEPT A STRING AS A FILENAME
-# AND IMPORT CORRECTLY
-
 preload_screen_abstracts <- function(
   data,
   file,
-  app_control,
-  format = "RData"
+  write,
+  app_control
 ){
   # error catching
   if(missing(data)){stop("No data supplied")}
-  if(missing(file)){file <- "screen_abstracts.RData"}
+  if(missing(file)){
+    file <- "screen_abstracts.rds"
+  }else{
+    if(!grepl(".rds$", file)){file <- paste0(file, ".rds")}
+  }
+  if(missing(write)){
+    write <- TRUE
+  }else{
+    if(!inherits(write, "logical")){
+      stop("argument 'write' must be logical")
+    }
+  }
   if(missing(app_control)){
     app_control_clean <- validate_app_control()
   }else{
     app_control_clean <- validate_app_control(app_control)
-  }
-  if(!any(c("none", "RDS", "RData") == format)){
-    stop("'format' must be one of 'none', 'RDS' or 'RData'")
   }
 
   # build S3 object of class "screen_abstracts_preloaded"
@@ -98,11 +98,11 @@ preload_screen_abstracts <- function(
   attr(app, "date_generated") <- as.character(Sys.time())
 
   # output in specified format
-  switch(format,
-    "RData" = {save(app, file = file)},
-    "RDS" = {saveRDS(app, file = file)},
-    "none" = {return(app)}
-  )
+  if(write){
+    saveRDS(app, file = file)
+  }else{
+    return(app)
+  }
 }
 
 

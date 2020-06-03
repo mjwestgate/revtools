@@ -50,7 +50,7 @@
 #' that the app will accept.
 #' @return This function launches a Shiny app in the users' default browser.
 #' @seealso \code{\link{screen_titles}} or \code{\link{screen_abstracts}} for
-#' manual screening; \code{\link{screen_topics_progress-class}} for saving and
+#' manual screening; \code{\link{screen_topics_progress}} for saving and
 #' restoring progress in \code{screen_topics}.
 #' @examples
 #'

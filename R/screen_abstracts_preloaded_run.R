@@ -1,4 +1,5 @@
 screen_abstracts_preloaded_run <- function(x){
+
   if(!inherits(x, "screen_abstracts_preloaded")){
     stop("screen_abstracts_preloaded_run can only use objects of class 'screen_abstracts_preloaded'")
   }
@@ -225,11 +226,11 @@ screen_abstracts_preloaded_run <- function(x){
       class(app) <- "screen_abstracts_preloaded"
       attr(app, "date_modified") <- as.character(Sys.time())
       # save in correct format
-      if(grepl(".rds$", file)){
+      # if(grepl(".rds$", file)){
         saveRDS(app, file = file)
-      }else{
-        save(app, file = file)
-      }
+      # }else{
+      #   save(app, file = file)
+      # }
       # show user that file has been saved
       showModal(
         modalDialog(

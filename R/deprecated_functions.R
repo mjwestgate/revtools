@@ -3,10 +3,7 @@
 #' Import bibliographic data
 #'
 #' Import standard formats from academic search engines and referencing
-#' software.
-#'
-#' This function aims to import bibliographic data from a range of formats in a
-#' consistent manner. \strong{This function has been deprecated and will be removed
+#' software. \strong{This function has been deprecated and will be removed
 #' from future versions of \code{revtools}. Please use \code{synthesisr::read_refs()}
 #' instead}.
 #'
@@ -19,7 +16,6 @@
 #' @param verbose Logical; should progress information be printed?
 #' @return Returns an object of class \code{data.frame} if \code{return_df} is
 #' \code{TRUE}; otherwise an object of class \code{bibliography}.
-#' @seealso \code{\link{bibliography-class}}, \code{\link{tag_lookup}}
 #' @examples
 #'
 #' file_location <- system.file(
@@ -52,7 +48,7 @@ read_bibliography <- function(
 #'
 #' Basic function to export bibliographic information for use in other
 #' programs. \strong{This function has been deprecated and will be removed
-#' from future versions of \code{revtools}. Please use \code{synthesisr::write_refs()} 
+#' from future versions of \code{revtools}. Please use \code{synthesisr::write_refs()}
 #' instead}.
 #'
 #'

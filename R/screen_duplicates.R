@@ -233,38 +233,10 @@ screen_duplicates <- function(
     })
 
 
-    # decide which method to use to calculate string distances
-    observe({
-      output$algorithm_selector <- renderUI({
-        if(input$match_function == "fuzzdist"){
-          algorithm_list <- list(
-            "M Ratio" = "fuzz_m_ratio",
-            "Partial Ratio" = "fuzz_partial_ratio",
-            "Token Sort Ratio" = "fuzz_token_sort_ratio",
-            "Token Set Ratio" = "fuzz_token_set_ratio"
-          )
-        }else{
-          algorithm_list <- c(
-            "osa", "lv", "dl",
-            "hamming", "lcs",
-            "qgram", "cosine",
-            "jaccard", "jw", "soundex"
-          )
-        }
-        if(input$match_function != "exact"){
-          selectInput(
-            inputId = "match_algorithm",
-            label = "Select method",
-            choices = algorithm_list
-          )
-        }
-      })
-    })
-
     # set a string distance as appropriate for each method
     observe({
       output$threshold_selector <- renderUI({
-        if(input$match_function == "fuzzdist"){
+        if(grepl(input$match_function, "^fuzz_")){ # doesn't work yet
           max_val <- 1
           initial_val <- 0.1
           step_val <- 0.05
@@ -320,14 +292,13 @@ screen_duplicates <- function(
       }else{
         calculating_modal()
         data$raw$matches <- find_duplicates(
-          data = data$raw,
-          match_variable = input$response_selector_result,
-          group_variables = input$group_selector_result,
-          match_function = input$match_function,
-          method = input$match_algorithm,
+          data = data$raw[, input$response_selector_result],
+          group_by = input$group_selector_result,
+          # match_function = input$match_function,
+          method = input$match_function, # input$match_algorithm,
           threshold = input$match_threshold,
           to_lower = input$match_lower,
-          remove_punctuation = input$match_punctuation
+          rm_punctuation = input$match_punctuation
         )
 
         # work out which duplicates to show

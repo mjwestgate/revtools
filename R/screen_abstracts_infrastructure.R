@@ -17,13 +17,12 @@ load_abstract_data <- function(data){
 
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
-    if(any(accepted_inputs == class(data)) == FALSE){
-      stop("only classes 'bibliography' or 'data.frame' accepted by screen_abstracts")}
+    if(!inherits(data, accepted_inputs)){
+      stop("only classes 'bibliography' or 'data.frame' are accepted by screen_abstracts")}
 
     switch(class(data),
       "bibliography" = {data <- as.data.frame(data)},
-      "data.frame" = {data <- data}
-    )
+      "data.frame" = {data <- data})
 
     data <- add_abstract_columns(data)
     colnames(data) <- tolower(colnames(data))
@@ -67,13 +66,12 @@ load_abstract_data_remote <- function(
 
     # throw a warning if a known file type isn't given
     accepted_inputs <- c("bibliography", "data.frame")
-    if(any(accepted_inputs == class(data)) == FALSE){
+    if(!inherits(data, accepted_inputs)){
       stop("only classes 'bibliography' or 'data.frame' accepted by screen_abstracts")}
 
     switch(class(data),
       "bibliography" = {data <- as.data.frame(data)},
-      "data.frame" = {data <- data}
-    )
+      "data.frame" = {data <- data})
 
     colnames(data) <- tolower(colnames(data))
     if(!any(colnames(data) == "screened_abstracts")){
@@ -101,7 +99,7 @@ load_abstract_data_remote <- function(
 add_abstract_columns <- function(df){
 
   if(!any(colnames(df) == "label")){
-    df$label <- generate_bibliographic_names(df)
+    df$label <- create_index(n = nrow(df))
     df <- df[, c(ncol(df), seq_len(ncol(df)-1))]
   }
   if(!any(colnames(df) == "screened_abstracts")){
