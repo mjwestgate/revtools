@@ -87,12 +87,34 @@ load_abstract_data_remote <- function(
       data$time_taken <- NA
     }
     x$data$raw <- data
-    x$progress$row <- min(which(is.na(data$screened_abstracts)))
+    if(any(is.na(data$screened_abstracts))){
+      x$progress$row <- min(which(is.na(data$screened_abstracts)))
+    }else{
+      x$progress$row <- 1
+    }
+
 
   } # end if is.null
 
   return(x)
 
+}
+
+
+wrap_app <- function(data, file, app_control){
+  if(app_control$save_csv){
+    write.csv(data$raw, "screening_data.csv")
+  }
+  app <- list(
+    data = data$raw,
+    file = file,
+    app_control = app_control
+  )
+  app$app_control$rank_by = "initial"
+  class(app) <- "screen_abstracts_preloaded"
+  attr(app, "date_modified") <- as.character(Sys.time())
+  saveRDS(app, file = file)
+  save_preloaded_modal()
 }
 
 

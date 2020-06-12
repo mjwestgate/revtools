@@ -42,6 +42,22 @@ save_error_modal <- function(){
   )
 }
 
+save_preloaded_modal <- function(){
+  showModal(
+    modalDialog(
+      HTML("Your data have been saved to a .rds file in your working directory<br><br>"),
+      modalButton("Continue Screening"),
+      actionButton(
+        inputId = "exit_app",
+        label = "Close App"
+      ),
+      title = "Data saved to file",
+      footer = NULL,
+      easyClose = FALSE
+    )
+  )
+}
+
 error_modal <- function(text){
   showModal(
     modalDialog(

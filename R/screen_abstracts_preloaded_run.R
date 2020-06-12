@@ -143,8 +143,9 @@ screen_abstracts_preloaded_run <- function(x){
       if(app_control$time_responses){
         data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
-      if(progress$row > nrow(data$raw)){
+      if(progress$row > (nrow(data$raw) - 1)){
         progress$row <- nrow(data$raw)
+        wrap_app(data, file, app_control)
       }else{
         progress$row <- progress$row + 1
       }
@@ -157,8 +158,9 @@ screen_abstracts_preloaded_run <- function(x){
       if(app_control$time_responses){
         data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
-      if(progress$row > nrow(data$raw)){
+      if(progress$row > (nrow(data$raw) - 1)){
         progress$row <- nrow(data$raw)
+        wrap_app(data, file, app_control)
       }else{
         progress$row <- progress$row + 1
       }
@@ -171,8 +173,9 @@ screen_abstracts_preloaded_run <- function(x){
       if(app_control$time_responses){
         data$raw$date_time[progress$row] <- as.character(Sys.time())
       }
-      if(progress$row > nrow(data$raw)){
+      if(progress$row > (nrow(data$raw) - 1)){
         progress$row <- nrow(data$raw)
+        wrap_app(data, file, app_control)
       }else{
         progress$row <- progress$row + 1
       }
@@ -214,37 +217,7 @@ screen_abstracts_preloaded_run <- function(x){
 
     # SAVE
     observeEvent(input$save_progress, {
-      if(app_control$save_csv){
-        write.csv(data$raw, "screening_data.csv")
-      }
-      app <- list(
-        data = data$raw,
-        file = file,
-        app_control = app_control
-      )
-      app$app_control$rank_by = "initial"
-      class(app) <- "screen_abstracts_preloaded"
-      attr(app, "date_modified") <- as.character(Sys.time())
-      # save in correct format
-      # if(grepl(".rds$", file)){
-        saveRDS(app, file = file)
-      # }else{
-      #   save(app, file = file)
-      # }
-      # show user that file has been saved
-      showModal(
-        modalDialog(
-          HTML("Your data have been saved to a .rds file in your working directory<br><br>"),
-          modalButton("Continue Screening"),
-          actionButton(
-            inputId = "exit_app",
-            label = "Close App"
-          ),
-          title = "Data saved to file",
-          footer = NULL,
-          easyClose = FALSE
-        )
-      )
+      wrap_app(data, file, app_control)
     })
 
     observeEvent(input$exit_app, {stopApp()})
