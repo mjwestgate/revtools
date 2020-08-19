@@ -30,9 +30,9 @@ screen_topics_ui <- function(){
           label = "Import",
           multiple = TRUE
         ),
-        uiOutput(
-          outputId = "response_selector"
-        ),
+        # uiOutput(
+        #   outputId = "response_selector"
+        # ),
         menuItem(
           text = "Variables",
           tabName = "variable_tab",
@@ -61,8 +61,8 @@ screen_topics_ui <- function(){
         br()
       ),
       menuItem(
-        text = "Processing",
-        icon = shiny::icon("align-left"),
+        text = "Model",
+        icon = icon("calculator"),
         sliderInput(
           inputId = "min_freq",
           label = "Lower threshold for removing rare terms (%):",
@@ -79,24 +79,20 @@ screen_topics_ui <- function(){
           step = 1,
           value = 85
         ),
-        sliderInput(
-          inputId = "bigram_quantile",
-          label = "Minimum frequency quantile for recognising bigrams (%):",
-          min = 0,
-          max = 100,
-          step = 2,
-          value = 80
-        ),
-        br()
-      ),
-      menuItem(
-        text = "Model",
-        icon = icon("calculator"),
-        selectInput(
-          inputId = "model_type",
-          label = "Model type",
-          choices = c("LDA", "CTM")
-        ),
+        # sliderInput(
+        #   inputId = "bigram_quantile",
+        #   label = "Minimum frequency quantile for recognising bigrams (%):",
+        #   min = 0,
+        #   max = 100,
+        #   step = 2,
+        #   value = 80
+        # ),
+        br(),
+        # selectInput(
+        #   inputId = "model_type",
+        #   label = "Model type",
+        #   choices = c("LDA", "CTM")
+        # ),
         sliderInput(
           inputId = "n_topics",
           label = "Number of topics",
@@ -107,7 +103,7 @@ screen_topics_ui <- function(){
         ),
         sliderInput(
           inputId = "n_iterations",
-          label = "Number of iterations",
+          label = "Maximum number of iterations",
           min = 2000,
           max = 30000,
           step = 2000,

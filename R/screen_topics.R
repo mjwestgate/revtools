@@ -35,10 +35,6 @@
 #' When you have finished viewing/screening, you can export information to a
 #' .csv or .rda file (saved to the working directory) using the 'Save' tab.
 #'
-#' Note that "\code{start_review_window}" is the earlier form of this function;
-#' this has been deprecated and will be removed from future versions of
-#' \code{revtools}.
-#'
 #' @param x An (optional) object of class \code{data.frame} or
 #' \code{bibliography} to open in the browser. If empty, the app will launch
 #' with no data. Data can be added within the app via the 'import' button.
@@ -108,7 +104,6 @@ server <- function(input, output, session){
     raw = data_in$raw,
     stopwords = data_in$stopwords,
     columns = data_in$columns,
-    grouped = data_in$grouped,
     dtm = data_in$dtm,
     model = data_in$model,
     plot_ready = data_in$plot_ready
@@ -136,8 +131,8 @@ server <- function(input, output, session){
   plot_features <- reactiveValues(
     palette = palette_initial,
     appearance = appearance_initial,
-    notes = FALSE,
-    common_words = FALSE
+    notes = FALSE
+    # common_words = FALSE
   )
   click_data <- reactiveValues(
     main = c(),
@@ -167,7 +162,6 @@ server <- function(input, output, session){
     )
     data$raw <- data_loaded$raw
     data$columns <- data_loaded$columns
-    data$grouped <- data_loaded$grouped
     data$dtm <- data_loaded$dtm
     data$model <- data_loaded$model
     data$plot_ready <- data_loaded$plot_ready
@@ -251,25 +245,6 @@ server <- function(input, output, session){
     removeModal()
   })
 
-
-  # data selection
-  # select a grouping variable
-  output$response_selector <- renderUI({
-    if(!is.null(data$columns)){
-      if(any(data$columns == "label")){
-        response_column <- "label"
-      }else{
-        response_column <- data$columns[1]
-      }
-      selectInput(
-        "response_variable",
-        label = "Show one point per:",
-        choices = data$columns,
-        selected = response_column
-      )
-    }
-  })
-
   # select text to be included in the DTM/topic model
   output$variable_selector <- renderUI({
     if(!is.null(data$columns)){
@@ -307,7 +282,7 @@ server <- function(input, output, session){
     	)
 
       # wipe earlier models/data
-      data$grouped <- NULL
+      # data$grouped <- NULL
       data$dtm <- NULL
       data$model <- NULL
       data$plot_ready <- NULL
@@ -318,43 +293,26 @@ server <- function(input, output, session){
         data$raw$display[which(is.na(data$raw$screened_topics) == FALSE)] <- FALSE
       }
 
-      # create data.frame with only relevant information for topic modelling
-      data$grouped  <- create_grouped_dataframe(
-        data = data$raw[which(data$raw$display), ],
-        response_variable = input$response_variable,
-        text_variables = input$variable_selector
-      )
-
       data$dtm <- make_dtm(
-        x = data$grouped$text,
+        # x = data$grouped$text,
+        x = data$raw[which(data$raw$display), input$variable_selector],
         stop_words = data$stopwords,
         min_freq = input$min_freq * 0.01,
-        max_freq = input$max_freq * 0.01,
-        bigram_quantile = input$bigram_quantile * 0.01
+        max_freq = input$max_freq * 0.01
+        # bigram_quantile = input$bigram_quantile * 0.01
       )
-
-      if(input$response_variable != data$columns[1]){
-        plot_features$common_words <- TRUE
-      }else{
-        plot_features$common_words <- FALSE
-      }
-
-      # restrict to only entries that are present in data$dtm
-      if(data$dtm$nrow < nrow(data$grouped)){
-        data$grouped <- data$grouped[as.numeric(data$dtm$dimnames$Docs), ]
-      }
 
       # calculate topic model
       data$model <- run_topic_model(
         dtm = data$dtm,
-        type = tolower(input$model_type),
+        # type = tolower(input$model_type),
         n_topics = input$n_topics,
         iterations = input$n_iterations
       )
 
       # create plottable information
       data$plot_ready <- build_plot_data(
-        info = data$grouped,
+        # info = data$grouped,
         dtm = data$dtm,
         model = data$model,
         hide_names = input$hide_names
@@ -370,22 +328,22 @@ server <- function(input, output, session){
       )
 
       # add topic to data$raw
-      data$grouped$topic <- topicmodels::topics(data$model)
-      data$raw$topic <- unlist(lapply(
-        data$raw[, input$response_variable],
-        function(a, lookup){
-          if(is.na(a)){
-            NA
-          }else{
-            if(any(lookup[, 1] == a)){
-              lookup$topic[which(lookup[, 1] == a)]
-            }else{
-              NA
-            }
-          }
-        },
-      lookup = data$grouped
-      ))
+      # data$grouped$topic <- topicmodels::topics(data$model)
+      # data$raw$topic <- unlist(lapply(
+      #   data$raw[, input$response_variable],
+      #   function(a, lookup){
+      #     if(is.na(a)){
+      #       NA
+      #     }else{
+      #       if(any(lookup[, 1] == a)){
+      #         lookup$topic[which(lookup[, 1] == a)]
+      #       }else{
+      #         NA
+      #       }
+      #     }
+      #   },
+      # lookup = data$grouped
+      # ))
 
       # add appearance info
       plot_features$appearance <- build_appearance(

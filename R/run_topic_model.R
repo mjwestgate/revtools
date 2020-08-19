@@ -4,11 +4,10 @@
 #' Correlated Topic Models (\code{CTM}), using the \code{topicmodels} package.
 #'
 #'
-#' @param dtm a Document Term Matrix (DTM)
-#' @param type string specififying the type of model to run. Either 'lda' (the
-#' default) or 'ctm'.
+#' @param dtm a list as produced by \code{stm::prepDocuments()} or equivalently
+#' by \code{revtools::make_dtm()}.
 #' @param n_topics Number of topics to calculate
-#' @param iterations The number of iterations. Only relevant for LDA.
+#' @param iterations The maximum number of iterations
 #' @return A topic model with the specified parameters.
 #' @note This is a basic wrapper function designed to allow consistent
 #' specification of model parameters within \code{shiny} apps.
@@ -28,33 +27,19 @@
 #' # run a topic model based on these data
 #' # note: the following lines can take a very long time to run, especially for large datasets!
 #' x_dtm <- make_dtm(x$title)
-#' \dontrun{x_lda <- run_topic_model(x_dtm, "lda", 5, 5000)}
+#' \dontrun{x_lda <- run_topic_model(x_dtm, 5, 5000)}
 #'
 #' @export run_topic_model
 run_topic_model <- function(
 	dtm,
-	type = "lda",
 	n_topics = 5,
-	iterations = 2000
+	iterations = 2000,
+  ...
 ){
-	LDA_control <- list(
-    iter = iterations,
-    burnin = iterations * 0.1
-  )
-	switch(type,
-		"ctm" = {
-      topicmodels::CTM(
-        dtm,
-        k = n_topics
-      )
-    },
-		"lda" = {
-      topicmodels::LDA(
-        dtm,
-        k = n_topics,
-        method = "Gibbs",
-        control = LDA_control
-      )
-    }
-  )
+  stm::stm(
+    documents = dtm$documents,
+    vocab = dtm$vocab,
+    K = n_topics,
+    max.em.its = iterations,
+    ...)
 }

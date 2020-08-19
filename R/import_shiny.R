@@ -33,7 +33,7 @@ import_shiny_topic_data <- function(
     raw = NULL,
     stopwords = revwords(),
     columns = NULL,
-    grouped = NULL,
+    # grouped = NULL,
     dtm = NULL,
     model = NULL,
     plot_ready = NULL
@@ -45,7 +45,7 @@ import_shiny_topic_data <- function(
       x$raw <- data_in$raw
       x$stopwords <- data_in$stopwords
       x$columns <- data_in$columns
-      x$grouped <- data_in$grouped
+      # x$grouped <- data_in$grouped
       x$dtm <- data_in$dtm
       x$model <- data_in$model
       x$plot_ready <- data_in$plot_ready
