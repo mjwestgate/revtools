@@ -642,7 +642,7 @@ read_bib <- function(x){
     entry_list <- lapply(entry_list,
       function(a){paste(a, collapse = " ")}
     )
-    if(any(names(entry_list) == "author")){
+    if((!(is.null(names(entry_list)))) && (any(names(entry_list) == "author"))){
       if(length(entry_list$author) == 1){
     		entry_list$author <- strsplit(entry_list$author, " and ")[[1]]
       }
