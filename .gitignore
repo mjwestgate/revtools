@@ -2,3 +2,6 @@
 /Users/martinwestgate/Documents/Work/R devel/GitHub/Package bibviewr/bibviewr/.DS_Store
 man/.DS_Store
 .DS_Store
+.Rproj.user
+.Rbuildignore
+revtools.Rproj
