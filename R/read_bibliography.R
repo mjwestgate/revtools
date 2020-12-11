@@ -549,6 +549,12 @@ read_ris <- function(x, tag_type = "ris"){
 
 # BIB
 read_bib <- function(x){
+  
+  ### Remove comments from x
+  x <- grep("^\\s*%.*",
+            x,
+            invert = TRUE,
+            value=TRUE)
 
   # which lines start with @article?
   group_vec <- rep(0, length(x))
@@ -642,6 +648,7 @@ read_bib <- function(x){
     entry_list <- lapply(entry_list,
       function(a){paste(a, collapse = " ")}
     )
+
     if((!(is.null(names(entry_list)))) && (any(names(entry_list) == "author"))){
       if(length(entry_list$author) == 1){
     		entry_list$author <- strsplit(entry_list$author, " and ")[[1]]
