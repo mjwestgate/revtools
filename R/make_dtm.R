@@ -6,8 +6,7 @@
 #' Takes bibliographic data and converts it to a DTM for passing to topic
 #' models.
 #'
-#' Formerly a unique function, but now a wrapper to prepDocuments and textProcessor,
-#' from the |code{stm} package. Maintained for backward-compatability.
+#' Formerly a unique function, but now a wrapper to code{quanteda} functions. Maintained for backward-compatability.
 #'
 #' @param x a vector or \code{data.frame} containing text
 #' @param stop_words optional vector of strings, listing terms to be removed
@@ -16,8 +15,8 @@
 #' to be retained in the analysis. Defaults to 0.01.
 #' @param max_freq maximum proportion of entries that a term must be found in
 #' to be retained in the analysis. Defaults to 0.85.
+# @param meta: Optional list passed to quanteda::corpus 'meta' argument.
 #' @param verbose logical: should details be printed to the screen? Defaults to FALSE
-#' @param ... extra arguments passed to stm::textProcessor
 #' @return A list as described in \code{link{stm::prepDocuments}}
 #' @seealso \code{\link{run_topic_model}}, \code{\link{screen_topics}}
 #' @examples
@@ -45,8 +44,8 @@ make_dtm <- function(
 	stop_words,
   min_freq = 0.01,
   max_freq = 0.85,
-  verbose = FALSE,
-  ...
+  # meta = NULL
+  verbose = FALSE # no longer functional
 ){
 
   # check format
@@ -62,24 +61,54 @@ make_dtm <- function(
   }
   n <- length(x)
 
-	# sort out stop words
-	if(missing(stop_words)){
+  # # sort out stop words
+  if(missing(stop_words)){
     stop_words <- revwords()
-	}else{
+  }else{
     stop_words <- unique(tolower(stop_words))
   }
 
-  x_processed <- stm::textProcessor(x,
-    customstopwords = stop_words,
-    verbose = verbose,
-    ...)
-  dtm <- stm::prepDocuments(
-    documents = x_processed$documents,
-    vocab = x_processed$vocab,
-    lower.thresh = min_freq * n,
-    upper.thresh = max_freq * n,
-    verbose = verbose)
+  # new approach using quanteda
+  # use quanteda tokeniser to get rid of basic stuff like punctuation
+  # if(is.null(meta)){
+     x_corpus <- quanteda::corpus(x)
+  # }else{
+  #   x_corpus <- quanteda::corpus(x, meta = meta)
+  # }
 
-  return(dtm)
+  x_tokens <- quanteda::tokens(x_corpus,
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    split_hyphens = TRUE)
+  # remove short words
+  x_tokens <- quanteda::tokens_select(x_tokens, min_nchar = 4)
+  # remove words that contain numbers or punctuation
+  x_tokens <- quanteda::tokens_remove(x_tokens,
+    pattern = "[[:digit:]]+|[[:punct:]]+", valuetype = "regex")
+  # convert to dfm
+  x_dfm <- quanteda::dfm(x_tokens, stem = TRUE, remove = stop_words)
+    # x_dfm@Dimnames$features[1:40] # check
+  # remove rare terms
+  x_dfm_small <- quanteda::dfm_trim(x_dfm,
+    min_termfreq = min_freq * n,
+    max_termfreq = max_freq * n,
+    termfreq_type = "count") # proportions doesn't work for some reason
+  # remove empty documents
+  x_dfm_small <- quanteda::dfm_subset(x_dfm_small, quanteda::ntoken(x_dfm_small) > 0)
+
+  # previous approach based solely on {stm}
+  # x_processed <- stm::textProcessor(x,
+  #   customstopwords = stop_words,
+  #   verbose = verbose,
+  #   ...)
+  # dtm <- stm::prepDocuments(
+  #   documents = x_processed$documents,
+  #   vocab = x_processed$vocab,
+  #   lower.thresh = min_freq * n,
+  #   upper.thresh = max_freq * n,
+  #   verbose = verbose)
+
+  return(x_dfm_small)
 
 }

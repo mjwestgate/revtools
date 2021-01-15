@@ -97,7 +97,7 @@ plot_words <- function(
 ){
   p <- plotly::plot_ly(
     data = input_info,
-    x = ~ topic_weight,
+    x = ~ value,
     y = ~ term,
     marker = list(
       color = color
@@ -109,7 +109,7 @@ plot_words <- function(
       namelength = 200,
       font = list(color = "black")
     ),
-    text = ~ caption,
+    text = ~ term,
     source = "word_plot",
     type = "bar",
     orientation = "h"

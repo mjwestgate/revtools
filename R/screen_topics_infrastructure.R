@@ -1,6 +1,10 @@
-# similar to import_shiny, but for initial load of data
+# similar to import_shiny, but for initial load of data.
+# should optionally accept a list and just build parts that are not provided
+  # e.g. raw data mandatory, but dtm & model optional (but if model given then dfm must too)
 load_topic_data <- function(
-  data,
+  data, # either a data.frame, bibliography, screen_topics_progress, or list
+    # if list, optional columns are same as for x (below)
+    # NOTE: This will require documentation
   stopwords
 ){
 
@@ -16,7 +20,7 @@ load_topic_data <- function(
     raw = NULL,
     stopwords = stopwords,
     columns = NULL,
-    grouped = NULL,
+    # grouped = NULL,
     dtm = NULL,
     model = NULL,
     plot_ready = NULL
@@ -28,10 +32,11 @@ load_topic_data <- function(
     accepted_inputs <- c(
       "bibliography",
       "data.frame",
-      "screen_topics_progress"
+      "screen_topics_progress",
+      "list"
     )
     if(!any(accepted_inputs == class(data))){
-      stop("only classes 'bibliography', 'data.frame' or
+      stop("only classes 'bibliography', 'data.frame', 'list' or
       'screen_topics_progress' accepted by screen_topics")
     }
 
@@ -39,21 +44,37 @@ load_topic_data <- function(
     switch(class(data),
       "bibliography" = {
         result <- as.data.frame(data)
-        colnames(result) <- clean_names(colnames(result))
+        colnames(result) <- clean_colnames(colnames(result))
         x$raw <- add_required_columns(result)
       },
       "data.frame" = {
-        colnames(data) <- clean_names(colnames(data))
+        colnames(data) <- clean_colnames(colnames(data))
         x$raw <- add_required_columns(data)
       },
       "screen_topics_progress" = {
         x$raw <- data$raw
         x$stopwords <- data$stopwords
         x$columns <- data$columns
-        x$grouped <- data$grouped
+        # x$grouped <- data$grouped
         x$dtm <- data$dtm
         x$model <- data$model
         x$plot_ready <- data$plot_ready
+      },
+      "list" = {
+        x_names <- names(x)
+        x <- lapply(x_names, function(a){
+          if(any(names(data) == a)){data[[a]]}else{x[[a]]}})
+        names(x) <- x_names
+        colnames(x$raw) <- clean_colnames(colnames(x$raw))
+        x$raw <- add_required_columns(x$raw)
+        if(all(c("dtm", "model") %in% names(x))){
+          x$plot_ready <- build_plot_data(
+            info = x$raw,
+            dtm = x$dtm,
+            model = x$model,
+            hide_names = TRUE
+          )
+        }
       }
     )
 
@@ -73,130 +94,6 @@ load_topic_data <- function(
   }
 
   return(x)
-}
-
-
-build_plot_data <- function(info, dtm, model, hide_names){
-  x_matrix <- modeltools::posterior(model)$topics # article x topic
-  y_matrix <- t(modeltools::posterior(model)$terms)
-
-  # build main plot information (x)
-  x_df <- cbind(
-    info,
-    data.frame(
-      ade4::dudi.coa(x_matrix, scannf = FALSE, nf = 3)$li
-    )
-  )
-  x_df$topic <- apply(x_matrix, 1, which.max)
-
-  # add citation in correctly formatted way
-  x_df$caption <- paste0(
-    format_citation(
-      data = x_df,
-      details = (hide_names == FALSE),
-      line_breaks = TRUE
-    ),
-    "<br>[Topic #",
-    x_df$topic,
-    "]"
-  )
-  x_df$common_words <- apply(dtm, 1, function(a){
-    paste(
-      names(sort(a, decreasing = TRUE)[1:5]),
-      collapse = "; "
-    )
-  })
-
-  # restrict to useful columns
-  x_df <- x_df[, colnames(x_df) %in% c(
-    "label", "author", "year", "title", "journal", "pages", "abstract",
-    "Axis1", "Axis2", "Axis3", "topic", "caption", "common_words")
-  ]
-
-  # build word plot information (y)
-  y_df <- data.frame(
-    term = rep(
-      x = colnames(dtm),
-      times = model@k
-    ),
-    n = rep(
-      x = apply(dtm, 2, sum),
-      times = model@k
-    ),
-    topic = rep(
-      x = seq_len(model@k),
-      each = ncol(dtm)
-    ),
-    topic_weight = as.numeric(y_matrix),
-    stringsAsFactors = FALSE
-  )
-  y_df$caption <- paste(
-    "Term:", y_df$term, "<br>Sample size = ", y_df$n,
-    sep = " "
-  )
-  y_list <- lapply(
-    split(y_df, y_df$topic),
-    function(a){
-      a[order(a$topic_weight, decreasing = TRUE)[1:50], ]
-    }
-  )
-  y_df <- as.data.frame(
-    do.call(rbind, y_list),
-    stringsAsFactors = FALSE
-  )
-  y_df$selected <- TRUE
-
-  # calculate which topics are most likely, highest weighted, or both
-  topics_default <- topicmodels::terms(model, 5)
-  topics_weighted <- apply(
-    y_matrix / apply(y_matrix, 1, sum), 2,
-    function(a){names(sort(a, decreasing = TRUE)[1:5])
-  })
-  topic_caption_list <- lapply(
-    seq_len(model@k),
-    function(a, d, w){
-      comparison <- w[, a] %in% d[, a]
-      word_list <- list(
-        "<em>high likelihood</em>" = d[!(d[, a] %in% w[, a]), a],
-        "<em>high weight</em>" = w[!(w[, a] %in% d[, a]), a],
-        "<em>both</em>" = w[w[, a] %in% d[, a], a]
-      )
-      word_vector <- unlist(lapply(
-        word_list,
-        function(b){paste(b, collapse = ", ")}
-      ))
-      result <- paste(
-        paste(names(word_vector), word_vector, sep = ": "),
-        collapse = "<br>"
-      )
-      return(result)
-    },
-    d = topics_default,
-    w = topics_weighted
-  )
-
-  # add topic information
-  topic_df <- data.frame(
-    topic = seq_len(
-      ncol(y_matrix)
-    ),
-    n = as.numeric(
-      xtabs(~ topicmodels::topics(model))
-    ),
-    caption = apply(topics_default, 2, function(a){
-      paste(a, collapse = ", ")
-    }),
-    caption_full = unlist(topic_caption_list),
-    stringsAsFactors = FALSE
-  )
-
-  # return
-  plot_list <- list(
-    x = x_df,
-    y = y_df,
-    topic = topic_df
-  )
-  return(plot_list)
 }
 
 
@@ -237,7 +134,7 @@ get_topic_colnames <- function(data){
 build_appearance <- function(plot_data, palette){
   lapply(plot_data, function(a, colours){
     result <- data.frame(
-      id = a[, 1],
+      # id = a[, 1],
       topic = a$topic,
       color = palette[a$topic],
       text_color = "#000000",

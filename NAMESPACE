@@ -1,10 +1,12 @@
 export(read_bibliography, write_bibliography,
   allocate_effort, distribute_tasks, aggregate_tasks,
   make_dtm, run_topic_model, revwords,
+  plot_articles, plot_topics, plot_words,
   preload_screen_abstracts,
   screen_duplicates, screen_titles, screen_abstracts, screen_topics)
 S3method(summary, screen_topics_progress)
 importFrom(synthesisr,
+  clean_colnames,
   read_refs, write_refs,
   as.bibliography, summary.bibliography, print.bibliography, '[.bibliography', c.bibliography,
   add_line_breaks, format_citation,
@@ -18,7 +20,8 @@ importFrom(ade4, dudi.coa)
 importFrom("utils", "combn", "read.csv")
 importFrom("stats", "rnorm")
 importFrom(grDevices, grey)
-importFrom(modeltools, posterior)
+importFrom(ggplot2,
+  ggplot, aes, geom_point, geom_bar, theme_bw, coord_cartesian, facet_wrap)
 importFrom(plotly,
   event_data, "%>%", plotlyOutput,
   renderPlotly, plotlyProxy, plotlyProxyInvoke)
@@ -39,9 +42,6 @@ importFrom(shinydashboard,
   sidebarMenu, menuItem, sidebarMenuOutput, renderMenu, dashboardHeader)
 importFrom(stats, xtabs, plogis)
 importFrom(stringdist, stringdist)
-importFrom(tm, removePunctuation, removeWords, removeNumbers,
-  stemDocument, tm_map, Corpus, VectorSource, DocumentTermMatrix,
-  removeSparseTerms, stopwords, content_transformer, weightTf)
-importFrom(topicmodels, LDA, CTM, get_terms)
 importFrom(utils, head, tail, write.csv, write.table)
+importFrom(viridis, scale_fill_viridis, scale_colour_viridis)
 importFrom(viridisLite, magma, viridis, inferno, plasma)

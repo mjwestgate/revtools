@@ -48,7 +48,7 @@ Selecting a region of the plot and clicking zooms on the selected region;
 double-clicking without selecting a region returns the plot to its full
 extent.
 
-The selection panel gives information on progress in selecting/deselecting
+The selection panel gives information on progress in including or excluding
 articles. It also contains windows for displaying topic-level infromation
 and article abstracts. All boxes in this panel can be minimized when not
 required.
@@ -58,10 +58,6 @@ displayed using \code{shiny} and \code{plotly}.
 
 When you have finished viewing/screening, you can export information to a
 .csv or .rda file (saved to the working directory) using the 'Save' tab.
-
-Note that "\code{start_review_window}" is the earlier form of this function;
-this has been deprecated and will be removed from future versions of
-\code{revtools}.
 }
 \examples{
 

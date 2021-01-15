@@ -4,7 +4,7 @@
 \alias{make_dtm}
 \title{Construct a document-term matrix (DTM)}
 \usage{
-make_dtm(x, stop_words, min_freq = 0.01, max_freq = 0.85, verbose = FALSE, ...)
+make_dtm(x, stop_words, min_freq = 0.01, max_freq = 0.85, verbose = FALSE)
 }
 \arguments{
 \item{x}{a vector or \code{data.frame} containing text}
@@ -19,8 +19,6 @@ to be retained in the analysis. Defaults to 0.01.}
 to be retained in the analysis. Defaults to 0.85.}
 
 \item{verbose}{logical: should details be printed to the screen? Defaults to FALSE}
-
-\item{...}{extra arguments passed to stm::textProcessor}
 }
 \value{
 A list as described in \code{link{stm::prepDocuments}}
@@ -30,8 +28,7 @@ Takes bibliographic data and converts it to a DTM for passing to topic
 models.
 }
 \details{
-Formerly a unique function, but now a wrapper to prepDocuments and textProcessor,
-from the |code{stm} package. Maintained for backward-compatability.
+Formerly a unique function, but now a wrapper to code{quanteda} functions. Maintained for backward-compatability.
 }
 \examples{
 

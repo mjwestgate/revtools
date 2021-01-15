@@ -16,7 +16,7 @@ revtools_css <- function(
     }
     .content-wrapper,
       .right-side {
-        background-color: #e2e2e2;
+        background-color: #f5f5f5;
       }
       .skin-black .main-header .logo {
         background-color: #27114D;
@@ -26,7 +26,7 @@ revtools_css <- function(
         background-color: #27114D;
       }
       .skin-black .main-header .navbar {
-        background-color: #afafaf;
+        background-color: #d1d1d1;
       }
       .dropdown {
         font-size: 120%;

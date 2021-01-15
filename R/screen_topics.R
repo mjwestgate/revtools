@@ -24,7 +24,7 @@
 #' double-clicking without selecting a region returns the plot to its full
 #' extent.
 #'
-#' The selection panel gives information on progress in selecting/deselecting
+#' The selection panel gives information on progress in including or excluding
 #' articles. It also contains windows for displaying topic-level infromation
 #' and article abstracts. All boxes in this panel can be minimized when not
 #' required.
@@ -112,7 +112,7 @@ server <- function(input, output, session){
   # need to run some extra code here if class screen_topics_progress is used
   if(!is.null(data_in$model)){
     palette_initial <- viridis(
-      n = data_in$model@k,
+      n = data_in$model$settings$dim$K,
       alpha = 0.9,
       begin = 0.1,
       end = 0.9,
@@ -142,7 +142,7 @@ server <- function(input, output, session){
   )
   words <- reactiveValues(
     current = NULL,
-    rows = NULL,
+    # rows = NULL,
     search_results = NULL,
     search_clicks = NULL,
     selected = NULL
@@ -171,7 +171,7 @@ server <- function(input, output, session){
 
       # create color palette
       plot_features$palette <- viridis(
-        n = data$model@k,
+        n = model$settings$dim$K,
         alpha = 0.9,
         begin = 0.1,
         end = 0.9,
@@ -294,25 +294,22 @@ server <- function(input, output, session){
       }
 
       data$dtm <- make_dtm(
-        # x = data$grouped$text,
         x = data$raw[which(data$raw$display), input$variable_selector],
         stop_words = data$stopwords,
         min_freq = input$min_freq * 0.01,
         max_freq = input$max_freq * 0.01
-        # bigram_quantile = input$bigram_quantile * 0.01
       )
 
       # calculate topic model
       data$model <- run_topic_model(
         dtm = data$dtm,
-        # type = tolower(input$model_type),
         n_topics = input$n_topics,
         iterations = input$n_iterations
       )
 
       # create plottable information
       data$plot_ready <- build_plot_data(
-        # info = data$grouped,
+        info = data$raw,
         dtm = data$dtm,
         model = data$model,
         hide_names = input$hide_names
@@ -320,7 +317,7 @@ server <- function(input, output, session){
 
       # create color palette
       plot_features$palette <- viridis(
-        n = data$model@k,
+        n = model$settings$dim$K,
         alpha = 0.9,
         begin = 0.1,
         end = 0.9,
@@ -367,7 +364,7 @@ server <- function(input, output, session){
     if(is.null(data$model)){
       k <- 5
     }else{
-      k <- data$model@k
+      k <- model$settings$dim$K
     }
     plot_features$palette <- viridis(
       n = k,
@@ -386,17 +383,7 @@ server <- function(input, output, session){
   # update caption if required
   observeEvent(input$hide_names, {
     if(!is.null(data$plot_ready)){
-      data$plot_ready$x$caption <- paste0(
-        format_citation(
-          data = data$plot_ready$x,
-          details = !as.logical(input$hide_names),
-          add_html = TRUE,
-          line_breaks = TRUE
-        ),
-        "<br>[Topic #",
-        data$plot_ready$x$topic,
-        "]"
-      )
+      data$plot_ready$x$caption <- build_caption(data$raw, data$dtm, input$hide_names)
     }
   })
 
@@ -443,14 +430,19 @@ server <- function(input, output, session){
 
   # CLICK DATA
   observe({
-    click_main <- event_data(
+    click_data$main <- event_data(
       event = "plotly_click",
       source = "main_plot"
-    )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
-    current_data <- plot_features$appearance$x
-    click_data$main <- which(data$plot_ready$x[, 1] ==
-      plot_features$appearance$x$id[click_main])
+    )$pointNumber + 1
     click_data$topic <- c()
+  # old:
+    # click_main <- event_data(
+    #   event = "plotly_click",
+    #   source = "main_plot"
+    # )$pointNumber + 1 # Note: plotly uses Python-style indexing, hence +1
+    # current_data <- plot_features$appearance$x
+    # click_data$main <- which(data$plot_ready$x[, 1] ==
+    #   plot_features$appearance$x$id[click_main])
   })
 
   observe({
@@ -485,65 +477,50 @@ server <- function(input, output, session){
   # show selected entry
   output$selector_text <- renderPrint({
     if(length(click_data$main) > 0){ # i.e. display data for one entry
-      citation_tr <- format_citation(
-        data$plot_ready$x[click_data$main, ],
-        abstract = FALSE,
-        details = (input$hide_names == FALSE),
-        add_html = TRUE
-      )
-      if(plot_features$common_words){
-        display_text <- paste0(
-          "<b>",
-          citation_tr,
-          "</b><br><em>Most common words:</em> ",
-          data$plot_ready$x$common_words[click_data$main]
-        )
-      }else{
-        display_text <- citation_tr
-      }
-      cat(paste0(
-        "<br><font color =",
-        plot_features$appearance$x$text_color[click_data$main],
-        ">",
-        display_text,
-        "</font><br><br>"
-      ))
+      cat(data$plot_ready$x$caption[click_data$main])
+      # citation_tr <- format_citation(
+      #   data$plot_ready$x[click_data$main, ],
+      #   abstract = FALSE,
+      #   details = (input$hide_names == FALSE),
+      #   add_html = TRUE
+      # )
+      # if(plot_features$common_words){
+      #   display_text <- paste0(
+      #     "<b>",
+      #     citation_tr,
+      #     "</b><br><em>Most common words:</em> ",
+      #     data$plot_ready$x$common_words[click_data$main]
+      #   )
+      # }else{
+      #   display_text <- citation_tr
+      # }
+      # cat(paste0(
+      #   "<br><font color =",
+      #   plot_features$appearance$x$text_color[click_data$main],
+      #   ">",
+      #   display_text,
+      #   "</font><br><br>"
+      # ))
     }else{ # display data for one topic
       if(length(click_data$topic) > 0){
-        cat(
-          paste0(
-            "<br><font color =",
-            plot_features$appearance$x$text_color[click_data$main],
-            "><b>Topic: ",
-            click_data$topic,
-            "</b><br>",
-    				data$plot_ready$topic$caption_full[click_data$topic],
-            "</font><br><br>"
-          )
-  			)
+        cat(data$plot_ready$topic$caption[click_data$topic])
       }
     }
   })
 
   # render abstracts
   output$abstract_text <- renderPrint({
-  	if(length(click_data$main) == 0){
-  		cat("")
-  	}else{
-  	  if(any(colnames(data$plot_ready$x) == "abstract")){
-        abstract_info <- paste0(
-          "<br><b>Abstract:</b> ",
-          data$plot_ready$x$abstract[click_data$main]
-        )
-  	    if(is.na(abstract_info)){
-          cat("No abstract available")
-        }else{
-      	  cat(abstract_info)
-  	  	}
-  	  }else{
-        cat("No abstracts available")
-      }
-  	}
+  	if(length(click_data$main) > 0){
+      cat(paste0(
+        "<h4>Abstract</h4><br>",
+        data$plot_ready$x$abstract[click_data$main]
+      ))
+    }
+    # }else{
+    #   if(length(click_data$topic) > 0){
+    #     cat(data$plot_ready$topic$caption[click_data$topic])
+    #   }
+    # }
   })
 
   # SELECTION/DESELECTION
@@ -666,7 +643,7 @@ server <- function(input, output, session){
       selected_rows <- display_rows[
         which(data$raw[display_rows, input$response_variable] == selected_response)
       ]
-      data$raw$screened_topics[selected_rows] <- "selected"
+      data$raw$screened_topics[selected_rows] <- "included"
     }else{ # i.e. topic selected on barplot
       # color topic plot
       topic_selected <- plot_features$appearance$topic$topic[click_data$topic]
@@ -679,7 +656,7 @@ server <- function(input, output, session){
       # map to data$raw
       display_rows <- which(data$raw$display)
       rows <- display_rows[which(data$raw$topic[display_rows] == topic_selected)]
-      data$raw$screened_topics[rows] <- "selected"
+      data$raw$screened_topics[rows] <- "included"
     }
   })
 
@@ -765,13 +742,8 @@ server <- function(input, output, session){
       plot_features$appearance$topic$topic[click_topic_2])
     click_data$word <- c() # should clear currently selected word, but doesn't
     if(length(click_topic_2) > 0){
-      word_rows <- which(data$plot_ready$y$topic == click_data$topic_2)[1:30]
+      word_rows <- which(data$plot_ready$y$topic == click_data$topic_2)
       word_data <- data$plot_ready$y[word_rows, ]
-      word_data$term <- factor(
-        x = rev(seq_len(30)),
-        levels = seq_len(30),
-        labels = rev(word_data$term)
-      )
       words$current <- word_data
       words$rows <- word_rows
     }else{
