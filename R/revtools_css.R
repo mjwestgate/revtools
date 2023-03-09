@@ -14,10 +14,12 @@ revtools_css <- function(
     navbar_size,
     ";
     }
-    .content-wrapper,
+
       .right-side {
         background-color: #f5f5f5;
       }
+
+      /* sidebar: logo */
       .skin-black .main-header .logo {
         background-color: #27114D;
         color: #ffffff;
@@ -28,11 +30,18 @@ revtools_css <- function(
       .skin-black .main-header .navbar {
         background-color: #d1d1d1;
       }
+
+      /* sidebar */
+      .skin-black .main-sidebar {
+        background: #404547;
+
       .dropdown {
         font-size: 120%;
         padding-right: 20px;
         padding-top: 12px;
       }
+
+      /* action buttons */
       .action-button {
         color: #fff;
         background: #4a3384;
@@ -43,6 +52,8 @@ revtools_css <- function(
         background: black;
         border-width: 0px;
       }
+
+      /* slider colors */
       .irs-bar {
         background: #4a3384;
         border: #4a3384;

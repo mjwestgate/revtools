@@ -69,7 +69,8 @@ screen_titles_ui <- function(){
           label = "Hide identifying information?",
           choices = c(TRUE, FALSE),
           multiple = FALSE
-        )
+        ),
+        br()
       )
     )
   )
