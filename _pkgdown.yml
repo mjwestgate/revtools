@@ -1,0 +1,11 @@
+url: https://revtools.net
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#fd872f"
+navbar:
+  bg: dark
+  type: dark
+home: 
+  sidebar: 
+    html: "pkgdown/assets/sidebar.html"

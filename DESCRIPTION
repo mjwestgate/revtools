@@ -12,3 +12,7 @@ URL: https://revtools.net
 BugReports: https://github.com/mjwestgate/revtools/issues
 LazyData: true
 RoxygenNote: 7.1.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
