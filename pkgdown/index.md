@@ -19,7 +19,7 @@ You can download `revtools` from <a href="https://cran.r-project.org/package=rev
   >
   You should see some plots here!
 </iframe>
-<font color="#999999"><i>Simplified example of article visualisation (left) and topic counts (right) as displayed by the 'screen_topics' function in revtools.</i></font>
+<font color="#999999"><i>Simplified example of article visualisation (left) and topic counts (right) as displayed by the `screen_topics()` function in revtools.</i></font>
 <br>
 
 
@@ -44,7 +44,6 @@ remotes::install_github("mjwestgate/revtools")
 library(revtools)
 ```
 
-## Releases
 <iframe
   id="revtools_downloads"
   src="reference/figures/revtools_downloads.html"
@@ -53,5 +52,5 @@ library(revtools)
   >
   You should see some plots here!
 </iframe>
-<img src="http://cranlogs.r-pkg.org/badges/revtools">
-<img src="http://cranlogs.r-pkg.org/badges/grand-total/revtools">
+<font color="#999999"><i>Cumulative downloads of `revtools` since its' release 
+in February 2018.</i>
