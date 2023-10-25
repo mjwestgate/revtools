@@ -81,6 +81,8 @@ screen_full_texts_ui <- function(){
         width = 10,
         tableOutput("citation"),
         br(),
+        uiOutput("doi"),
+        br(),
         br(),
         uiOutput(outputId = "render_notes_toggle"),
         uiOutput(outputId = "render_notes")

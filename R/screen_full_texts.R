@@ -11,7 +11,7 @@ screen_full_texts <- function(
   }
 
   # load data
-  data_in <- load_abstract_data(
+  data_in <- load_full_text_data(
     data = x
   )
 
@@ -142,11 +142,6 @@ screen_full_texts <- function(
         }else{
           abstract_text <- "<em>No abstract available</em>"
         }
-        if(any(colnames(data$raw) == "doi")) {
-          doi_text <- "<a href=data$raw$doi[progress$row]>data$raw$doi[progress$row]</a>"
-        }else{
-          doi_text <- "<em>No doi available</em>"
-        }
         current_status <- data$raw$screened_full_texts[progress$row]
         if(is.na(current_status)){
           text_color <- "black"
@@ -173,12 +168,21 @@ screen_full_texts <- function(
             text_label,
             "<br><br>",
            abstract_text,
-            "<br>",
-           doi_text,
            "</font>"
          )
         )
       })
+    })
+    observe({
+      if(any(colnames(data$raw) == "doi")) {
+        output$doi <- renderUI(
+          a(href=paste0(data$raw$doi[progress$row]),"DOI link",target="_blank")
+        )
+      }else{
+        output$doi <- renderUI(
+          paste0("No DOI available")
+        )
+      }
     })
 
     # RENDER SELECTION BUTTONS

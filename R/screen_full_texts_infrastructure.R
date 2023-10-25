@@ -57,7 +57,7 @@ add_full_text_columns <- function(df){
     df <- df[, c(ncol(df), seq_len(ncol(df)-1))]
   }
   if(!any(colnames(df) == "screened_full_texts")){
-    df$screened_abstracts <- NA
+    df$screened_full_texts <- NA
   }
   if(!any(colnames(df) == "notes")){
     df$notes <- ""
