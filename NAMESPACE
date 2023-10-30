@@ -44,6 +44,7 @@ importFrom(shinydashboard,
 sidebarMenu, menuItem, sidebarMenuOutput, renderMenu)
 importFrom(stats, xtabs, plogis)
 importFrom(stringdist, stringdist)
+importFrom(stringr, str_starts)
 importFrom(tm, removePunctuation, removeWords, removeNumbers,
 stemDocument, tm_map, Corpus, VectorSource, DocumentTermMatrix,
 removeSparseTerms, stopwords, content_transformer, weightTf)

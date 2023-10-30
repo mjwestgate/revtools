@@ -173,17 +173,42 @@ screen_full_texts <- function(
         )
       })
     })
+    # doi link
     observe({
+      validate(need(data$raw, ""))
+      validate(need(progress$max_n > 0, ""))
       if(any(colnames(data$raw) == "doi")) {
-        output$doi <- renderUI(
-          a(href=paste0(data$raw$doi[progress$row]),"DOI link",target="_blank")
-        )
+        if (stringr::str_starts(data$raw$doi[progress$row], "htt") == FALSE) {   # for when DOIs don't have url element
+          output$doi <- renderUI(
+            a(href=paste0("https://doi.org/", data$raw$doi[progress$row]),"DOI link",target="_blank")
+          )
+        } else {
+          output$doi <- renderUI(
+            a(href=paste0(data$raw$doi[progress$row]),"DOI link",target="_blank")
+          )
+        }
       }else{
         output$doi <- renderUI(
           paste0("No DOI available")
         )
       }
     })
+    # full-text pdf
+    #observe({
+    #  if(any(colnames(data$raw) == "doi")) {
+    #    metagear::PDF_download(
+    #      DOI = data$raw$doi[progress$row],
+    #      directory = './www//',
+    #      theFileName = 'full-text'
+    #    )
+    #  }
+    #})
+    #observe({
+    #  output$pdf_view <- renderUI({
+    #    tags$iframe(style = "height:1500px; width:100%; scrolling=yes",
+    #                src = "full-text.pdf")
+    #  })
+    #})
 
     # RENDER SELECTION BUTTONS
     output$selector_bar <- renderUI({
@@ -581,6 +606,6 @@ screen_full_texts <- function(
 
   } # end server
 
-  print(shinyApp(ui, server))
+  print(shinyApp(ui, server, options = list(launch.browser = TRUE)))
 
 }
