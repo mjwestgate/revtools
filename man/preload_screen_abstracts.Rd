@@ -34,23 +34,23 @@ series of options can be pre-set to customize user experience.
 \details{
 List entries that can be specified within \code{app_control} are as follows:
 \itemize{
-  \item\code{show_identifying_info} - Logical: should author names,
-   publication year and journal title be displayed? Defaults to FALSE.
-  \item\code{time_responses} - Logical: should the app record timing
-   information? If TRUE (the default) record the time spent on each page, and
-   the time at which the page was loaded.
-  \item\code{keyword_highlighting} - Logical: should the app highlight
-   user-specified keywords? Defaults to FALSE.
-  \item\code{keywords} - Optional set of keywords to be highlighted in
-    article titles and abstracts.  \item\code{highlight_color} - Optional color
-    for keyword highlighting. Defaults to "red".
-  \item\code{rank_by} - Specify how entries should be ordered. Should be one
-    of \code{"initial"} (the default) to maintain the order of \code{x},
-    \code{"random"} to randomize order via \code{rnorm}, \code{"alphabetical"}
-   for alphabetical by article title, or \code{"relevance"} for ranking by
-   number of matched keywords.
-  \item\code{save_csv} - Logical: should the app save a \code{csv} file as
-    well as a \code{.rds} file? Defaults to FALSE.
+\item\code{show_identifying_info} - Logical: should author names,
+publication year and journal title be displayed? Defaults to FALSE.
+\item\code{time_responses} - Logical: should the app record timing
+information? If TRUE (the default) record the time spent on each page, and
+the time at which the page was loaded.
+\item\code{keyword_highlighting} - Logical: should the app highlight
+user-specified keywords? Defaults to FALSE.
+\item\code{keywords} - Optional set of keywords to be highlighted in
+article titles and abstracts.  \item\code{highlight_color} - Optional color
+for keyword highlighting. Defaults to "red".
+\item\code{rank_by} - Specify how entries should be ordered. Should be one
+of \code{"initial"} (the default) to maintain the order of \code{x},
+\code{"random"} to randomize order via \code{rnorm}, \code{"alphabetical"}
+for alphabetical by article title, or \code{"relevance"} for ranking by
+number of matched keywords.
+\item\code{save_csv} - Logical: should the app save a \code{csv} file as
+well as a \code{.rds} file? Defaults to FALSE.
 }
 }
 \examples{

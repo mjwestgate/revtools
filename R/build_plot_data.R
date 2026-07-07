@@ -1,11 +1,15 @@
-# calculate 'best topic' per article from an object returned by stm::make.dt
+#' calculate 'best topic' per article from an object returned by stm::make.dt
+#' @noRd
+#' @keywords Internal
 get_best_topic <- function(x_mat){
   apply(x_mat[, c(2:ncol(x_mat))], 1, which.max)
 }
 
 
-# use ade4 to create scatterplot from article x topic matrix
-# note captions aren't included as they require data from other sources (raw data  + dtm)
+#' use ade4 to create scatterplot from article x topic matrix
+#' note captions aren't included as they require data from other sources (raw data  + dtm)
+#' @noRd
+#' @keywords Internal
 build_article_scatterplot_data <- function(model){
   x_matrix <- as.data.frame(stm::make.dt(model))
   x_df <- data.frame(docnum = x_matrix$docnum)
@@ -16,7 +20,9 @@ build_article_scatterplot_data <- function(model){
 }
 
 
-# article counts per topic + detailed caption
+#' article counts per topic + detailed caption
+#' @noRd
+#' @keywords Internal
 build_topic_barplot_data <- function(model){
   x_matrix <- as.data.frame(stm::make.dt(model))
   topic <- get_best_topic(x_matrix)
@@ -47,7 +53,9 @@ build_topic_barplot_data <- function(model){
 }
 
 
-# detailed words per topic, for a given metric
+#' detailed words per topic, for a given metric
+#' @noRd
+#' @keywords Internal
 build_word_barplot_data <- function(model, method = "frex", n_terms = 15){
   logbeta <- model$beta$logbeta[[1]]
   wordcounts <- model$settings$dim$wcounts$x
@@ -70,10 +78,15 @@ build_word_barplot_data <- function(model, method = "frex", n_terms = 15){
 }
 
 
-# function to ensure articles are indexed properly
+#' function to ensure articles are indexed properly
+#' @noRd
+#' @keywords Internal
 get_dtm_index <- function(dtm){as.numeric(gsub("text", "", quanteda::docnames(dtm)))}
 
-# ensure that captions are properly indexed between models and raw data
+
+#' ensure that captions are properly indexed between models and raw data
+#' @noRd
+#' @keywords Internal
 build_caption <- function(info, dtm, hide_names){
   synthesisr::format_citation(
     info[get_dtm_index(dtm), ],
@@ -81,7 +94,10 @@ build_caption <- function(info, dtm, hide_names){
     line_breaks = TRUE)
 }
 
-# function used by screen_topics to accumulate plot info
+
+#' function used by screen_topics to accumulate plot info
+#' @noRd
+#' @keywords Internal
 build_plot_data <- function(info, dtm, model, hide_names = TRUE){
 
   # build main plot information (x)

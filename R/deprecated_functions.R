@@ -7,7 +7,6 @@
 #' from future versions of \code{revtools}. Please use \code{synthesisr::read_refs()}
 #' instead}.
 #'
-#'
 #' @param filename A vector or list containing paths to one or more
 #' bibliographic files.
 #' @param return_df Logical; should the object returned be a data.frame?
@@ -27,7 +26,7 @@
 #' x <- read_bibliography(file_location, return_df = FALSE)
 #' class(x) # = bibliography
 #' summary(x)
-#'
+#' @importFrom synthesisr read_refs
 #' @export read_bibliography
 read_bibliography <- function(
   filename,
@@ -35,7 +34,7 @@ read_bibliography <- function(
   tag_naming = "best_guess",
   verbose = FALSE
 ){
-  read_refs(
+  synthesisr::read_refs(
     filename = filename,
     return_df = return_df,
     tag_naming = tag_naming,
@@ -71,7 +70,7 @@ read_bibliography <- function(
 #' write_bibliography(x[1:5],
 #'   filename = paste0(tempdir(), "/x_out.ris"),
 #'   format = "ris")
-#'
+#' @importFrom synthesisr write_refs
 #' @export write_bibliography
 write_bibliography <- function(
   x,
@@ -79,7 +78,7 @@ write_bibliography <- function(
   format = "ris",
   tag_naming = "synthesisr"
 ){
-  write_refs(
+  synthesisr::write_refs(
     x,
     file = filename,
     format = format,

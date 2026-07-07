@@ -38,5 +38,4 @@ x <- read_bibliography(file_location, return_df = FALSE)
 write_bibliography(x[1:5],
   filename = paste0(tempdir(), "/x_out.ris"),
   format = "ris")
-
 }

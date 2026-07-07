@@ -1,4 +1,4 @@
-<img align="left" height="120" src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/revtools_hex.png"><b>revtools v0.4.1</b>
+<img align="left" height="120" src="https://github.com/mjwestgate/revtools_website/blob/master/assets/img/logo.png"><b>revtools version 0.5.0</b>
 
 Tools to support literature review and evidence synthesis in R, including import, de-duplication and interactive display of bibliographic data.
 

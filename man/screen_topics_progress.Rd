@@ -2,23 +2,37 @@
 % Please edit documentation in R/screen_topics_progress.R
 \name{screen_topics_progress}
 \alias{screen_topics_progress}
-\title{Description of class 'screen_topics_progress'}
+\alias{summary.screen_topics_progress}
+\title{Class \code{screen_topics_progress}}
+\usage{
+\method{summary}{screen_topics_progress}(object, ...)
+}
+\arguments{
+\item{object}{An object of class \code{screen_topics_progress}}
+
+\item{...}{Any further information}
+}
+\value{
+Class \code{screen_topics_progress} has seven slots containing
+the following information:
+
+\itemize{
+\item{\code{raw}: duplicate of data passed to \code{\link[=screen_topics]{screen_topics()}}}
+\item{\code{stopwords}: vector of words excluded from the dtm}
+\item{\code{columns}: vector of column names in the original dataset}
+\item{\code{grouped}: a data.frame showing grouped data as specified by the user}
+\item{\code{dtm}: document-term matrix, created by \code{\link[=make_dtm]{make_dtm()}}}
+\item{\code{model}: most recent topic model, created by \code{\link[=run_topic_model]{run_topic_model()}}}
+\item{\code{plot_ready}: data needed for the main plot (coordinates etc.)}
+}
+}
 \description{
 \code{screen_topics_progress} is an S3 class designed to store data from
-\code{screen_topics}, allowing the user to re-load a previously calculated
-topic model. If you just want to save your decisions on article
+\code{\link[=screen_topics]{screen_topics()}}, allowing the user to re-load a previously calculated
+topic model. It is typically stored within a .rds file
+in the working directory. When re-imported to R using \code{\link[=readRDS]{readRDS()}}, this
+file will contain an object of class \code{screen_topics_progress.}
+If you just want to save your decisions on article
 inclusion/exclusion, along with your notes, then this is probably overkill
-as that information can simply be exported as a .csv file.
+as that information can simply be exported as a \code{.csv} file.
 }
-\section{slots}{
- Class 'screen_topics_progress' has seven slots containing
-the following information: \itemize{ \item \strong{raw} duplicate of data
-passed to \code{screen_topics} \item \strong{stopwords} vector of words
-excluded from the dtm \item \strong{columns} vector of column names in the
-original dataset \item \strong{grouped} a data.frame showing grouped data as
-specified by the user \item \strong{dtm} document-term matrix, created by
-\code{make_dtm} \item \strong{model} most recent topic model, created by
-\code{run_topic_model} \item \strong{plot_ready} data needed for the main
-plot (coordinates etc.)  }
-}
-

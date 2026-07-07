@@ -5,7 +5,7 @@ description: Tools for Evidence Synthesis in R
 
 <h1>Tools for Evidence Synthesis</h1>
 
-<img class="hex" src="man/figures/revtools_hex.png">  `revtools` is an R package to support researchers working on evidence synthesis projects. It provides a free, easy-to-use, open-source environment to conduct your literature review or meta-analysis. You can use it to visualise patterns in bibliographic data, interactively select or exclude individual articles or words, and save the results for later analysis.
+`revtools` is an R package to support researchers working on evidence synthesis projects. It provides a free, easy-to-use, open-source environment to conduct your literature review or meta-analysis. You can use it to visualise patterns in bibliographic data, interactively select or exclude individual articles or words, and save the results for later analysis.
 
 You can download `revtools` from <a href="https://cran.r-project.org/package=revtools" target="_blank" rel="noopener">CRAN</a>, view the development version on <a href="https://github.com/mjwestgate/revtools" target="_blank" rel="noopener">GitHub</a>, or read about it in this paper:
 
@@ -43,14 +43,3 @@ install.packages("remotes")
 remotes::install_github("mjwestgate/revtools")
 library(revtools)
 ```
-
-<iframe
-  id="revtools_downloads"
-  src="reference/figures/revtools_downloads.html"
-  width="100%"
-  height="450px"
-  >
-  You should see some plots here!
-</iframe>
-<font color="#999999"><i>Cumulative downloads of `revtools` since its' release 
-in February 2018.</i>

@@ -43,5 +43,4 @@ class(x) # = data.frame
 x <- read_bibliography(file_location, return_df = FALSE)
 class(x) # = bibliography
 summary(x)
-
 }

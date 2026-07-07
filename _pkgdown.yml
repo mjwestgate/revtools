@@ -1,11 +1,56 @@
-url: https://revtools.net
+url: https://martinwestgate.com/revtools/
 template:
   bootstrap: 5
   bslib:
-    primary: "#fd872f"
+    code_font: {google: "Source Code Pro"}
+    pkgdown-nav-height: 130px
+  params:
+    bootswatch: litera
+development:
+  mode: auto
 navbar:
-  bg: dark
-  type: dark
-home: 
-  sidebar: 
-    html: "pkgdown/assets/sidebar.html"
+  structure:
+    left:
+    - home
+    - articles
+    - reference
+    right:
+    - search
+    - news
+    - github
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Screen duplicates
+        href: articles/screen_duplicates.html
+      - text: Screen titles or abstracts
+        href: articles/screen_titles_or_abstracts.html
+      - text: Screen topics
+        href: articles/screening_with_topic_models.html
+    news:
+      text: News
+      href: news/index.html
+reference:
+- title: Individual screening
+  contents:
+  - screen_duplicates
+  - screen_titles
+  - screen_abstracts
+  - screen_topics
+- title: Team screening
+  contents:
+  - allocate_effort
+  - distribute_tasks
+  - aggregate_tasks
+  - preload_screen_abstracts
+- title: Text mining
+  contents:
+  - revwords
+  - make_dtm
+  - run_topic_model
+  - screen_topics_progress
+- title: Deprecated functions
+  contents:
+  - read_bibliography
+  - write_bibliography

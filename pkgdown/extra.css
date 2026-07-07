@@ -1,3 +1,21 @@
+@import url(https://fonts.googleapis.com/css?family=Lato);
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+h1, h2, h3, h4, .h1, .h2, .h3, .main-title, .main-subtitle {
+  font-family: Lato;
+  font-weight: normal;
+  color: #8C2981;
+}
+
+a {
+    color: #5b218d;
+    text-decoration: none;
+}
+
+a:hover {
+  color: #721ba4;
+}
+
 .clearfix:after {
   content: "";
   display: table;
@@ -17,22 +35,6 @@ img.screenshot_tall {
   width: 200px;
   vertical-align: left;
   padding: 5px 15px 5px 0px;
-}
-
-.navbar.bg-dark {
-  background-image: linear-gradient(to bottom, #27114D, #371554);
-}
-
-.navbar-dark .navbar-brand:hover {
-    color: #8C2981;
-}
-
-.nav-item:selection {
-  background-color: #8C2981;
-}
-
-.nav-item:hover {
-  background-color: #8C2981;
 }
 
 .banner-logo {

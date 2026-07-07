@@ -25,7 +25,7 @@ per reviewer)? Defaults to TRUE}
 
 \item{file_name}{a file path & name showing where .csv files should be
 saved. Ignored if \code{write_csv} is FALSE. Defaults to
-'reviewer_[name].csv'.}
+'reviewer_\link{name}.csv'.}
 
 \item{return_data}{Logical - should a list be (invisibly) returned, in which
 each entry is the data sent to a single reviewer? Defaults to FALSE.}

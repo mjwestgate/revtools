@@ -14,34 +14,34 @@
 #' abstracts, and interactively select or exclude individual references, words
 #' or topics.
 #'
-#'
 #' @name revtools-package
 #' @aliases revtools
-#' @docType package
 #' @section Functions:
 #' \strong{Individual screening}
 #' \itemize{
-#'   \item\code{\link{screen_duplicates}} Screen for duplicates
-#'   \item\code{\link{screen_titles}} Screen articles by title
-#'   \item\code{\link{screen_abstracts}} Screen articles by abstract
-#'   \item\code{\link{screen_topics}} Screen data by topic
+#'   \item{[screen_duplicates()] Screen for duplicates}
+#'   \item{[screen_titles()] Screen articles by title}
+#'   \item{[screen_abstracts()] Screen articles by abstract}
+#'   \item{[screen_topics()] Screen data by topic}
 #' }
 #' \strong{Team screening}
 #' \itemize{
-#'   \item \code{\link{allocate_effort}} Specify how to distribute screening effort among a team of reviewers
-#'   \item \code{\link{distribute_tasks}} Split a dataset among a team of reviewers
-#'   \item \code{\link{aggregate_tasks}} Combine screening results from a team of reviewers
-#'   \item \code{\link{preload_screen_abstracts}} Pre-package a screening app to forward to reviewers
+#'   \item{[allocate_effort()] Specify how to distribute screening effort among a team of reviewers}
+#'   \item{[distribute_tasks()] Split a dataset among a team of reviewers}
+#'   \item{[aggregate_tasks()] Combine screening results from a team of reviewers}
+#'   \item{[preload_screen_abstracts()] Pre-package a screening app to forward to reviewers}
 #' }
 #' \strong{Text mining}
 #' \itemize{
-#'   \item \code{\link{revwords}} Stopwords used in revtools functions
-#'   \item \code{\link{make_dtm}} Construct a Document-Term Matrix from bibliographic data
-#'   \item \code{\link{run_topic_model}} Wrapper function for topic models
+#'   \item{[revwords()] Stopwords used in revtools functions}
+#'   \item{[make_dtm()] Construct a Document-Term Matrix from bibliographic data}
+#'   \item{[run_topic_model()] Wrapper function for topic models}
+#'   \item{[screen_topics_progress()] Object class for storing and restarting topic-based screening}
 #' }
 #' \strong{Deprecated functions}
 #' \itemize{
-#'   \item \code{\link{read_bibliography}} Import bibliographic data (use \code{synthesisr::read_refs} instead)
-#'   \item \code{\link{write_bibliography}} Export bibliographic data (use \code{synthesisr::write_refs} instead)
+#'   \item{[read_bibliography()] Import bibliographic data (use [synthesisr::read_refs()] instead)}
+#'   \item{[write_bibliography()] Export bibliographic data (use [synthesisr::write_refs()] instead)}
 #' }
-NULL
+#' @keywords internal
+"_PACKAGE"
